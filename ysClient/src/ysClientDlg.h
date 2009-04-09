@@ -29,7 +29,7 @@ public:
     void OutputBusToFile(void*);
     BOOL GenerateHeadStruct(void*);
     void UpdateView(void*, int);
-    void UpdateViewDetail(HWND hGroup, StaticAutoPtrArray& arrStatic, EditAutoPtrArray& arrEdit);
+    void UpdateViewDetail(void* var_array, HWND hGroup, StaticAutoPtrArray& arrStatic, EditAutoPtrArray& arrEdit);
 
 
 // й╣ож

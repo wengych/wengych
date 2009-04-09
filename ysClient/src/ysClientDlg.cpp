@@ -312,29 +312,55 @@ void CysClientDlg::OutputBusToFile( void* bus )
 void CysClientDlg::UpdateView(void* var_array, int flag)
 {
     int len = YSVarArrayGetLen(var_array);
-    CStatic* pStatic = new CStatic[len];
-    CEdit* pEdit = new CEdit[len];
-    int default_width = 40;
-    int default_height = 14;
-    int ctrl_to_parent_left = 10;
-    int ctrl_to_parent_top = 10;
 
     CWnd grp_in, grp_out;
     grp_in.Attach(this->GetDlgItem(IDC_GRP_IN)->m_hWnd);
     grp_out.Attach(this->GetDlgItem(IDC_GRP_OUT)->m_hWnd);
     
-    CRect rcParent, rcCtrl;
     if (flag == VIEW_FLAG_IN)
-        UpdateViewDetail(this->GetDlgItem(IDC_GRP_IN)->m_hWnd, m_pStaticIn, m_pEditIn);
+        UpdateViewDetail(var_array, this->GetDlgItem(IDC_GRP_IN)->m_hWnd, m_pStaticIn, m_pEditIn);
     else
-        grp_out.GetWindowRect(rcParent);
+        UpdateViewDetail(var_array, this->GetDlgItem(IDC_GRP_OUT)->m_hWnd, m_pStaticOut, m_pEditOut);
+
+
+    grp_in.Detach();
+    grp_out.Detach();
+}
+
+void CysClientDlg::UpdateViewDetail( void* var_array, HWND hGroup, StaticAutoPtrArray& arrStatic, EditAutoPtrArray& arrEdit )
+{
+    int len = YSVarArrayGetLen(var_array);
+
+    // 销毁之前创建的控件对象
+    if (!arrStatic.IsEmpty()) {
+        arrStatic.RemoveAll();
+    }
+    if (!arrEdit.IsEmpty()) {
+        arrEdit.RemoveAll();
+    }    
+
+    for (int i = 0; i < len; ++i) {
+        StaticPtr pStatic(new CStatic);
+        EditPtr pEdit(new CEdit);
+        arrStatic.InsertAt(arrStatic.GetCount(), pStatic);
+        arrEdit.InsertAt(arrEdit.GetCount(), pEdit);
+    }
+
+    CRect rcParent, rcCtrl;
+
+    int default_width = 40;
+    int default_height = 14;
+    int ctrl_to_parent_left = 10;
+    int ctrl_to_parent_top = 10;
+
+    ::GetWindowRect(hGroup, rcParent);
 
     rcCtrl.left = rcParent.left + ctrl_to_parent_left;
     rcCtrl.right = rcCtrl.left + default_width;
     rcCtrl.top = rcParent.top + ctrl_to_parent_top;
     rcCtrl.bottom = rcCtrl.top + default_height;
 
-    pStatic[0].Create(_T("test"), 0, rcCtrl, this);
+    arrStatic[0]->Create(_T("test"), WS_CHILD | WS_VISIBLE, rcCtrl, this);
 
     for (int i = 1; i < len; ++i)
     {
@@ -345,13 +371,5 @@ void CysClientDlg::UpdateView(void* var_array, int flag)
     rcCtrl.right = rcCtrl.left + default_width;
     rcCtrl.top = rcParent.top + ctrl_to_parent_top;
     rcCtrl.bottom = rcCtrl.top + default_height;
-    pEdit[0].Create(0, rcCtrl, this, WM_USER + 100);
-
-    grp_in.Detach();
-    grp_out.Detach();
-}
-
-void CysClientDlg::UpdateViewDetail( HWND hGroup, StaticAutoPtrArray& arrStatic, EditAutoPtrArray& arrEdit )
-{
-    arrStatic.Append();
+    arrEdit[0]->Create(WS_CHILD | WS_VISIBLE, rcCtrl, this, WM_USER + 100);
 }

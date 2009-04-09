@@ -22,6 +22,7 @@
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfMFC="2"
+			UseOfATL="1"
 			CharacterSet="1"
 			>
 			<Tool
