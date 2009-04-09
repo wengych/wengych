@@ -13,6 +13,9 @@
 #define new DEBUG_NEW
 #endif
 
+const int VIEW_FLAG_OUT = 0;
+const int VIEW_FLAG_IN = 1;
+
 // CysClientDlg 对话框
 
 
@@ -29,7 +32,7 @@ void CysClientDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CysClientDlg, CDialog)
 	ON_WM_PAINT()
-    ON_BN_CLICKED(ID_CONNECT, OnConnect)
+    ON_BN_CLICKED(IDC_TEST, OnPrepareRequest)
     ON_BN_CLICKED(ID_SEND, OnSend)
     ON_BN_CLICKED(ID_EXIT, OnExit)
 	ON_WM_QUERYDRAGICON()
@@ -82,9 +85,9 @@ void CysClientDlg::OnPaint()
 	}
 }
 
-void CysClientDlg::OnConnect()
+void CysClientDlg::OnPrepareRequest()
 {
-    Connect();
+    PrepareRequest();
 }
 
 void CysClientDlg::OnExit()
@@ -102,33 +105,20 @@ HCURSOR CysClientDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-void CysClientDlg::Connect()
+void CysClientDlg::PrepareRequest()
 {
-    if (m_hSocket) {
-        // 已连接，断开连接
-        closesocket(m_hSocket);
-        m_hSocket = 0;
-        GetDlgItem(ID_CONNECT)->SetWindowText(_T("连接"));
-        return ;
+    void* var_array = NULL;
+    while (1)
+    {
+        var_array = YSVarArrayNew(0);
+
+        YSVarArrayAdd(var_array, YSDICT_IN);
+        UpdateView(var_array, VIEW_FLAG_IN);
+
+        break;
     }
-
-    // 未连接，建立连接
-    struct sockaddr_in serv_addr;
-
-    unsigned char ip[] = {192, 168, 0, 105};
-    unsigned port = 9000;
-
-    m_hSocket = socket(AF_INET, SOCK_STREAM, 0);
-
-    ZeroMemory((char *) &serv_addr, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    memcpy((char *)&serv_addr.sin_addr.s_addr,ip, sizeof(ip));
-    serv_addr.sin_port = htons(port);
-
-    if (connect(m_hSocket,(const sockaddr*)&serv_addr,sizeof(serv_addr)) < 0)
-        MessageBox(_T("ERROR connecting"));
-
-    GetDlgItem(ID_CONNECT)->SetWindowText(_T("断开"));
+    
+    YSVarFree(var_array);
 }
 
 void CysClientDlg::OnSend()
@@ -318,6 +308,7 @@ void CysClientDlg::OutputBusToFile( void* bus )
     YSVarFree(str);
 }
 
+
 void CysClientDlg::UpdateView(void* var_array, int flag)
 {
     int len = YSVarArrayGetLen(var_array);
@@ -333,8 +324,8 @@ void CysClientDlg::UpdateView(void* var_array, int flag)
     grp_out.Attach(this->GetDlgItem(IDC_GRP_OUT)->m_hWnd);
     
     CRect rcParent, rcCtrl;
-    if (flag == 1)
-        grp_in.GetWindowRect(rcParent);
+    if (flag == VIEW_FLAG_IN)
+        UpdateViewDetail(this->GetDlgItem(IDC_GRP_IN)->m_hWnd, m_pStaticIn, m_pEditIn);
     else
         grp_out.GetWindowRect(rcParent);
 
@@ -350,6 +341,17 @@ void CysClientDlg::UpdateView(void* var_array, int flag)
         // pStatic[i]->Create();
     }
 
+    rcCtrl.left = rcCtrl.right + ctrl_to_parent_left;
+    rcCtrl.right = rcCtrl.left + default_width;
+    rcCtrl.top = rcParent.top + ctrl_to_parent_top;
+    rcCtrl.bottom = rcCtrl.top + default_height;
+    pEdit[0].Create(0, rcCtrl, this, WM_USER + 100);
+
     grp_in.Detach();
     grp_out.Detach();
+}
+
+void CysClientDlg::UpdateViewDetail( HWND hGroup, StaticAutoPtrArray& arrStatic, EditAutoPtrArray& arrEdit )
+{
+    arrStatic.Append();
 }

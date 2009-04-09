@@ -7,7 +7,10 @@
 // CysClientDlg 对话框
 class CysClientDlg : public CDialog
 {
-// 构造
+    typedef CAutoPtr<CStatic> StaticPtr;
+    typedef CAutoPtr<CEdit> EditPtr;
+    typedef CAutoPtrArray<CStatic> StaticAutoPtrArray;
+    typedef CAutoPtrArray<CEdit> EditAutoPtrArray;
 public:
 	CysClientDlg(CWnd* pParent = NULL);	// 标准构造函数
 
@@ -17,7 +20,7 @@ public:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
 
-    void OnConnect();
+    void OnPrepareRequest();
     void OnSend();
     void OnExit();
 
@@ -26,6 +29,7 @@ public:
     void OutputBusToFile(void*);
     BOOL GenerateHeadStruct(void*);
     void UpdateView(void*, int);
+    void UpdateViewDetail(HWND hGroup, StaticAutoPtrArray& arrStatic, EditAutoPtrArray& arrEdit);
 
 
 // 实现
@@ -40,5 +44,11 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
     // Connect to ys server
-    void Connect();
+    void PrepareRequest();
+
+    StaticAutoPtrArray m_pStaticIn;
+    EditAutoPtrArray m_pEditIn;
+
+    StaticAutoPtrArray m_pStaticOut;
+    EditAutoPtrArray m_pEditOut;
 };
