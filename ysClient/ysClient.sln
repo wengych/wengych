@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ysClient", "ysClient.vcproj", "{9764509B-8E3E-42EB-BB51-929EE6E6D4BD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yscom_win", "..\yscom_win\yscom_win.vcproj", "{1A99F58D-A555-485A-A037-805EA22CA68B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9764509B-8E3E-42EB-BB51-929EE6E6D4BD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9764509B-8E3E-42EB-BB51-929EE6E6D4BD}.Debug|Win32.Build.0 = Debug|Win32
+		{9764509B-8E3E-42EB-BB51-929EE6E6D4BD}.Release|Win32.ActiveCfg = Release|Win32
+		{9764509B-8E3E-42EB-BB51-929EE6E6D4BD}.Release|Win32.Build.0 = Release|Win32
+		{1A99F58D-A555-485A-A037-805EA22CA68B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1A99F58D-A555-485A-A037-805EA22CA68B}.Debug|Win32.Build.0 = Debug|Win32
+		{1A99F58D-A555-485A-A037-805EA22CA68B}.Release|Win32.ActiveCfg = Release|Win32
+		{1A99F58D-A555-485A-A037-805EA22CA68B}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

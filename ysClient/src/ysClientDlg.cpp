@@ -1,0 +1,355 @@
+// ysClientDlg.cpp : 实现文件
+//
+
+#include "stdafx.h"
+#include "ysClient.h"
+#include "ysClientDlg.h"
+
+#include <WinSock2.h>
+#include <fstream>
+#include <ysdef.h>
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+// CysClientDlg 对话框
+
+
+CysClientDlg::CysClientDlg(CWnd* pParent /*=NULL*/)
+	: CDialog(CysClientDlg::IDD, pParent), m_hSocket(0)
+{
+	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+}
+
+void CysClientDlg::DoDataExchange(CDataExchange* pDX)
+{
+	CDialog::DoDataExchange(pDX);
+}
+
+BEGIN_MESSAGE_MAP(CysClientDlg, CDialog)
+	ON_WM_PAINT()
+    ON_BN_CLICKED(ID_CONNECT, OnConnect)
+    ON_BN_CLICKED(ID_SEND, OnSend)
+    ON_BN_CLICKED(ID_EXIT, OnExit)
+	ON_WM_QUERYDRAGICON()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+
+// CysClientDlg 消息处理程序
+
+BOOL CysClientDlg::OnInitDialog()
+{
+	CDialog::OnInitDialog();
+
+	// 设置此对话框的图标。当应用程序主窗口不是对话框时，框架将自动
+	//  执行此操作
+	SetIcon(m_hIcon, TRUE);			// 设置大图标
+	SetIcon(m_hIcon, FALSE);		// 设置小图标
+
+	// TODO: 在此添加额外的初始化代码
+
+	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
+}
+
+// 如果向对话框添加最小化按钮，则需要下面的代码
+//  来绘制该图标。对于使用文档/视图模型的 MFC 应用程序，
+//  这将由框架自动完成。
+
+void CysClientDlg::OnPaint()
+{
+	if (IsIconic())
+	{
+		CPaintDC dc(this); // 用于绘制的设备上下文
+
+		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
+
+		// 使图标在工作区矩形中居中
+		int cxIcon = GetSystemMetrics(SM_CXICON);
+		int cyIcon = GetSystemMetrics(SM_CYICON);
+		CRect rect;
+		GetClientRect(&rect);
+		int x = (rect.Width() - cxIcon + 1) / 2;
+		int y = (rect.Height() - cyIcon + 1) / 2;
+
+		// 绘制图标
+		dc.DrawIcon(x, y, m_hIcon);
+	}
+	else
+	{
+		CDialog::OnPaint();
+	}
+}
+
+void CysClientDlg::OnConnect()
+{
+    Connect();
+}
+
+void CysClientDlg::OnExit()
+{
+    if (m_hSocket)
+        closesocket(m_hSocket);
+
+    EndDialog(0);
+}
+
+//当用户拖动最小化窗口时系统调用此函数取得光标
+//显示。
+HCURSOR CysClientDlg::OnQueryDragIcon()
+{
+	return static_cast<HCURSOR>(m_hIcon);
+}
+
+void CysClientDlg::Connect()
+{
+    if (m_hSocket) {
+        // 已连接，断开连接
+        closesocket(m_hSocket);
+        m_hSocket = 0;
+        GetDlgItem(ID_CONNECT)->SetWindowText(_T("连接"));
+        return ;
+    }
+
+    // 未连接，建立连接
+    struct sockaddr_in serv_addr;
+
+    unsigned char ip[] = {192, 168, 0, 105};
+    unsigned port = 9000;
+
+    m_hSocket = socket(AF_INET, SOCK_STREAM, 0);
+
+    ZeroMemory((char *) &serv_addr, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    memcpy((char *)&serv_addr.sin_addr.s_addr,ip, sizeof(ip));
+    serv_addr.sin_port = htons(port);
+
+    if (connect(m_hSocket,(const sockaddr*)&serv_addr,sizeof(serv_addr)) < 0)
+        MessageBox(_T("ERROR connecting"));
+
+    GetDlgItem(ID_CONNECT)->SetWindowText(_T("断开"));
+}
+
+void CysClientDlg::OnSend()
+{
+    NewSend();
+    //OldSend();
+    return;
+
+}
+
+BOOL CysClientDlg::GenerateHeadStruct( void* hs )
+{
+    BYTE buff[] =
+    {
+        0x01, // VerM
+        0x00, // VerS
+        0x00, // ReqType
+        0x53, 0x45, 0x52, 0x56, 0x48, 0x41, 0x53, 0x48, // PkgType
+        0x01, // PkgSum
+        0x01, // PkgNum
+        0x00, 0x00, 0x00, 0xda, // DataSum
+        0x00, 0x00, 0x00, 0xda, // DataLen
+
+        /* data */
+        0x69, 0x00, 0x00, 0x00, 0x0e, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x11, 0x00, 0x00, 0x00, 0x03, 0x65,
+        0x00, 0x00, 0x00, 0x18, 0x00, 0x0a, 0x5f, 0x5f,
+        0x44, 0x49, 0x43, 0x54, 0x5f, 0x49, 0x4e, 0x32,
+        0x00, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x01,
+        0x08, 0x00, 0x00, 0x00, 0x29, 0x00, 0x0a, 0x5f,
+        0x5f, 0x44, 0x49, 0x43, 0x54, 0x5f, 0x49, 0x4e,
+        0x32, 0x37, 0x35, 0x30, 0x33, 0x3a, 0x2d, 0x31,
+        0x32, 0x30, 0x38, 0x38, 0x39, 0x39, 0x33, 0x36,
+        0x30, 0x2d, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30,
+        0x30, 0x31, 0x65, 0x00, 0x00, 0x00, 0x1f, 0x00,
+        0x11, 0x5f, 0x5f, 0x44, 0x49, 0x43, 0x54, 0x5f,
+        0x53, 0x43, 0x41, 0x4c, 0x4c, 0x5f, 0x4e, 0x41,
+        0x4d, 0x45, 0x00, 0xff, 0xff, 0xff, 0x00, 0x00,
+        0x00, 0x01, 0x08, 0x00, 0x00, 0x00, 0x26, 0x00,
+        0x11, 0x5f, 0x5f, 0x44, 0x49, 0x43, 0x54, 0x5f,
+        0x53, 0x43, 0x41, 0x4c, 0x4c, 0x5f, 0x4e, 0x41,
+        0x4d, 0x45, 0x4d, 0x79, 0x44, 0x65, 0x6d, 0x6f,
+        0x44, 0x61, 0x74, 0x65, 0x54, 0x69, 0x6d, 0x65,
+        0x32, 0x65, 0x00, 0x00, 0x00, 0x17, 0x00, 0x09,
+        0x5f, 0x5f, 0x44, 0x49, 0x43, 0x54, 0x5f, 0x49,
+        0x4e, 0x00, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00,
+        0x01, 0x08, 0x00, 0x00, 0x00, 0x28, 0x00, 0x09,
+        0x5f, 0x5f, 0x44, 0x49, 0x43, 0x54, 0x5f, 0x49,
+        0x4e, 0x37, 0x35, 0x30, 0x33, 0x3a, 0x2d, 0x31,
+        0x32, 0x30, 0x38, 0x38, 0x39, 0x39, 0x33, 0x36,
+        0x30, 0x2d, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30,
+        0x30, 0x31
+    };
+
+    YSPkgDataToStruct(hs,YSPKG_HEADSTRUCT_ST_SIZE \
+        ,buff,sizeof(buff));
+
+    void *SendPkg;
+    void* Hash;
+    void* Str;
+
+    tYSPkgHeadStruct* pHs = (tYSPkgHeadStruct*)(hs);
+    if ( NULL==(SendPkg=YSVarBinSave(pHs->Data,pHs->DataLen)) )
+    if ( NULL==(SendPkg=YSVarBinSave(buff,sizeof(buff))) )
+    {
+        MessageBox(_T("Failed at YSVarBinSave"));
+        return FALSE;
+    }
+
+    Str = YSVarStringNew2(10240);
+    char *a = (char *)YSVarBinGet(SendPkg);
+ 
+
+    if ( 0>(YSVarHashUnPack(&Hash,  SendPkg, 0)) ) {
+        MessageBox(_T("解包hash出错"));
+        return FALSE;
+    }
+    YSVarHashShow(Hash, 0, Str);
+    std::ofstream req_file("req.xml");
+    req_file.write((char*)YSVarStringGet(Str), YSVarStringGetLen(Str));
+    req_file.close();
+
+    YSVarFree(Hash);
+    YSVarFree(Str);
+
+    return TRUE;
+}
+
+void CysClientDlg::OldSend(  )
+{
+    tYSPkgHeadStruct hs;
+    void* Pkg = NULL;
+    void* Hash;
+    int time_out = 1;
+    if (FALSE == GenerateHeadStruct(&hs)) {
+        return ;
+    }
+
+    //     if (0 > send(m_hSocket, buff, sizeof(buff), 0)) {
+    //         MessageBox(_T("发送失败"));
+    //         return;
+    //     }
+    if (FALSE == YSPkgTcpWrite(m_hSocket, time_out, &hs)) {
+        MessageBox(_T("发送数据失败"));
+        return ;
+    }
+
+    // 收包
+    Pkg = YSVarBinNew();
+    if (FALSE == YSPkgTcpRead(m_hSocket, time_out, Pkg, &hs)) {
+        MessageBox(_T("接收数据失败"));
+        return ;
+    }
+
+    // 解包
+    if (0 > YSVarHashUnPack(&Hash, Pkg, YSPKG_HEADSTRUCT_MEM_HEADLEN(&hs))) {
+        MessageBox(_T("UnPack failed!."));
+        return ;
+    }
+
+
+    void* Str;
+    Str = YSVarStringNew2(10240);
+    YSVarHashShow(Hash, 0, Str);
+
+    std::ofstream ofile("test.xml");
+    ofile.write((char*)YSVarStringGet(Str), YSVarStringGetLen(Str));
+    ofile.close();
+
+    YSVarBinClear(Pkg);
+    YSVarHashFree(Hash);
+}
+
+void CysClientDlg::NewSend()
+{
+    const char* ip = "192.168.0.105";
+    int port = 9000;
+    int time_out = 5;
+
+    void* SendBus = NULL;
+    void* RecvBus = NULL;
+
+    
+    char V[128];
+    while (1) {
+        if ( NULL==(SendBus = YSUserBusNew(0)) ){
+            break;
+        }
+
+        sprintf(V,"MyDemoDateTime1");
+        YSUserBusAddString(SendBus,YSDICT_SERVNAME,V,strlen(V));
+        // sprintf(V,"%d:%d-%08d",getpid(),(INT32)pthread_self(),Idx);
+        //YSUserBusAddString(SendBus,YSDICT_IN,V,strlen(V));
+        //YSUserBusAddString(SendBus,YSDICT_IN,V,strlen(V));
+        //YSUserBusAddString(SendBus,YSDICT_IN2,V,strlen(V));
+
+        if (FALSE == YSServiceClientCallSock(ip, 9000, time_out, SendBus, &RecvBus)) {
+            MessageBox(_T("ServiceClientCall failed!"));
+            break;
+        }
+
+        break;
+    }
+
+    OutputBusToFile(SendBus);
+    OutputBusToFile(RecvBus);
+
+    YSUserBusFree(SendBus);
+    YSUserBusFree(RecvBus);
+
+}
+
+void CysClientDlg::OutputBusToFile( void* bus )
+{
+    void* str = NULL;
+    while (1)
+    {
+        str = YSVarStringNew2(10240);
+        YSUserBusShow(bus, 0, str);
+        std::ofstream ofile("test.xml", std::ios_base::app);
+        ofile << "\n<================ />\n";
+        ofile.write((char*)YSVarStringGet(str), YSVarStringGetLen(str));
+
+        break;
+    }
+
+    YSVarFree(str);
+}
+
+void CysClientDlg::UpdateView(void* var_array, int flag)
+{
+    int len = YSVarArrayGetLen(var_array);
+    CStatic* pStatic = new CStatic[len];
+    CEdit* pEdit = new CEdit[len];
+    int default_width = 40;
+    int default_height = 14;
+    int ctrl_to_parent_left = 10;
+    int ctrl_to_parent_top = 10;
+
+    CWnd grp_in, grp_out;
+    grp_in.Attach(this->GetDlgItem(IDC_GRP_IN)->m_hWnd);
+    grp_out.Attach(this->GetDlgItem(IDC_GRP_OUT)->m_hWnd);
+    
+    CRect rcParent, rcCtrl;
+    if (flag == 1)
+        grp_in.GetWindowRect(rcParent);
+    else
+        grp_out.GetWindowRect(rcParent);
+
+    rcCtrl.left = rcParent.left + ctrl_to_parent_left;
+    rcCtrl.right = rcCtrl.left + default_width;
+    rcCtrl.top = rcParent.top + ctrl_to_parent_top;
+    rcCtrl.bottom = rcCtrl.top + default_height;
+
+    pStatic[0].Create(_T("test"), 0, rcCtrl, this);
+
+    for (int i = 1; i < len; ++i)
+    {
+        // pStatic[i]->Create();
+    }
+
+    grp_in.Detach();
+    grp_out.Detach();
+}
