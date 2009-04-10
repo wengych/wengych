@@ -16,8 +16,10 @@
 const int VIEW_FLAG_OUT = 0;
 const int VIEW_FLAG_IN = 1;
 
-// CysClientDlg 对话框
+const int input_test_count = 3;
+char* input_test[input_test_count] = { YSDICT_IN, YSDICT_IN, YSDICT_IN2 };
 
+// CysClientDlg 对话框
 
 CysClientDlg::CysClientDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CysClientDlg::IDD, pParent), m_hSocket(0)
@@ -111,8 +113,13 @@ void CysClientDlg::PrepareRequest()
     while (1)
     {
         var_array = YSVarArrayNew(0);
+        for (int i = 0; i < input_test_count; ++i) {
+            void* var_string = NULL;
+            var_string = YSVarStringSave(input_test[i],strlen(input_test[i]));
 
-        YSVarArrayAdd(var_array, YSDICT_IN);
+            YSVarArrayAdd(var_array, var_string);
+        }
+        
         UpdateView(var_array, VIEW_FLAG_IN);
 
         break;
@@ -270,6 +277,24 @@ void CysClientDlg::NewSend()
 
         sprintf(V,"MyDemoDateTime1");
         YSUserBusAddString(SendBus,YSDICT_SERVNAME,V,strlen(V));
+        USES_CONVERSION;
+        for (size_t i = 0; i < m_pEditIn.GetCount(); ++i) {
+            CString strUserInput;
+            m_pEditIn[i]->GetWindowText(strUserInput);
+            char *p = T2A(strUserInput.GetString());
+            YSUserBusAddString(SendBus, input_test[i], p, strlen(p));
+
+//             
+//             arr = YSUserBusGetArray(RecvBus,input_test[i]);
+//             for ( i=0;i<YSVarArrayGetLen(arr);i++ )
+//             {
+// 
+//                 str = YSVarArrayGet(arr,i);
+//                 p = YSVarStringGet(str);
+//                 p = A2T(P);
+//             }
+            
+        }
         // sprintf(V,"%d:%d-%08d",getpid(),(INT32)pthread_self(),Idx);
         //YSUserBusAddString(SendBus,YSDICT_IN,V,strlen(V));
         //YSUserBusAddString(SendBus,YSDICT_IN,V,strlen(V));
@@ -280,6 +305,10 @@ void CysClientDlg::NewSend()
             break;
         }
 
+        void* dict_out = YSUserBusGetArray(RecvBus, YSDICT_OUT);
+        void* dict_out2 = YSUserBusGetArray(RecvBus, YSDICT_OUT2);
+        
+        UpdateView(dict_out, VIEW_FLAG_OUT);
         break;
     }
 
@@ -311,8 +340,6 @@ void CysClientDlg::OutputBusToFile( void* bus )
 
 void CysClientDlg::UpdateView(void* var_array, int flag)
 {
-    int len = YSVarArrayGetLen(var_array);
-
     CWnd grp_in, grp_out;
     grp_in.Attach(this->GetDlgItem(IDC_GRP_IN)->m_hWnd);
     grp_out.Attach(this->GetDlgItem(IDC_GRP_OUT)->m_hWnd);
@@ -346,30 +373,52 @@ void CysClientDlg::UpdateViewDetail( void* var_array, HWND hGroup, StaticAutoPtr
         arrEdit.InsertAt(arrEdit.GetCount(), pEdit);
     }
 
-    CRect rcParent, rcCtrl;
+    CRect rcDialog, rcGroup, rcCtrl;
 
-    int default_width = 40;
-    int default_height = 14;
+    int default_width = 80;
+    int default_height = 20;
     int ctrl_to_parent_left = 10;
-    int ctrl_to_parent_top = 10;
+    int ctrl_to_parent_top = 5;
 
-    ::GetWindowRect(hGroup, rcParent);
+    ::GetWindowRect(m_hWnd, rcDialog);
+    ::GetWindowRect(hGroup, rcGroup);
 
-    rcCtrl.left = rcParent.left + ctrl_to_parent_left;
+    rcCtrl.left = rcGroup.left - rcDialog.left + ctrl_to_parent_left;
     rcCtrl.right = rcCtrl.left + default_width;
-    rcCtrl.top = rcParent.top + ctrl_to_parent_top;
+    rcCtrl.top = rcGroup.top - rcDialog.top + ctrl_to_parent_top;
     rcCtrl.bottom = rcCtrl.top + default_height;
 
-    arrStatic[0]->Create(_T("test"), WS_CHILD | WS_VISIBLE, rcCtrl, this);
+    // ::ScreenToClient(m_hWnd, rcCtrl);
+    USES_CONVERSION;
+    CString label_text;
+    label_text = A2T((char*)YSVarArrayGet(var_array, 0));
 
-    for (int i = 1; i < len; ++i)
-    {
-        // pStatic[i]->Create();
-    }
+    arrStatic[0]->Create(label_text, WS_CHILD | WS_VISIBLE, rcCtrl, this);
 
     rcCtrl.left = rcCtrl.right + ctrl_to_parent_left;
     rcCtrl.right = rcCtrl.left + default_width;
-    rcCtrl.top = rcParent.top + ctrl_to_parent_top;
+    rcCtrl.top = rcGroup.top - rcDialog.top + ctrl_to_parent_top;
     rcCtrl.bottom = rcCtrl.top + default_height;
-    arrEdit[0]->Create(WS_CHILD | WS_VISIBLE, rcCtrl, this, WM_USER + 100);
+
+    // ::ScreenToClient(m_hWnd, rcCtrl);
+    arrEdit[0]->Create(WS_CHILD | WS_VISIBLE | WS_BORDER, rcCtrl, this, WM_USER + 100);
+
+
+    for (int i = 1; i < len; ++i)
+    {
+        /* top and bottom doesn't't need modify */
+        rcCtrl.top = rcCtrl.bottom + ctrl_to_parent_top;
+        rcCtrl.bottom = rcCtrl.top + default_height;
+
+        /* create static */
+        rcCtrl.left = rcGroup.left - rcDialog.left + ctrl_to_parent_left;
+        rcCtrl.right = rcCtrl.left + default_width;
+        label_text = (char*)YSVarArrayGet(var_array, i);
+        arrStatic[i]->Create(label_text, WS_CHILD | WS_VISIBLE, rcCtrl, this);
+
+        /* create edit box */
+        rcCtrl.left = rcCtrl.right + ctrl_to_parent_left;
+        rcCtrl.right = rcCtrl.left + default_width;
+        arrEdit[i]->Create(WS_CHILD | WS_VISIBLE | WS_BORDER, rcCtrl, this, WM_USER + 100);
+    }
 }
