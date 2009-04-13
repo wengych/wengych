@@ -28,7 +28,7 @@ public:
     void NewSend();
     void OutputBusToFile(void*);
     BOOL GenerateHeadStruct(void*);
-    void UpdateView(void*, int);
+    void UpdateView(void*, int, void* bus = NULL);
     void UpdateViewDetail(void* var_array, HWND hGroup, StaticAutoPtrArray& arrStatic, EditAutoPtrArray& arrEdit);
 
 

@@ -269,51 +269,50 @@ void CysClientDlg::NewSend()
     void* RecvBus = NULL;
 
     
-    char V[128];
+    //char V[128];
     while (1) {
         if ( NULL==(SendBus = YSUserBusNew(0)) ){
             break;
         }
 
-        sprintf(V,"MyDemoDateTime1");
-        YSUserBusAddString(SendBus,YSDICT_SERVNAME,V,strlen(V));
+        char strServName[] = "MyDemoDateTime1";
+        YSUserBusAddString(SendBus,YSDICT_SERVNAME,strServName,strlen(strServName));
         USES_CONVERSION;
         for (size_t i = 0; i < m_pEditIn.GetCount(); ++i) {
             CString strUserInput;
             m_pEditIn[i]->GetWindowText(strUserInput);
             char *p = T2A(strUserInput.GetString());
             YSUserBusAddString(SendBus, input_test[i], p, strlen(p));
-
-//             
-//             arr = YSUserBusGetArray(RecvBus,input_test[i]);
-//             for ( i=0;i<YSVarArrayGetLen(arr);i++ )
-//             {
-// 
-//                 str = YSVarArrayGet(arr,i);
-//                 p = YSVarStringGet(str);
-//                 p = A2T(P);
-//             }
-            
         }
-        // sprintf(V,"%d:%d-%08d",getpid(),(INT32)pthread_self(),Idx);
-        //YSUserBusAddString(SendBus,YSDICT_IN,V,strlen(V));
-        //YSUserBusAddString(SendBus,YSDICT_IN,V,strlen(V));
-        //YSUserBusAddString(SendBus,YSDICT_IN2,V,strlen(V));
 
         if (FALSE == YSServiceClientCallSock(ip, 9000, time_out, SendBus, &RecvBus)) {
             MessageBox(_T("ServiceClientCall failed!"));
             break;
         }
 
-        void* dict_out = YSUserBusGetArray(RecvBus, YSDICT_OUT);
-        void* dict_out2 = YSUserBusGetArray(RecvBus, YSDICT_OUT2);
+        if (!RecvBus)
+        {
+            MessageBox(_T("接收数据出错，创建接收bus失败"));
+            break;
+        }
+
+        void* recv_key_array = NULL;
+        recv_key_array = YSVarArrayNew(0);
+        if (!recv_key_array)
+        {
+            MessageBox(_T("创建接收到数据的key数组失败"));
+            break;
+        }
+
+        void* strDictOut = YSVarStringSave(YSDICT_OUT, strlen(YSDICT_OUT));
+        void* strDictOut2 = YSVarStringSave(YSDICT_OUT2, strlen(YSDICT_OUT2));
+
+        YSVarArrayAdd(recv_key_array, strDictOut);
+        YSVarArrayAdd(recv_key_array, strDictOut2);
         
-        UpdateView(dict_out, VIEW_FLAG_OUT);
+        UpdateView(recv_key_array, VIEW_FLAG_OUT);
         break;
     }
-
-    OutputBusToFile(SendBus);
-    OutputBusToFile(RecvBus);
 
     YSUserBusFree(SendBus);
     YSUserBusFree(RecvBus);
@@ -338,16 +337,16 @@ void CysClientDlg::OutputBusToFile( void* bus )
 }
 
 
-void CysClientDlg::UpdateView(void* var_array, int flag)
+void CysClientDlg::UpdateView(void* key_array, int flag, void* bus/* used for response */)
 {
     CWnd grp_in, grp_out;
     grp_in.Attach(this->GetDlgItem(IDC_GRP_IN)->m_hWnd);
     grp_out.Attach(this->GetDlgItem(IDC_GRP_OUT)->m_hWnd);
     
     if (flag == VIEW_FLAG_IN)
-        UpdateViewDetail(var_array, this->GetDlgItem(IDC_GRP_IN)->m_hWnd, m_pStaticIn, m_pEditIn);
-    else
-        UpdateViewDetail(var_array, this->GetDlgItem(IDC_GRP_OUT)->m_hWnd, m_pStaticOut, m_pEditOut);
+        UpdateViewDetail(key_array, this->GetDlgItem(IDC_GRP_IN)->m_hWnd, m_pStaticIn, m_pEditIn);
+    else if(flag == VIEW_FLAG_OUT)
+        UpdateViewDetail(key_array, this->GetDlgItem(IDC_GRP_OUT)->m_hWnd, m_pStaticOut, m_pEditOut);
 
 
     grp_in.Detach();
@@ -391,7 +390,7 @@ void CysClientDlg::UpdateViewDetail( void* var_array, HWND hGroup, StaticAutoPtr
     // ::ScreenToClient(m_hWnd, rcCtrl);
     USES_CONVERSION;
     CString label_text;
-    label_text = A2T((char*)YSVarArrayGet(var_array, 0));
+    label_text = A2T( (char*) YSVarStringGet( YSVarArrayGet(var_array, 0) ) );
 
     arrStatic[0]->Create(label_text, WS_CHILD | WS_VISIBLE, rcCtrl, this);
 
@@ -413,12 +412,12 @@ void CysClientDlg::UpdateViewDetail( void* var_array, HWND hGroup, StaticAutoPtr
         /* create static */
         rcCtrl.left = rcGroup.left - rcDialog.left + ctrl_to_parent_left;
         rcCtrl.right = rcCtrl.left + default_width;
-        label_text = (char*)YSVarArrayGet(var_array, i);
+        label_text = A2T( (char*) YSVarStringGet( YSVarArrayGet(var_array, i) ) );
         arrStatic[i]->Create(label_text, WS_CHILD | WS_VISIBLE, rcCtrl, this);
 
         /* create edit box */
         rcCtrl.left = rcCtrl.right + ctrl_to_parent_left;
         rcCtrl.right = rcCtrl.left + default_width;
-        arrEdit[i]->Create(WS_CHILD | WS_VISIBLE | WS_BORDER, rcCtrl, this, WM_USER + 100);
+        arrEdit[i]->Create(WS_CHILD | WS_VISIBLE | WS_BORDER, rcCtrl, this, WM_USER + 100 + i);
     }
 }
