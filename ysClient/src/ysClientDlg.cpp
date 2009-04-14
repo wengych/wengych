@@ -310,7 +310,7 @@ void CysClientDlg::NewSend()
         YSVarArrayAdd(recv_key_array, strDictOut);
         YSVarArrayAdd(recv_key_array, strDictOut2);
         
-        UpdateView(recv_key_array, VIEW_FLAG_OUT);
+        UpdateView(recv_key_array, VIEW_FLAG_OUT, RecvBus);
         break;
     }
 
@@ -339,23 +339,113 @@ void CysClientDlg::OutputBusToFile( void* bus )
 
 void CysClientDlg::UpdateView(void* key_array, int flag, void* bus/* used for response */)
 {
-    CWnd grp_in, grp_out;
-    grp_in.Attach(this->GetDlgItem(IDC_GRP_IN)->m_hWnd);
-    grp_out.Attach(this->GetDlgItem(IDC_GRP_OUT)->m_hWnd);
     
     if (flag == VIEW_FLAG_IN)
-        UpdateViewDetail(key_array, this->GetDlgItem(IDC_GRP_IN)->m_hWnd, m_pStaticIn, m_pEditIn);
+    {
+        UpdateViewIn(key_array);
+    }
     else if(flag == VIEW_FLAG_OUT)
-        UpdateViewDetail(key_array, this->GetDlgItem(IDC_GRP_OUT)->m_hWnd, m_pStaticOut, m_pEditOut);
+    {
+        // UpdateViewOut(key_array, this->GetDlgItem(IDC_GRP_OUT)->m_hWnd, m_pStaticOut, m_pEditOut);
+        UpdateViewOut(key_array, bus);
+    }
 
-
-    grp_in.Detach();
-    grp_out.Detach();
 }
 
-void CysClientDlg::UpdateViewDetail( void* var_array, HWND hGroup, StaticAutoPtrArray& arrStatic, EditAutoPtrArray& arrEdit )
+void CysClientDlg::UpdateViewOut( void* key_array, void* recv_bus)
 {
-    int len = YSVarArrayGetLen(var_array);
+    CArray<CString> arrStringKey;
+    CArray<CString> arrStringOutput;
+
+    USES_CONVERSION;
+    int key_array_len = YSVarArrayGetLen(key_array);
+    for (int i = 0; i < key_array_len; ++i)
+    {
+        void* value_array = YSUserBusGetArray(recv_bus,
+            (char*)YSVarStringGet(YSVarArrayGet(key_array, i)));
+        int value_array_len = YSVarArrayGetLen(value_array);
+        for (int j = 0; j < value_array_len; ++j)
+        {
+            void* var_string = YSVarArrayGet(value_array, j);
+            arrStringOutput.Add( A2T((char*)YSVarStringGet(var_string)) );
+            arrStringKey.Add( A2T((char*)YSVarStringGet(YSVarArrayGet(key_array, i))) );
+        }
+    }
+    
+    int len = arrStringOutput.GetCount();
+    StaticAutoPtrArray& arrStatic = m_pStaticOut;
+    EditAutoPtrArray& arrEdit = m_pEditOut;
+    HWND hGroup = this->GetDlgItem(IDC_GRP_OUT)->m_hWnd;
+
+
+    // 销毁之前创建的控件对象
+    if (!arrStatic.IsEmpty()) {
+        arrStatic.RemoveAll();
+    }
+    if (!arrEdit.IsEmpty()) {
+        arrEdit.RemoveAll();
+    }    
+
+    for (int i = 0; i < len; ++i) {
+        StaticPtr pStatic(new CStatic);
+        EditPtr pEdit(new CEdit);
+        arrStatic.InsertAt(arrStatic.GetCount(), pStatic);
+        arrEdit.InsertAt(arrEdit.GetCount(), pEdit);
+    }
+
+    CRect rcDialog, rcGroup, rcCtrl;
+
+    int default_width = 80;
+    int default_height = 20;
+    int ctrl_to_parent_left = 10;
+    int ctrl_to_parent_top = 5;
+
+    ::GetWindowRect(m_hWnd, rcDialog);
+    ::GetWindowRect(hGroup, rcGroup);
+
+    rcCtrl.left = rcGroup.left - rcDialog.left + ctrl_to_parent_left;
+    rcCtrl.right = rcCtrl.left + default_width;
+    rcCtrl.top = rcGroup.top - rcDialog.top + ctrl_to_parent_top;
+    rcCtrl.bottom = rcCtrl.top + default_height;
+
+    arrStatic[0]->Create(arrStringKey[0], WS_CHILD | WS_VISIBLE, rcCtrl, this);
+
+    rcCtrl.left = rcCtrl.right + ctrl_to_parent_left;
+    rcCtrl.right = rcCtrl.left + default_width;
+    rcCtrl.top = rcGroup.top - rcDialog.top + ctrl_to_parent_top;
+    rcCtrl.bottom = rcCtrl.top + default_height;
+
+    // ::ScreenToClient(m_hWnd, rcCtrl);
+    arrEdit[0]->Create(WS_CHILD | WS_VISIBLE | WS_BORDER, rcCtrl, this, WM_USER + 100);
+    arrEdit[0]->SetWindowText(arrStringOutput[0]);
+
+
+    for (int i = 1; i < len; ++i)
+    {
+        /* top and bottom doesn't't need modify */
+        rcCtrl.top = rcCtrl.bottom + ctrl_to_parent_top;
+        rcCtrl.bottom = rcCtrl.top + default_height;
+
+        /* create static */
+        rcCtrl.left = rcGroup.left - rcDialog.left + ctrl_to_parent_left;
+        rcCtrl.right = rcCtrl.left + default_width;
+        
+        arrStatic[i]->Create(arrStringKey[i], WS_CHILD | WS_VISIBLE, rcCtrl, this);
+
+        /* create edit box */
+        rcCtrl.left = rcCtrl.right + ctrl_to_parent_left;
+        rcCtrl.right = rcCtrl.left + default_width;
+        arrEdit[i]->Create(WS_CHILD | WS_VISIBLE | WS_BORDER, rcCtrl, this, WM_USER + 100 + i);
+        arrEdit[i]->SetWindowText(arrStringOutput[i]);
+    }
+}
+
+void CysClientDlg::UpdateViewIn( void* key_array )// , HWND hGroup, StaticAutoPtrArray& arrStatic, EditAutoPtrArray& arrEdit )
+{
+    int len = YSVarArrayGetLen(key_array);
+    StaticAutoPtrArray& arrStatic = m_pStaticIn;
+    EditAutoPtrArray& arrEdit = m_pEditIn;
+    HWND hGroup = this->GetDlgItem(IDC_GRP_IN)->m_hWnd;
 
     // 销毁之前创建的控件对象
     if (!arrStatic.IsEmpty()) {
@@ -390,7 +480,7 @@ void CysClientDlg::UpdateViewDetail( void* var_array, HWND hGroup, StaticAutoPtr
     // ::ScreenToClient(m_hWnd, rcCtrl);
     USES_CONVERSION;
     CString label_text;
-    label_text = A2T( (char*) YSVarStringGet( YSVarArrayGet(var_array, 0) ) );
+    label_text = A2T( (char*) YSVarStringGet( YSVarArrayGet(key_array, 0) ) );
 
     arrStatic[0]->Create(label_text, WS_CHILD | WS_VISIBLE, rcCtrl, this);
 
@@ -412,7 +502,7 @@ void CysClientDlg::UpdateViewDetail( void* var_array, HWND hGroup, StaticAutoPtr
         /* create static */
         rcCtrl.left = rcGroup.left - rcDialog.left + ctrl_to_parent_left;
         rcCtrl.right = rcCtrl.left + default_width;
-        label_text = A2T( (char*) YSVarStringGet( YSVarArrayGet(var_array, i) ) );
+        label_text = A2T( (char*) YSVarStringGet( YSVarArrayGet(key_array, i) ) );
         arrStatic[i]->Create(label_text, WS_CHILD | WS_VISIBLE, rcCtrl, this);
 
         /* create edit box */
