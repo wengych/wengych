@@ -10,6 +10,9 @@
 /**[Memo         ]define func for pkg                                     **/
 /**[Modify       ]                                                        **/
 /***************************************************************************/
+#include <stdio.h>
+#include <stdlib.h>
+
 #ifdef __OS_WIN__
 #include <winsock2.h>
 #ifdef _WINDEF_
@@ -371,10 +374,11 @@ BOOL  YSPkgTcpRead(INT32 Sock,INT32 TO,void *Pkg,void *Head)
 #ifdef __OS_LINUX__
     char Tmp[TMP_MAX_BUFFER];
 #endif
-
+	char aa[1024];
+	FILE * fp;
     if ( (0>Sock)||!YSVarIsInit2(Pkg,VARTYPE_MEM_VT_BIN)||(NULL==Head) )
     {
-        return YSRTN_ERAPP_ARG;
+        return FALSE;
     }
 
     Buf = NULL;
@@ -409,6 +413,12 @@ BOOL  YSPkgTcpRead(INT32 Sock,INT32 TO,void *Pkg,void *Head)
             ,YSVarStringGet(Buf),&Len,YSPKG_HEADSTRUCT_MEM_PKGLEN((Head)));
 #elif __OS_WIN__
         Len = YSPKG_HEADSTRUCT_MEM_PKGLEN(Head);
+		
+		fp = fopen("lib.log", "a+");
+		memset(aa,0,sizeof(aa));
+		sprintf(aa,"Len=%d,%d,%d,%08X\n",Len,YSPKG_HEADSTRUCT_MEM_PKGLEN(Head),*(INT32*)(SBuf+YSPKG_HEADPKG_DSUM_POS),*(INT32*)(SBuf+YSPKG_HEADPKG_DSUM_POS));
+		fprintf(fp,"%s",aa);
+		fclose(fp);
         if ( Len!=(iRtn=SocketRead(Sock,T,YSVarStringGet(Buf),Len)) )
         {
             Len = 0;
@@ -672,11 +682,42 @@ int SocketWriteTimtOut(int sockfd,int iTimeOut)
 
 int SocketRead(int sockfd,int iTimeOut,char *pcBuffer,int iLength)
 {
-    if ( !SocketReadTimtOut(sockfd,iTimeOut) )
-    {
-        return -1;
-    }
-    return recv( sockfd,pcBuffer,iLength,0 );
+	int r;
+	int p;
+	int l;
+	FILE *fp;
+	int i;
+	p = 0;
+	r = 0;
+	l = iLength;
+	while( p<l )
+	{
+		if ( !SocketReadTimtOut(sockfd,iTimeOut) )
+		{
+			break;
+		}
+		if ( 0>(r=recv(sockfd,pcBuffer,l-p,0)) )
+		{
+			continue;
+		}
+		fp = fopen("lib.log", "a+");
+		fprintf(fp,"SocketRead: l=%d,r=%d,p=%d,r+p=%d\n",l,r,p,r+p);
+		fclose(fp);
+		p += r;
+	}
+	fp = fopen("lib.log", "a+");
+	fprintf(fp,"SocketRead: l=%d,p=%d\n",l,p);
+
+	for (i = 0; i < iLength /16; ++i) {
+		fprintf(fp, "%6d %x %x %x %x %x %x %x %x  %x %x %x %x %x %x %x %x  $ %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c $",
+			i,
+			pcBuffer[i*16 + 0], pcBuffer[i*16 + 1], pcBuffer[i*16 + 2], pcBuffer[i*16 + 3], pcBuffer[i*16 + 4], pcBuffer[i*16 + 5], pcBuffer[i*16 + 6], pcBuffer[i*16 + 7],
+			pcBuffer[i*16 + 8], pcBuffer[i*16 + 9], pcBuffer[i*16 + 10], pcBuffer[i*16 + 11], pcBuffer[i*16 + 12], pcBuffer[i*16 + 13], pcBuffer[i*16 + 14], pcBuffer[i*16 + 15],
+			pcBuffer[i*16 + 0], pcBuffer[i*16 + 1], pcBuffer[i*16 + 2], pcBuffer[i*16 + 3], pcBuffer[i*16 + 4], pcBuffer[i*16 + 5], pcBuffer[i*16 + 6], pcBuffer[i*16 + 7],
+			pcBuffer[i*16 + 8], pcBuffer[i*16 + 9], pcBuffer[i*16 + 10], pcBuffer[i*16 + 11], pcBuffer[i*16 + 12], pcBuffer[i*16 + 13], pcBuffer[i*16 + 14], pcBuffer[i*16 + 15]);
+	}
+	fclose(fp);
+	return p;
 }
 
 int SocketWrite(int sockfd,int iTimeOut,char *pcBuffer,int iLength)
