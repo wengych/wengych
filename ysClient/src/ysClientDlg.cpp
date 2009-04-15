@@ -284,11 +284,16 @@ void CysClientDlg::NewSend()
             char *p = T2A(strUserInput.GetString());
             YSUserBusAddString(SendBus, input_test[i], p, strlen(p));
         }
+		// 输出SendBus到文件
+		OutputBusToFile(SendBus);
 
         if (FALSE == YSServiceClientCallSock(ip, 9000, time_out, SendBus, &RecvBus)) {
             MessageBox(_T("ServiceClientCall failed!"));
             break;
         }
+
+		// 输出RecvBus到文件
+		OutputBusToFile(RecvBus);
 
         if (!RecvBus)
         {
@@ -395,7 +400,7 @@ void CysClientDlg::UpdateViewOut( void* key_array, void* recv_bus)
 
     CRect rcDialog, rcGroup, rcCtrl;
 
-    int default_width = 80;
+    int default_width = 100;
     int default_height = 20;
     int ctrl_to_parent_left = 10;
     int ctrl_to_parent_top = 5;
@@ -464,7 +469,7 @@ void CysClientDlg::UpdateViewIn( void* key_array )// , HWND hGroup, StaticAutoPt
 
     CRect rcDialog, rcGroup, rcCtrl;
 
-    int default_width = 80;
+    int default_width = 100;
     int default_height = 20;
     int ctrl_to_parent_left = 10;
     int ctrl_to_parent_top = 5;
