@@ -687,6 +687,8 @@ int SocketRead(int sockfd,int iTimeOut,char *pcBuffer,int iLength)
 	int l;
 	FILE *fp;
 	int i;
+    unsigned char* pBuffer;
+
 	p = 0;
 	r = 0;
 	l = iLength;
@@ -708,13 +710,14 @@ int SocketRead(int sockfd,int iTimeOut,char *pcBuffer,int iLength)
 	fp = fopen("lib.log", "a+");
 	fprintf(fp,"SocketRead: l=%d,p=%d\n",l,p);
 
+    pBuffer = pcBuffer;
 	for (i = 0; i < iLength /16; ++i) {
-		fprintf(fp, "%6d %x %x %x %x %x %x %x %x  %x %x %x %x %x %x %x %x  $ %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c $",
+		fprintf(fp, "%6d %02x %02x %02x %02x %02x %02x %02x %02x  %02x %02x %02x %02x %02x %02x %02x %02x  $ %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c $\n",
 			i,
-			pcBuffer[i*16 + 0], pcBuffer[i*16 + 1], pcBuffer[i*16 + 2], pcBuffer[i*16 + 3], pcBuffer[i*16 + 4], pcBuffer[i*16 + 5], pcBuffer[i*16 + 6], pcBuffer[i*16 + 7],
-			pcBuffer[i*16 + 8], pcBuffer[i*16 + 9], pcBuffer[i*16 + 10], pcBuffer[i*16 + 11], pcBuffer[i*16 + 12], pcBuffer[i*16 + 13], pcBuffer[i*16 + 14], pcBuffer[i*16 + 15],
-			pcBuffer[i*16 + 0], pcBuffer[i*16 + 1], pcBuffer[i*16 + 2], pcBuffer[i*16 + 3], pcBuffer[i*16 + 4], pcBuffer[i*16 + 5], pcBuffer[i*16 + 6], pcBuffer[i*16 + 7],
-			pcBuffer[i*16 + 8], pcBuffer[i*16 + 9], pcBuffer[i*16 + 10], pcBuffer[i*16 + 11], pcBuffer[i*16 + 12], pcBuffer[i*16 + 13], pcBuffer[i*16 + 14], pcBuffer[i*16 + 15]);
+			pBuffer[i*16 + 0], pBuffer[i*16 + 1], pBuffer[i*16 + 2], pBuffer[i*16 + 3], pBuffer[i*16 + 4], pBuffer[i*16 + 5], pBuffer[i*16 + 6], pBuffer[i*16 + 7],
+			pBuffer[i*16 + 8], pBuffer[i*16 + 9], pBuffer[i*16 + 10], pBuffer[i*16 + 11], pBuffer[i*16 + 12], pBuffer[i*16 + 13], pBuffer[i*16 + 14], pBuffer[i*16 + 15],
+			pBuffer[i*16 + 0], pBuffer[i*16 + 1], pBuffer[i*16 + 2], pBuffer[i*16 + 3], pBuffer[i*16 + 4], pBuffer[i*16 + 5], pBuffer[i*16 + 6], pBuffer[i*16 + 7],
+			pBuffer[i*16 + 8], pBuffer[i*16 + 9], pBuffer[i*16 + 10], pBuffer[i*16 + 11], pBuffer[i*16 + 12], pBuffer[i*16 + 13], pBuffer[i*16 + 14], pBuffer[i*16 + 15]);
 	}
 	fclose(fp);
 	return p;
