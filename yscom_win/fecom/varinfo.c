@@ -2,7 +2,7 @@
 /**[File Name    ]varinfo.c                                               **/
 /**[File Path    ]$(TOPDIR)/src/libsrc/fecom                              **/
 /**[Library Name ]libfecom.so                                             **/
-/**[Library Path ]$(APPDIR)/lib                                           **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/12/20                                              **/
@@ -28,30 +28,31 @@ typedef struct tagFEVarTypeInfo
 #define FEVARTYPE_INFO_MEM_N(v)     (((tFEVarTypeInfo*)(v))->Name)
 static const tFEVarTypeInfo gstFEVarTypeInfo[] = 
 {
-     {FEVARTYPE_MEM_VT_NOT      ,"unknown"      }
-    ,{FEVARTYPE_MEM_VT_BOOL     ,"Bool"         }
-    ,{FEVARTYPE_MEM_VT_BYTE     ,"Byte"         }
-    ,{FEVARTYPE_MEM_VT_INT16    ,"Int16"        }
-    ,{FEVARTYPE_MEM_VT_INT32    ,"Int32"        }
-    ,{FEVARTYPE_MEM_VT_INT64    ,"Int64"        }
-    ,{FEVARTYPE_MEM_VT_DOUBLE   ,"Double"       }
-    ,{FEVARTYPE_MEM_VT_BIN      ,"Bin"          }
-    ,{FEVARTYPE_MEM_VT_STRING   ,"String"       }
-    ,{FEVARTYPE_MEM_VT_OBJECT   ,"Object"       }
+     {VARTYPE_MEM_VT_NOT      ,"unknown"      }
+    ,{VARTYPE_MEM_VT_BOOL     ,"Bool"         }
+    ,{VARTYPE_MEM_VT_BYTE     ,"Byte"         }
+    ,{VARTYPE_MEM_VT_INT16    ,"Int16"        }
+    ,{VARTYPE_MEM_VT_INT32    ,"Int32"        }
+    ,{VARTYPE_MEM_VT_INT64    ,"Int64"        }
+    ,{VARTYPE_MEM_VT_DOUBLE   ,"Double"       }
+    ,{VARTYPE_MEM_VT_BIN      ,"Bin"          }
+    ,{VARTYPE_MEM_VT_STRING   ,"String"       }
+    ,{VARTYPE_MEM_VT_OBJECT   ,"Object"       }
+    ,{VARTYPE_MEM_VT_STRUCT   ,"Struct"       }
 
-    ,{FEVARTYPE_MEM_VT_P1       ,"P1"           }
-    ,{FEVARTYPE_MEM_VT_P2       ,"P2"           }
-    ,{FEVARTYPE_MEM_VT_P3       ,"P3"           }
-    ,{FEVARTYPE_MEM_VT_P4       ,"P4"           }
+    ,{VARTYPE_MEM_VT_P1       ,"P1"           }
+    ,{VARTYPE_MEM_VT_P2       ,"P2"           }
+    ,{VARTYPE_MEM_VT_P3       ,"P3"           }
+    ,{VARTYPE_MEM_VT_P4       ,"P4"           }
 
-    ,{FEVARTYPE_MEM_VT_ARRAY    ,"Array"        }
-    ,{FEVARTYPE_MEM_VT_FIFO     ,"Fifo"         }
-    ,{FEVARTYPE_MEM_VT_FILO     ,"Filo"         }
-    ,{FEVARTYPE_MEM_VT_CICLE    ,"Circle"       }
-    ,{FEVARTYPE_MEM_VT_HASH     ,"Hash"         }
-    ,{FEVARTYPE_MEM_VT_LINK     ,"Link"         }
-    ,{FEVARTYPE_MEM_VT_TREE     ,"Tree"         }
-    ,{FEVARTYPE_MEM_VT_XML      ,"Xml"          }
+    ,{VARTYPE_MEM_VT_ARRAY    ,"Array"        }
+    ,{VARTYPE_MEM_VT_FIFO     ,"Fifo"         }
+    ,{VARTYPE_MEM_VT_FILO     ,"Filo"         }
+    ,{VARTYPE_MEM_VT_CICLE    ,"Circle"       }
+    ,{VARTYPE_MEM_VT_HASH     ,"Hash"         }
+    ,{VARTYPE_MEM_VT_LINK     ,"Link"         }
+    ,{VARTYPE_MEM_VT_TREE     ,"Tree"         }
+    ,{VARTYPE_MEM_VT_XML      ,"Xml"          }
 };
 #define FEVARTYPE_INFO_V_SIZE             \
     (sizeof(gstFEVarTypeInfo)/FEVARTYPE_INFO_ST_SIZE)
@@ -60,7 +61,7 @@ BYTE  FEVarTypeInfoGetVT(const char *Name)
 {
     BYTE bRtn;
     INT32 i;
-    bRtn = FEVARTYPE_MEM_VT_NOT;
+    bRtn = VARTYPE_MEM_VT_NOT;
     for ( i=0;i<FEVARTYPE_INFO_V_SIZE;i++ )
     {
         if ( !strcmp(FEVARTYPE_INFO_MEM_N( \

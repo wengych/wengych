@@ -38,11 +38,16 @@ INT32 FEVarUnPack(void **VVar,void *Buf,INT32 P);
 BOOL  FEVarIsInit(void *Var);
 BOOL  FEVarIsInit2(void *v,INT32 VT);
 INT32 FEVarGetType(void *Var);
+BOOL  FEVarValueIsNot(void *Var);
+BOOL  FEVarValueIsNull(void *Var);
+BOOL  FEVarValueIsSet(void *Var);
+BOOL  FEVarHasKey(void *Var);
 
 void *FEVarGetRes(void *Var);
 BOOL  FEVarSetRes(void *Var,void *Res,void *Clone,void *Free,void *Show);
 BOOL  FEVarMoveRes(void *NVar,void *OVar);
 
+INT32 FEVarGetKeyHash(void *Var);
 INT32 FEVarGetKeyLen(void *Var);
 char *FEVarGetKey(void *Var);
 BOOL  FEVarCatKey(void *Var,const void *Key,INT32 Len);
@@ -115,6 +120,8 @@ void *FEVarDoubleSave(DOUBLE V);
 void *FEVarDoubleSave2(const char *Key,DOUBLE V);
 void *FEVarDoubleClone(void *Var);
 
+void *FEVarBinSetValue(void *V,INT32 Len,INT32 Size);
+BOOL  FEVarBinSetValue2(void *Var,void *V,INT32 Len,INT32 Size);
 void *FEVarBinNew();
 void *FEVarBinNew2(INT32 Size);
 void  FEVarBinFree(void *Var);
@@ -189,6 +196,43 @@ void *FEVarObjectClone(void *Var);
 /****************************************************************************/
 
 /****************************************************************************/
+/** var -- struct                                                          **/
+/****************************************************************************/
+void *FEVarStructNew(INT32 n);
+void *FEVarStructNew_Key(INT32 N,const char *Key);
+void  FEVarStructFree(void *Var);
+void  FEVarStructShow(void *Var,INT32 T,void *Buf);
+BOOL  FEVarStructPack(void *Var,void *Buf);
+INT32 FEVarStructUnPack(void **VVar,void *Buf,INT32 P);
+INT32 FEVarStructGetSize(void *Var);
+BOOL  FEVarStructIsIdxOfRange(void *Var,INT32 Idx);
+void *FEVarStructGet(void *Var,INT32 Idx);
+BOOL  FEVarStructSet(void *Var,INT32 Idx,void *V);
+BOOL  FEVarStructReplace(void *Var,INT32 Idx,void *V);
+ 
+void *FEVarStructGetByKey(void *Var,const char *Key,INT32 Len);
+BOOL  FEVarStructSetByKey(void *Var,const char *Key,INT32 Len,void *V);
+BOOL  FEVarStructReplaceByKey(void *Var,const char *Key,INT32 Len,void *V);
+ 
+void *FEVarStructClone(void *Var);
+BOOL  FEVarStructCloneValue(void *N,void *Var);
+
+typedef struct tagFEVarStructFieldInfo
+{
+    INT32 Type;
+    INT32 Flag;
+    char  Name[MAXKEYBUF+1];
+}tFEVarStructFieldInfo;
+#define FEVARSTRUCTFIELDINFO_ST_SIZE    (sizeof(tFEVarStructFieldInfo))
+#define FEVARSTRUCTFIELDINFO_MEM_T(v)   (((tFEVarStructFieldInfo*)(v))->Type)
+#define FEVARSTRUCTFIELDINFO_MEM_F(v)   (((tFEVarStructFieldInfo*)(v))->Flag)
+#define FEVARSTRUCTFIELDINFO_MEM_N(v)   (((tFEVarStructFieldInfo*)(v))->Name)
+INT32 FEVarStructFieldGetIdx(void *Set,INT32 Size,const char *Name,INT32 Len);
+void *FEVarArrayToStruct(void *Array,void *Set,INT32 Size);
+/****************************************************************************/
+/****************************************************************************/
+
+/****************************************************************************/
 /** var -- array                                                           **/
 /****************************************************************************/
 void *FEVarArrayNew(INT32 Max);
@@ -218,6 +262,7 @@ BOOL  FEVarArrayInsert(void *Var,INT32 Idx,void *V);
 BOOL  FEVarArrayReplace(void *Var,INT32 Idx,void *V);
 BOOL  FEVarArrayReplaceValue(void *Var,INT32 Idx,void *V);
 BOOL  FEVarArrayDelete(void *Var,INT32 Idx);
+void *FEVarArrayRemove(void *Var,INT32 Idx);
 void *FEVarArrayGet(void *Var,INT32 Idx);
 BOOL  FEVarArrayGet2(void *Var,INT32 Idx,void **V);
 
@@ -228,6 +273,7 @@ BOOL  FEVarArrayInsertByKey(void *Var,const void *Key,INT32 Len,void *V);
 BOOL  FEVarArrayReplaceByKey(void *Var,void *V);
 BOOL  FEVarArrayReplaceValueByKey(void *Var,const void *Key,INT32 Len,void *V);
 BOOL  FEVarArrayDeleteByKey(void *Var,const void *Key,INT32 Len);
+void *FEVarArrayRemoveByKey(void *Var,const void *Key,INT32 Len);
 
 void *FEVarArrayClone(void *Var);
 BOOL  FEVarArrayCloneValue(void *N,void *Var);

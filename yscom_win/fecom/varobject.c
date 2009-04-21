@@ -2,7 +2,7 @@
 /**[File Name    ]varobject.c                                             **/
 /**[File Path    ]$(TOPDIR)/src/libsrc/fecom                              **/
 /**[Library Name ]libfecom.so                                             **/
-/**[Library Path ]$(APPDIR)/lib                                           **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/11/11                                              **/
@@ -62,7 +62,7 @@ void  FEVarObjectNFree(void *Var)
 
 void  FEVarObjectVFree(void *Var)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_OBJECT) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_OBJECT) )
     {
         return;
     }
@@ -79,11 +79,11 @@ void  FEVarObjectVFree(void *Var)
 
 void  FEVarObjectShow(void *Var,INT32 T,void *Buf)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_OBJECT) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_OBJECT) )
     {
         return ;
     }
-    if ( !FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_STRING) )
     {
         return ;
     }
@@ -99,11 +99,11 @@ void  FEVarObjectVShow(void *Var,INT32 T,void *Buf)
     char *Tmp;
     INT32 L;
     INT32 P;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_OBJECT) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_OBJECT) )
     {
         return;
     }
-    if ( !FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_STRING) )
     {
         return ;
     }
@@ -156,7 +156,7 @@ BOOL  FEVarObjectInit(void *Var)
     {
         return FALSE;
     }
-    FEVarTypeVTSet(Var,FEVARTYPE_MEM_VT_OBJECT);
+    FEVarTypeVTSet(Var,VARTYPE_MEM_VT_OBJECT);
     FEVAROBJECT_MEM_V(Var) = NULL;
     FEVAROBJECT_MEM_VCLONE(Var) = NULL;
     FEVAROBJECT_MEM_VFREE(Var) = NULL;
@@ -167,7 +167,7 @@ BOOL  FEVarObjectInit(void *Var)
 
 void *FEVarObjectGet(void *Var)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_OBJECT) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_OBJECT) )
     {
         return NULL;
     }
@@ -176,7 +176,7 @@ void *FEVarObjectGet(void *Var)
 
 BOOL  FEVarObjectGet2(void *Var,void **V)
 {
-    if ( (!FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_OBJECT))||(NULL==V) )
+    if ( (!FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_OBJECT))||(NULL==V) )
     {
         return FALSE;
     }
@@ -186,7 +186,7 @@ BOOL  FEVarObjectGet2(void *Var,void **V)
 
 void *FEVarObjectGetVClone(void *Var)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_OBJECT) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_OBJECT) )
     {
         return NULL;
     }
@@ -195,7 +195,7 @@ void *FEVarObjectGetVClone(void *Var)
 
 void *FEVarObjectGetVFree(void *Var)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_OBJECT) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_OBJECT) )
     {
         return NULL;
     }
@@ -204,7 +204,7 @@ void *FEVarObjectGetVFree(void *Var)
 
 void *FEVarObjectGetVShow(void *Var)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_OBJECT) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_OBJECT) )
     {
         return NULL;
     }
@@ -213,7 +213,7 @@ void *FEVarObjectGetVShow(void *Var)
 
 void *FEVarObjectGetVPack(void *Var)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_OBJECT) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_OBJECT) )
     {
         return NULL;
     }
@@ -222,7 +222,7 @@ void *FEVarObjectGetVPack(void *Var)
 
 BOOL  FEVarObjectSet(void *Var,void *V )
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_OBJECT) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_OBJECT) )
     {
         return FALSE;
     }
@@ -240,7 +240,7 @@ BOOL  FEVarObjectSet(void *Var,void *V )
 
 BOOL  FEVarObjectSetFuncVClone(void *Var,void *VClone)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_OBJECT) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_OBJECT) )
     {
         return FALSE;
     }
@@ -250,7 +250,7 @@ BOOL  FEVarObjectSetFuncVClone(void *Var,void *VClone)
 
 BOOL  FEVarObjectSetFuncVFree(void *Var,void *VFree)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_OBJECT) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_OBJECT) )
     {
         return FALSE;
     }
@@ -260,7 +260,7 @@ BOOL  FEVarObjectSetFuncVFree(void *Var,void *VFree)
 
 BOOL  FEVarObjectSetFuncVShow(void *Var,void *VShow)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_OBJECT) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_OBJECT) )
     {
         return FALSE;
     }
@@ -270,7 +270,7 @@ BOOL  FEVarObjectSetFuncVShow(void *Var,void *VShow)
 
 BOOL  FEVarObjectSetFuncVPack(void *Var,void *VPack)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_OBJECT) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_OBJECT) )
     {
         return FALSE;
     }
@@ -318,7 +318,7 @@ void *FEVarObjectClone(void *Var)
     void *N;
     void *V;
     BOOL Flag;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_OBJECT) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_OBJECT) )
     {
         return NULL;
     }

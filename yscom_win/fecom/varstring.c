@@ -2,7 +2,7 @@
 /**[File Name    ]varstring.c                                             **/
 /**[File Path    ]$(TOPDIR)/src/libsrc/fecom                              **/
 /**[Library Name ]libfecom.so                                             **/
-/**[Library Path ]$(APPDIR)/lib                                           **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/11/11                                              **/
@@ -91,7 +91,7 @@ void  FEVarStringDelete(void *Var)
 
 void  FEVarStringShow(void *Var,INT32 T,void *Buf)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_STRING) )
     {
         return ;
     }
@@ -105,11 +105,11 @@ void  FEVarStringVShow(void *Var,INT32 T,void *Buf)
     char Log[BUFSIZE_128];
     char Tab[BUFSIZE_64];
     INT32 L;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_STRING) )
     {
         return;
     }
-    if ( !FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_STRING) )
     {
         return;
     }
@@ -139,7 +139,7 @@ BOOL  FEVarStringPack(void *Var,void *Buf)
     BOOL bRtn;
     INT32 PL;
     INT32 L;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_STRING) )
     {
         return FALSE;
     }
@@ -186,11 +186,11 @@ INT32 FEVarStringUnPack(void **VVar,void *Buf,INT32 P)
     {
         return iRtn;
     }
-    if ( FEVARTYPE_MEM_VT_STRING!=((BYTE*)V)[P] )
+    if ( VARTYPE_MEM_VT_STRING!=((BYTE*)V)[P] )
     {
         return iRtn;
     }
-    if ( FERTN_OK>(iRtn=FEVarTypeUnPack(&PL,&VarType,Buf,P+1)) )
+    if ( RTNCODE_OK>(iRtn=FEVarTypeUnPack(&PL,&VarType,Buf,P+1)) )
     {
         return iRtn;
     }
@@ -199,7 +199,7 @@ INT32 FEVarStringUnPack(void **VVar,void *Buf,INT32 P)
     
     *VVar = NULL;
     Var = NULL;
-    iRtn = FERTN_ERVAR_UNPACK;
+    iRtn = RTNCODE_ERVAR_UNPACK;
     while( 1 )
     {
         PL += FEVARSTRING_VALUE_POS;
@@ -212,10 +212,10 @@ INT32 FEVarStringUnPack(void **VVar,void *Buf,INT32 P)
         {
             break;
         }
-        iRtn = FERTN_OK;
+        iRtn = RTNCODE_OK;
         break;
     }
-    if ( FERTN_OK==iRtn )
+    if ( RTNCODE_OK==iRtn )
     {
         iRtn = PL; 
         *VVar = Var;
@@ -237,14 +237,14 @@ BOOL  FEVarStringInit(void *Var)
     FEVARSTRING_MEM_C(Var) = FECHARSET_UTF8;
     FEVARSTRING_MEM_V(Var) = NULL;
     FEVarTypeVVSetValue(Var);
-    FEVarTypeVTSet(Var,FEVARTYPE_MEM_VT_STRING);
+    FEVarTypeVTSet(Var,VARTYPE_MEM_VT_STRING);
     FEVarTypeEDSetBig(Var);
     return TRUE;
 }
 
 BOOL  FEVarStringClear(void *Var)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_STRING) )
     {
         return FALSE;
     }
@@ -268,7 +268,7 @@ void  FEVarStringCut(void *Var,INT32 S,INT32 L)
     INT32 EE;
     INT32 LL;
     INT32 i;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_STRING) )
     {
         return ;
     }
@@ -292,16 +292,16 @@ void  FEVarStringCut(void *Var,INT32 S,INT32 L)
 
 INT32 FEVarStringGetSize(void *Var)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_STRING) )
     {
-        return FERTN_ER;
+        return RTNCODE_ER;
     }
     return FEVARSTRING_MEM_S(Var);
 }
 
 BOOL  FEVarStringSetLen(void *Var,INT32 Len)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_STRING) )
     {
         return FALSE;
     }
@@ -318,16 +318,16 @@ BOOL  FEVarStringSetLen(void *Var,INT32 Len)
 
 INT32 FEVarStringGetLen(void *Var)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_STRING) )
     {
-        return FERTN_ER;
+        return RTNCODE_ER;
     }
     return FEVARSTRING_MEM_L(Var);
 }
 
 void *FEVarStringGet(void *Var)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_STRING) )
     {
         return NULL;
     }
@@ -336,7 +336,7 @@ void *FEVarStringGet(void *Var)
 
 BOOL  FEVarStringGet2(void *Var,void *V,INT32 *L,INT32 S)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_STRING) )
     {
         return FALSE;
     }
@@ -359,7 +359,7 @@ BOOL  FEVarStringGet2(void *Var,void *V,INT32 *L,INT32 S)
 
 BOOL  FEVarStringMalloc(void *Var,INT32 L)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_STRING) )
     {
         return FALSE;
     }
@@ -373,7 +373,7 @@ BOOL  FEVarStringMalloc(void *Var,INT32 L)
 
 BOOL  FEVarStringMalloc2(void *Var,INT32 L)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_STRING) )
     {
         return FALSE;
     }
@@ -390,7 +390,7 @@ BOOL  FEVarStringRealloc(void *Var,INT32 L)
     void *v;
     INT32 vs;
     INT32 pos;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_STRING) )
     {
         return FALSE;
     }
@@ -427,7 +427,7 @@ BOOL  FEVarStringRealloc(void *Var,INT32 L)
 BOOL  FEVarStringCat(void *Var,void *V,INT32 L)
 {
     INT32 pos;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_STRING) )
     {
         return FALSE;
     }
@@ -471,7 +471,7 @@ BOOL  FEVarStringCatUni(void *Var,void *V,INT32 L)
     bRtn = FALSE;
     while( 1 )
     {
-        if ( FERTN_OK!=FE2BytesUniToUTF8BigEndian(V,L,v,&vl,vs) )
+        if ( RTNCODE_OK!=FE2BytesUniToUTF8BigEndian(V,L,v,&vl,vs) )
         {
             break;
         }
@@ -511,7 +511,7 @@ BOOL  FEVarStringCatGbk(void *Var,void *V,INT32 L)
     bRtn = FALSE;
     while( 1 )
     {
-        if ( FERTN_OK!=FE2BytesGbk2Uni(V,L,v,&vl,vs) )
+        if ( RTNCODE_OK!=FE2BytesGbk2Uni(V,L,v,&vl,vs) )
         {
             break;
         }
@@ -568,7 +568,7 @@ void *FEVarStringSave2(const char *Key,void *V,INT32 L)
 void *FEVarStringClone(void *Var)
 {
     void *N;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_STRING) )
     {
         return NULL;
     }

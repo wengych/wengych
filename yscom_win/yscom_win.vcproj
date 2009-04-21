@@ -28,7 +28,6 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				CommandLine=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -167,6 +166,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\yscom\host.c"
+				>
+			</File>
+			<File
+				RelativePath=".\fecom\inifile.c"
+				>
+			</File>
+			<File
 				RelativePath=".\fecom\keyvalue.c"
 				>
 			</File>
@@ -175,15 +182,27 @@
 				>
 			</File>
 			<File
-				RelativePath=".\yscom\mhash.c"
+				RelativePath=".\yscom\mempkg.c"
 				>
 			</File>
 			<File
-				RelativePath=".\yscom\mhashmem.c"
+				RelativePath=".\yscom\mpdict.c"
 				>
 			</File>
 			<File
-				RelativePath=".\yscom\mhashshm.c"
+				RelativePath=".\yscom\mphost.c"
+				>
+			</File>
+			<File
+				RelativePath=".\yscom\mpmem.c"
+				>
+			</File>
+			<File
+				RelativePath=".\yscom\mpserv.c"
+				>
+			</File>
+			<File
+				RelativePath=".\yscom\mpshm.c"
 				>
 			</File>
 			<File
@@ -192,6 +211,10 @@
 			</File>
 			<File
 				RelativePath=".\yscom\servcli.c"
+				>
+			</File>
+			<File
+				RelativePath=".\yscom\servinfo.c"
 				>
 			</File>
 			<File
@@ -263,6 +286,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\fecom\varstruct.c"
+				>
+			</File>
+			<File
 				RelativePath=".\fecom\varstype.c"
 				>
 			</File>
@@ -321,7 +348,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\yscom\mhash.h"
+				RelativePath=".\yscom\mempkg.h"
 				>
 			</File>
 			<File
@@ -346,10 +373,6 @@
 			</File>
 			<File
 				RelativePath=".\include\ysmacro.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\ysrtn.h"
 				>
 			</File>
 			<File

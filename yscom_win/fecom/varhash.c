@@ -2,7 +2,7 @@
 /**[File Name    ]varhash.c                                               **/
 /**[File Path    ]$(TOPDIR)/src/libsrc/fecom                              **/
 /**[Library Name ]libfecom.so                                             **/
-/**[Library Path ]$(APPDIR)/lib                                           **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/11/11                                              **/
@@ -39,7 +39,7 @@ void *FEVarHashNew(INT32 Size)
     {
         return NULL;
     }
-    FEVarTypeVTSet(Var,FEVARTYPE_MEM_VT_HASH);
+    FEVarTypeVTSet(Var,VARTYPE_MEM_VT_HASH);
     HS = FEHashCalSize(Size);
     FEVarRootSetMax(Var,0);
     FEVarRootSetSize(Var,HS);
@@ -106,7 +106,7 @@ void  FEVarHashVFree(void *Var)
     INT32 i;
     INT32 HS;
     void *Arr;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_HASH) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_HASH) )
     {
         return;
     }
@@ -125,11 +125,11 @@ void  FEVarHashVFree(void *Var)
 
 void  FEVarHashShow(void *Var,INT32 T,void *Buf)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_HASH) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_HASH) )
     {
         return ;
     }
-    if ( !FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_STRING) )
     {
         return ;
     }
@@ -145,11 +145,11 @@ void  FEVarHashNShow1(void *Var,INT32 T,void *Buf)
     char *Type;
     INT32 L;
 
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_HASH) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_HASH) )
     {
         return ;
     }
-    if ( !FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_STRING) )
     {
         return ;
     }
@@ -177,11 +177,11 @@ void  FEVarHashVShow(void *Var,INT32 T,void *Buf)
     void *Link;
     void *Node;
 
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_HASH) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_HASH) )
     {
         return;
     }
-    if ( !FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_STRING) )
     {
         return ;
     }
@@ -190,7 +190,7 @@ void  FEVarHashVShow(void *Var,INT32 T,void *Buf)
     for ( i=0;i<HS;i++ )
     {
         Link = FEVarPointer4GetP0(((tFEVarPointer4*)Arr)+i);
-        if ( !FEVarTypeIsInit2(Link,FEVARTYPE_MEM_VT_LINK) )
+        if ( !FEVarTypeIsInit2(Link,VARTYPE_MEM_VT_LINK) )
         {
             continue;
         }
@@ -209,7 +209,7 @@ void  FEVarHashVShow(void *Var,INT32 T,void *Buf)
 
 BOOL  FEVarHashPackInfo(void *Var,void *Buf)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_HASH) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_HASH) )
     {
         return FALSE;
     }
@@ -230,11 +230,12 @@ BOOL  FEVarHashVPack(void *Var,void *Buf)
     void *Node;
     BOOL bRtn;
 
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_HASH) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_HASH) \
+        ||!FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_BIN) )
     {
         return FALSE;
     }
-    if ( !FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_BIN) )
+    if ( !FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_BIN) )
     {
         return FALSE;
     }
@@ -244,7 +245,7 @@ BOOL  FEVarHashVPack(void *Var,void *Buf)
     for ( i=0;i<HS;i++ )
     {
         Link = FEVarPointer4GetP0(((tFEVarPointer4*)Arr)+i);
-        if ( !FEVarTypeIsInit2(Link,FEVARTYPE_MEM_VT_LINK) )
+        if ( !FEVarTypeIsInit2(Link,VARTYPE_MEM_VT_LINK) )
         {
             continue;
         }
@@ -273,7 +274,7 @@ BOOL  FEVarHashPack(void *Var,void *Buf)
     INT32 PL;
     INT32 L;
  
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_HASH) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_HASH) )
     {
         return FALSE;
     }
@@ -324,11 +325,11 @@ INT32 FEVarHashUnPack(void **VVar,void *Buf,INT32 P)
     {
         return iRtn;
     }
-    if ( FEVARTYPE_MEM_VT_HASH!=((BYTE*)V)[P] )
+    if ( VARTYPE_MEM_VT_HASH!=((BYTE*)V)[P] )
     {
         return iRtn;
     }
-    if ( FERTN_OK>(iRtn=FEVarTypeUnPack(&PL,&VarType,Buf,P+BYTE_SIZE)) )
+    if ( RTNCODE_OK>(iRtn=FEVarTypeUnPack(&PL,&VarType,Buf,P+BYTE_SIZE)) )
     {
         return iRtn;
     }
@@ -338,7 +339,7 @@ INT32 FEVarHashUnPack(void **VVar,void *Buf,INT32 P)
     *VVar = NULL;
     Var = NULL;
     N = NULL;
-    iRtn = FERTN_ERVAR_UNPACK;
+    iRtn = RTNCODE_ERVAR_UNPACK;
     while( 1 )
     {
         /* Size */
@@ -374,13 +375,13 @@ INT32 FEVarHashUnPack(void **VVar,void *Buf,INT32 P)
         }
         if ( Idx<Len )
         {
-            iRtn = FERTN_ERVAR_UNPACK;
+            iRtn = RTNCODE_ERVAR_UNPACK;
             break;
         }
-        iRtn = FERTN_OK;
+        iRtn = RTNCODE_OK;
         break;
     }
-    if ( FERTN_OK==iRtn )
+    if ( RTNCODE_OK==iRtn )
     {
         iRtn = PL;
         *VVar = Var;
@@ -414,7 +415,11 @@ BOOL  FEVarHashInitLink(void *VP)
     {
         return FALSE;
     }
+#if 0
     return FEVarPointer4SetP0(VP,Link);
+#else
+    return FEVarPointer4Set2P0(VP,Link);
+#endif
 }
 
 BOOL  FEVarHashIsEmpty(void *Var)
@@ -434,7 +439,7 @@ void *FEVarHashGetLink(void *Var,const void *Key,INT32 Len)
 #endif
     INT32 KH;
     INT32 Idx;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_HASH)||(NULL==Key) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_HASH)||(NULL==Key) )
     {
         return NULL;
     }
@@ -485,7 +490,7 @@ INT32 FEVarHashGetBase(void *Var)
 {
     if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_HASH) )
     {
-        return FERTN_ER;
+        return RTNCODE_ER;
     }
     return FEVarRootGetSize(Var);
 }
@@ -576,7 +581,11 @@ BOOL  FEVarHashCloneLink(void *VP,void *VVP)
     {
         return FALSE;
     }
+#if 0
     if ( !FEVarPointer4SetP0(VP,Link) )
+#else
+    if ( !FEVarPointer4Set2P0(VP,Link) )
+#endif
     {
         FEVarLinkFree(Link);
     }
@@ -586,7 +595,7 @@ BOOL  FEVarHashCloneLink(void *VP,void *VVP)
 void *FEVarHashClone(void *Var)
 {
     void *NVar;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_HASH) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_HASH) )
     {
         return NULL;
     }
@@ -618,11 +627,11 @@ BOOL  FEVarHashCloneValue(void *NVar,void *OVar)
     INT32 j;
     BOOL bRtn;
 
-    if ( !FEVarTypeIsInit2(NVar,FEVARTYPE_MEM_VT_HASH) )
+    if ( !FEVarTypeIsInit2(NVar,VARTYPE_MEM_VT_HASH) )
     {
         return FALSE;
     }
-    if ( !FEVarTypeIsInit2(OVar,FEVARTYPE_MEM_VT_HASH) )
+    if ( !FEVarTypeIsInit2(OVar,VARTYPE_MEM_VT_HASH) )
     {
         return TRUE;
     }

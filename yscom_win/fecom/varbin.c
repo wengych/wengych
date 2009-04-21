@@ -2,7 +2,7 @@
 /**[File Name    ]varbin.c                                                **/
 /**[File Path    ]$(TOPDIR)/src/libsrc/fecom                              **/
 /**[Library Name ]libfecom.so                                             **/
-/**[Library Path ]$(APPDIR)/lib                                           **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/11/11                                              **/
@@ -18,6 +18,8 @@
 extern "C"{
 #endif
 
+#define FEVARBIN_VFREE      0
+#define FEVARBIN_VFREE_NOT  1
 typedef struct tagFEVarBin
 {
     FEVARTYPE_MEM;
@@ -33,6 +35,37 @@ typedef struct tagFEVarBin
 #define FEVARBIN_INFO_POS           (0)
 #define FEVARBIN_INFO_LEN           (FEVARTYPE_INFO_LEN)
 #define FEVARBIN_VALUE_POS          (FEVARBIN_INFO_LEN)
+
+void *FEVarBinSetValue(void *V,INT32 Len,INT32 Size)
+{
+    void *Var;
+    if ( NULL==(Var=malloc(FEVARBIN_ST_SIZE)) )
+    {
+        return NULL;
+    }
+    memset(Var,0,FEVARBIN_ST_SIZE);
+    FEVarTypeInit(Var);
+    FEVarBinInit(Var);
+    FEVARTYPE_MEM_ED(Var) = FEVARBIN_VFREE_NOT;
+    FEVARBIN_MEM_S(Var) = FECAL_MAX(0,Size);
+    FEVARBIN_MEM_L(Var) = FECAL_MAX(0,Len);
+    FEVARBIN_MEM_V(Var) = V;
+    return Var;
+}
+
+BOOL  FEVarBinSetValue2(void *Var,void *V,INT32 Len,INT32 Size)
+{
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_BIN) )
+    {
+        return FALSE;
+    }
+    FEVarBinClear(Var);
+    FEVARTYPE_MEM_ED(Var) = FEVARBIN_VFREE_NOT;
+    FEVARBIN_MEM_S(Var) = FECAL_MAX(0,Size);
+    FEVARBIN_MEM_L(Var) = FECAL_MAX(0,Len);
+    FEVARBIN_MEM_V(Var) = V;
+    return TRUE;
+}
 
 void *FEVarBinNew()
 {
@@ -87,11 +120,11 @@ void  FEVarBinDelete(void *Var)
 
 void  FEVarBinShow(void *Var,INT32 T,void *Buf)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_BIN) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_BIN) )
     {
         return ;
     }
-    if ( !FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_STRING) )
     {
         return ;
     }
@@ -107,11 +140,11 @@ void  FEVarBinVShow(void *Var,INT32 T,void *Buf)
     INT32 L;
     INT32 i;
     INT32 LL;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_BIN) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_BIN) )
     {
         return;
     }
-    if ( !FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_STRING) )
     {
         return ;
     }
@@ -179,7 +212,8 @@ BOOL  FEVarBinPack(void *Var,void *Buf)
     BOOL bRtn;
     INT32 PL;
     INT32 L;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_BIN) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_BIN) \
+        ||!FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_BIN) )
     {
         return FALSE;
     }
@@ -226,11 +260,11 @@ INT32 FEVarBinUnPack(void **VVar,void *Buf,INT32 P)
     {
         return iRtn;
     }
-    if ( FEVARTYPE_MEM_VT_BIN!=((BYTE*)V)[P] )
+    if ( VARTYPE_MEM_VT_BIN!=((BYTE*)V)[P] )
     {
         return iRtn;
     }
-    if ( FERTN_OK>(iRtn=FEVarTypeUnPack(&PL,&VarType,Buf,P+1)) )
+    if ( RTNCODE_OK>(iRtn=FEVarTypeUnPack(&PL,&VarType,Buf,P+1)) )
     {
         return iRtn;
     }
@@ -252,10 +286,10 @@ INT32 FEVarBinUnPack(void **VVar,void *Buf,INT32 P)
         {
             break;
         }
-        iRtn = FERTN_OK;
+        iRtn = RTNCODE_OK;
         break;
     }
-    if ( FERTN_OK==iRtn )
+    if ( RTNCODE_OK==iRtn )
     {
         iRtn = PL; 
         *VVar = Var;
@@ -276,20 +310,23 @@ BOOL  FEVarBinInit(void *Var)
     FEVARBIN_MEM_L(Var) = 0;
     FEVARBIN_MEM_V(Var) = NULL;
     FEVarTypeVVSetValue(Var);
-    FEVarTypeVTSet(Var,FEVARTYPE_MEM_VT_BIN);
+    FEVarTypeVTSet(Var,VARTYPE_MEM_VT_BIN);
     FEVarTypeEDSetBig(Var);
     return TRUE;
 }
 
 BOOL  FEVarBinClear(void *Var)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_BIN) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_BIN) )
     {
         return FALSE;
     }
-    if ( (0<=FEVARBIN_MEM_S(Var))&&(NULL!=FEVARBIN_MEM_V(Var)) )
+    if ( FEVARBIN_VFREE_NOT!=FEVARTYPE_MEM_ED(Var) )
     {
-        free(FEVARBIN_MEM_V(Var));
+        if ( (0<=FEVARBIN_MEM_S(Var))&&(NULL!=FEVARBIN_MEM_V(Var)) )
+        {
+            free(FEVARBIN_MEM_V(Var));
+        }
     }
     FEVarBinInit(Var);
     return TRUE;
@@ -306,7 +343,7 @@ void  FEVarBinCut(void *Var,INT32 S,INT32 L)
     INT32 EE;
     INT32 LL;
     INT32 i;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_BIN) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_BIN) )
     {
         return ;
     }
@@ -331,16 +368,16 @@ void  FEVarBinCut(void *Var,INT32 S,INT32 L)
 
 INT32 FEVarBinGetSize(void *Var)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_BIN) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_BIN) )
     {
-        return FERTN_ER;
+        return RTNCODE_ER;
     }
     return FEVARBIN_MEM_S(Var);
 }
  
 BOOL  FEVarBinSetLen(void *Var,INT32 Len)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_BIN) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_BIN) )
     {
         return FALSE;
     }
@@ -356,16 +393,16 @@ BOOL  FEVarBinSetLen(void *Var,INT32 Len)
 
 INT32 FEVarBinGetLen(void *Var)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_BIN) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_BIN) )
     {
-        return FERTN_ER;
+        return RTNCODE_ER;
     }
     return FEVARBIN_MEM_L(Var);
 }
 
 void *FEVarBinGet(void *Var)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_BIN) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_BIN) )
     {
         return NULL;
     }
@@ -374,7 +411,7 @@ void *FEVarBinGet(void *Var)
 
 BOOL  FEVarBinGet2(void *Var,void *V,INT32 *L,INT32 S)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_BIN) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_BIN) )
     {
         return FALSE;
     }
@@ -397,7 +434,7 @@ BOOL  FEVarBinGet2(void *Var,void *V,INT32 *L,INT32 S)
 
 BOOL  FEVarBinMalloc(void *Var,INT32 L)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_BIN) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_BIN) )
     {
         return FALSE;
     }
@@ -410,7 +447,7 @@ BOOL  FEVarBinMalloc(void *Var,INT32 L)
 
 BOOL  FEVarBinMalloc2(void *Var,INT32 L)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_BIN) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_BIN) )
     {
         return FALSE;
     }
@@ -426,7 +463,11 @@ BOOL  FEVarBinRealloc(void *Var,INT32 L)
     void *v;
     INT32 vs;
     INT32 pos;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_BIN) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_BIN) )
+    {
+        return FALSE;
+    }
+    if ( FEVARBIN_VFREE==FEVARTYPE_MEM_ED(Var) )
     {
         return FALSE;
     }
@@ -462,7 +503,7 @@ BOOL  FEVarBinRealloc(void *Var,INT32 L)
 BOOL  FEVarBinCat(void *Var,void *V,INT32 L)
 {
     INT32 pos;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_BIN) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_BIN) )
     {
         return FALSE;
     }
@@ -523,7 +564,7 @@ void *FEVarBinSave2(const char *Key,void *V,INT32 L)
 void *FEVarBinClone(void *Var)
 {
     void *N;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_BIN) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_BIN) )
     {
         return NULL;
     }

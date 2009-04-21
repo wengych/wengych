@@ -2,7 +2,7 @@
 /**[File Name    ]varstype.c                                              **/
 /**[File Path    ]$(TOPDIR)/src/libsrc/fecom                              **/
 /**[Library Name ]libfecom.so                                             **/
-/**[Library Path ]$(APPDIR)/lib                                           **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/11/11                                              **/
@@ -91,7 +91,7 @@ void  FEVarSTypeVShow(void *Var,INT32 T,void *Buf)
 
     L = 0;
 
-    if ( FEVARTYPE_MEM_VT_DOUBLE==FEVarTypeVTGet(Var) )
+    if ( VARTYPE_MEM_VT_DOUBLE==FEVarTypeVTGet(Var) )
     {
         sprintf(Log+L,"%s<Value Size=\"%d Prec=\"%d.%d\" \">" \
             ,Tab,FEVarTypeSLGet(Var) \
@@ -105,10 +105,10 @@ void  FEVarSTypeVShow(void *Var,INT32 T,void *Buf)
     Len = FEVarTypeSLGet(Var);
     switch ( FEVarTypeVTGet(Var) )
     {
-        case FEVARTYPE_MEM_VT_BOOL:
-            sprintf(Log+L,"%d",FERTN_CMPBOOL(FEVARSTYPE_MEM_V(Var)));
+        case VARTYPE_MEM_VT_BOOL:
+            sprintf(Log+L,"%d",RTNCODE_CMPBOOL(FEVARSTYPE_MEM_V(Var)));
             break;
-        case FEVARTYPE_MEM_VT_BYTE:
+        case VARTYPE_MEM_VT_BYTE:
             if ( (0x20<FEVARSTYPE_MEM_V(Var)[0]) \
                 &&(0x80>FEVARSTYPE_MEM_V(Var)[0]) )
             {
@@ -119,16 +119,16 @@ void  FEVarSTypeVShow(void *Var,INT32 T,void *Buf)
                 sprintf(Log+L,"0x%02X",FEVARSTYPE_MEM_V(Var)[0]);
             }
             break;
-        case FEVARTYPE_MEM_VT_INT16:
+        case VARTYPE_MEM_VT_INT16:
             sprintf(Log+L,"%d",*(INT16*)(Tmp));
             break;
-        case FEVARTYPE_MEM_VT_INT32:
+        case VARTYPE_MEM_VT_INT32:
             sprintf(Log+L,"%d",*(INT32*)(Tmp));
             break;
-        case FEVARTYPE_MEM_VT_INT64:
+        case VARTYPE_MEM_VT_INT64:
             sprintf(Log+L,"%lld",*(INT64*)(Tmp));
             break;
-        case FEVARTYPE_MEM_VT_DOUBLE:
+        case VARTYPE_MEM_VT_DOUBLE:
             memset(Tmp2,0,sizeof(Tmp2));
             snprintf(Tmp2+1,sizeof(Tmp2)-1,"%d.%d" \
                 ,FEVarDoubleGetDPInt(Var),FEVarDoubleGetDPDec(Var));
@@ -179,7 +179,8 @@ BOOL  FEVarSTypePack(void *Var,void *Buf)
     INT32 L;
     void *PackInfo;
     UCHAR V[BUFSIZE_64];
-    if ( !FEVarSTypeIsSType(Var) )
+    if ( !FEVarSTypeIsSType(Var) \
+        ||!FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_BIN) )
     {
         return FALSE;
     }
@@ -189,7 +190,7 @@ BOOL  FEVarSTypePack(void *Var,void *Buf)
     {
         PL = FEVARSTYPE_INFO_LEN;
         PackInfo = NULL;
-        if ( FEVARTYPE_MEM_VT_DOUBLE==FEVARTYPE_MEM_VT(Var) )
+        if ( VARTYPE_MEM_VT_DOUBLE==VARTYPE_MEM_VT(Var) )
         {
             PL = FEVARDOUBLE_INFO_LEN;
             /* VarType */
@@ -241,7 +242,7 @@ INT32 FEVarSTypeUnPack(void **VVar,void *Buf,INT32 P)
     {
         return iRtn;
     }
-    if ( FERTN_OK>(iRtn=FEVarTypeUnPack(&PL,&VarType,Buf,P+BYTE_SIZE)) )
+    if ( RTNCODE_OK>(iRtn=FEVarTypeUnPack(&PL,&VarType,Buf,P+BYTE_SIZE)) )
     {
         return iRtn;
     }
@@ -261,7 +262,7 @@ INT32 FEVarSTypeUnPack(void **VVar,void *Buf,INT32 P)
         {
             break;
         }
-        if ( FEVARTYPE_MEM_VT_DOUBLE==((BYTE*)V)[P] )
+        if ( VARTYPE_MEM_VT_DOUBLE==((BYTE*)V)[P] )
         {
             if ( !FEVarTypeDPSet2(Var,((BYTE*)V)[PL]) )
             {
@@ -281,10 +282,10 @@ INT32 FEVarSTypeUnPack(void **VVar,void *Buf,INT32 P)
             break;
         }
         PL += FEVARTYPE_MEM_SL(Var);
-        iRtn = FERTN_OK;
+        iRtn = RTNCODE_OK;
         break;
     }
-    if ( FERTN_OK==iRtn )
+    if ( RTNCODE_OK==iRtn )
     {
         iRtn = PL; 
         *VVar = Var;
@@ -316,22 +317,22 @@ BOOL  FEVarSTypeInit(void *Var,BYTE VT)
 #endif
     switch ( VT )
     {
-        case FEVARTYPE_MEM_VT_BOOL:
+        case VARTYPE_MEM_VT_BOOL:
             SL = BOOL_SIZE;
             break;
-        case FEVARTYPE_MEM_VT_BYTE:
+        case VARTYPE_MEM_VT_BYTE:
             SL = BYTE_SIZE;
             break;
-        case FEVARTYPE_MEM_VT_INT16:
+        case VARTYPE_MEM_VT_INT16:
             SL = INT16_SIZE;
             break;
-        case FEVARTYPE_MEM_VT_INT32:
+        case VARTYPE_MEM_VT_INT32:
             SL = INT32_SIZE;
             break;
-        case FEVARTYPE_MEM_VT_INT64:
+        case VARTYPE_MEM_VT_INT64:
             SL = INT64_SIZE;
             break;
-        case FEVARTYPE_MEM_VT_DOUBLE:
+        case VARTYPE_MEM_VT_DOUBLE:
             SL = DOUBLE_SIZE;
             break;
         default:
@@ -402,7 +403,7 @@ void *FEVarSTypeClone(void *Var)
         FEVarSTypeFree(N);
         return NULL;
     }
-    if ( FEVARTYPE_MEM_VT_DOUBLE==FEVarTypeVTGet(Var) )
+    if ( VARTYPE_MEM_VT_DOUBLE==FEVarTypeVTGet(Var) )
     {
         if ( !FEVarTypeDPSet(N,FEVarTypeDPGetInt(Var),FEVarTypeDPGetDec(Var)) )
         {
@@ -420,7 +421,7 @@ void *FEVarSTypeClone(void *Var)
 
 void *FEVarBoolNew()
 {
-    return FEVarSTypeNew(FEVARTYPE_MEM_VT_BOOL);
+    return FEVarSTypeNew(VARTYPE_MEM_VT_BOOL);
 }
 
 void  FEVarBoolFree(void *Var)
@@ -484,7 +485,7 @@ void *FEVarBoolClone(void *Var)
 
 void *FEVarByteNew()
 {
-    return FEVarSTypeNew(FEVARTYPE_MEM_VT_BYTE);
+    return FEVarSTypeNew(VARTYPE_MEM_VT_BYTE);
 }
 
 void  FEVarByteFree(void *Var)
@@ -548,7 +549,7 @@ void *FEVarByteClone(void *Var)
 
 void *FEVarInt16New()
 {
-    return FEVarSTypeNew(FEVARTYPE_MEM_VT_INT16);
+    return FEVarSTypeNew(VARTYPE_MEM_VT_INT16);
 }
 
 void  FEVarInt16Free(void *Var)
@@ -612,7 +613,7 @@ void *FEVarInt16Clone(void *Var)
 
 void *FEVarInt32New()
 {
-    return FEVarSTypeNew(FEVARTYPE_MEM_VT_INT32);
+    return FEVarSTypeNew(VARTYPE_MEM_VT_INT32);
 }
 
 void  FEVarInt32Free(void *Var)
@@ -676,7 +677,7 @@ void *FEVarInt32Clone(void *Var)
 
 void *FEVarInt64New()
 {
-    return FEVarSTypeNew(FEVARTYPE_MEM_VT_INT64);
+    return FEVarSTypeNew(VARTYPE_MEM_VT_INT64);
 }
 
 void  FEVarInt64Free(void *Var)
@@ -740,7 +741,7 @@ void *FEVarInt64Clone(void *Var)
 
 void *FEVarDoubleNew()
 {
-    return FEVarSTypeNew(FEVARTYPE_MEM_VT_DOUBLE);
+    return FEVarSTypeNew(VARTYPE_MEM_VT_DOUBLE);
 }
 
 void  FEVarDoubleFree(void *Var)
@@ -750,7 +751,7 @@ void  FEVarDoubleFree(void *Var)
 
 BOOL  FEVarDoublePackInfo(void *Var,void *Buf)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_DOUBLE) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_DOUBLE) )
     {
         return FALSE;
     }

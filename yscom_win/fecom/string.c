@@ -2,7 +2,7 @@
 /**[File Name    ]string.c                                                **/
 /**[File Path    ]$(SRCDIR)/libsrc/fecom                                  **/
 /**[Library Name ]libfecom.so                                             **/
-/**[Library Path ]$(HOME)/lib                                             **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/04/28                                              **/
@@ -24,7 +24,7 @@ INT32 FEPathSplit(const char *Path)
     INT32 Len;
     if ( NULL==Path )
     {
-        return FERTN_ERAPP_ARG;
+        return RTNCODE_ERAPP_ARG;
     }
     Len = strlen(Path);
     for ( i=Len;--i>=0; )
@@ -44,7 +44,7 @@ BOOL  FECharIsSetBit(UCHAR C,INT32 Idx)
     {
         return FALSE;
     }
-    return FERTN_CMPBOOL(0!= ( ((0x80) >> Idx) & C) );
+    return RTNCODE_CMPBOOL(0!= ( ((0x80) >> Idx) & C) );
 }
 
 BOOL  FECharSetBit(UCHAR *C,INT32 Idx,BOOL Flag)
@@ -99,7 +99,7 @@ INT32 FEStrIsNumber(char *str,INT32 len)
   char *p;
   if ( NULL==str )
   {
-    return FERTN_ERAPP_ARG;
+    return RTNCODE_ERAPP_ARG;
   }
   p = str;
   iRtn = 0;
@@ -132,7 +132,7 @@ INT32 FEStrIsHex(char *str,INT32 len)
   char *p;
   if ( NULL==str )
   {
-    return FERTN_ERAPP_ARG;
+    return RTNCODE_ERAPP_ARG;
   }
   p = str;
   iRtn = 0;
@@ -784,7 +784,7 @@ BOOL  FEEndianIsBig()
 {
     INT32 i;
     i = 0x1234;
-    return FERTN_CMPBOOL(0x12==((UCHAR*)(&i))[0]);
+    return RTNCODE_CMPBOOL(0x12==((UCHAR*)(&i))[0]);
 }
 
 void  FEEndianConversion(void *E,INT32 Size)
@@ -892,6 +892,52 @@ INT32 FEHexToBufLine(char *Hex,INT32 Size,INT32 MaxLine \
     memcpy(P+PPos," $ ",3);
     PPos += 3;
     return HPos+PPos;
+}
+
+INT32 FEStrCmp(const char *S1,INT32 L1,const char *S2,INT32 L2)
+{
+    INT32 i;
+    INT32 iRtn;
+    char T1;
+    char T2;
+    if ( (0>=L1)||(0>=L2)||(L1!=L2) )
+    {
+        return RTNCODE_ER;
+    }
+    iRtn = RTNCODE_OK;
+    for ( i=0;i<L1;i++ )
+    {
+        if ( (T1=toupper(S1[i]))!=(T2=toupper(S2[i])) )
+        {
+            break;
+        }
+    }
+    return (i>=L1)?iRtn:(T1<T2)?RTNCODE_ER:RTNCODE_OK1;
+}
+
+INT32 FEFieldArrayGetIdx(char **Ns,INT32 Size,const char *Name)
+{
+    char N[MAXKEYBUF];
+    INT32 Idx;
+    if ( (NULL==Ns)||(0>Size)||(NULL==Name) )
+    {
+        return RTNCODE_ER;
+    }
+    if ( NULL==*Ns )
+    {
+        return RTNCODE_ER;
+    }
+    memset(N,0,sizeof(N));
+    snprintf(N,sizeof(N),"%s",Name);
+    FEStrToUpper(N);
+    for ( Idx=0;Idx<Size;Idx++ )
+    {
+        if ( !strcmp(N,Ns[Idx]) )
+        {
+            break;
+        }
+    }
+    return (Size<=Idx)?RTNCODE_ER:Idx;
 }
 
 #ifdef __cplusplus

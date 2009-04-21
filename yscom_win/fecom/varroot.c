@@ -2,7 +2,7 @@
 /**[File Name    ]varroot.c                                               **/
 /**[File Path    ]$(TOPDIR)/src/libsrc/fecom                              **/
 /**[Library Name ]libfecom.so                                             **/
-/**[Library Path ]$(APPDIR)/lib                                           **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/11/11                                              **/
@@ -83,7 +83,7 @@ void  FEVarRootNShow1(void *Var,INT32 T,void *Buf)
     Type = FEVarTypeInfoGetName(FEVarTypeVTGet(Var));
 
     L = 0;
-    if ( FEVARTYPE_MEM_VT_ARRAY==FEVarTypeVVGet(Var) )
+    if ( VARTYPE_MEM_VT_ARRAY==FEVarTypeVVGet(Var) )
     {
         snprintf(Log+L,sizeof(Log)-L \
             ,"%s<Node Addr=\"%08X\" VV=\"%d\" VT=\"%d\" Type=\"%s\" " 
@@ -114,7 +114,7 @@ BOOL  FEVarRootIsEmpty(void *Var)
     {
         return FALSE;
     }
-    return FERTN_CMPBOOL(0>=FEVARROOT_MEM_LEN(Var));
+    return RTNCODE_CMPBOOL(0>=FEVARROOT_MEM_LEN(Var));
 }
 
 BOOL  FEVarRootIsFull(void *Var)
@@ -123,7 +123,7 @@ BOOL  FEVarRootIsFull(void *Var)
     {
         return FALSE;
     }
-    return FERTN_CMPBOOL(FEVARROOT_MEM_MAX(Var)<=FEVARROOT_MEM_LEN(Var));
+    return RTNCODE_CMPBOOL(FEVARROOT_MEM_MAX(Var)<=FEVARROOT_MEM_LEN(Var));
 }
 
 BOOL  FEVarRootIsAdd(void *Var)
@@ -132,7 +132,7 @@ BOOL  FEVarRootIsAdd(void *Var)
     {
         return FALSE;
     }
-    return FERTN_CMPBOOL(FEVARROOT_MEM_LEN(Var)>=FEVARROOT_MEM_SIZE(Var));
+    return RTNCODE_CMPBOOL(FEVARROOT_MEM_LEN(Var)>=FEVARROOT_MEM_SIZE(Var));
 }
 
 BOOL  FEVarRootCanAdd(void *Var)
@@ -141,7 +141,7 @@ BOOL  FEVarRootCanAdd(void *Var)
     {
         return FALSE;
     }
-    return FERTN_CMPBOOL(FEVARROOT_MEM_MAX(Var)>FEVARROOT_MEM_SIZE(Var));
+    return RTNCODE_CMPBOOL(FEVARROOT_MEM_MAX(Var)>FEVARROOT_MEM_SIZE(Var));
 }
 
 BOOL  FEVarRootSetMax(void *Var,INT32 Max)
@@ -158,7 +158,7 @@ INT32 FEVarRootGetMax(void *Var)
 {
     if ( !FEVarTypeIsInit(Var) )
     {
-        return FERTN_ERAPP_ARG;
+        return RTNCODE_ERAPP_ARG;
     }
     return FEVARROOT_MEM_MAX(Var);
 }
@@ -177,7 +177,7 @@ INT32 FEVarRootGetSize(void *Var)
 {
     if ( !FEVarTypeIsInit(Var) )
     {
-        return FERTN_ERAPP_ARG;
+        return RTNCODE_ERAPP_ARG;
     }
     return FEVARROOT_MEM_SIZE(Var);
 }
@@ -218,7 +218,7 @@ INT32 FEVarRootGetLen(void *Var)
 {
     if ( !FEVarTypeIsInit(Var) )
     {
-        return FERTN_ERAPP_ARG;
+        return RTNCODE_ERAPP_ARG;
     }
     return FEVARROOT_MEM_LEN(Var);
 }
@@ -241,7 +241,7 @@ INT32 FEVarRootGetPushIdx(void *Var)
 {
     if ( !FEVarTypeIsInit(Var) )
     {
-        return FERTN_ER;
+        return RTNCODE_ER;
     }
     return FEVARROOT_MEM_PUSH(Var);
 }
@@ -264,7 +264,7 @@ INT32 FEVarRootGetPopIdx(void *Var)
 {
     if ( !FEVarTypeIsInit(Var) )
     {
-        return FERTN_ER;
+        return RTNCODE_ER;
     }
     return FEVARROOT_MEM_POP(Var);
 }
@@ -293,7 +293,7 @@ INT32 FEVarRootGetUserLen(void *Var)
 {
     if ( !FEVarTypeIsInit(Var) )
     {
-        return FERTN_ER;
+        return RTNCODE_ER;
     }
     return FEVARROOT_MEM_USERLEN(Var);
 }
@@ -322,7 +322,7 @@ INT32 FEVarRootGetUserCnt(void *Var)
 {
     if ( !FEVarTypeIsInit(Var) )
     {
-        return FERTN_ER;
+        return RTNCODE_ER;
     }
     return FEVARROOT_MEM_USERCNT(Var);
 }

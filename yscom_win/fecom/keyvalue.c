@@ -2,7 +2,7 @@
 /**[File Name    ]keyvalue.c                                              **/
 /**[File Path    ]$(TOPDIR)/src/libsrc/fecom                              **/
 /**[Library Name ]libfecom.so                                             **/
-/**[Library Path ]$(APPDIR)/lib                                           **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/11/11                                              **/
@@ -42,22 +42,22 @@ INT32 FEKVLoadFromFile(void *Hash,const char *FileName)
     void *V;
     tFEKVStruct KV;
     char acLine[BUFSIZE_2048];
-    if ( NULL==Hash )
+    if ( !FEVarIsInit2(Hash,VARTYPE_MEM_VT_HASH) )
     {
-        return FERTN_ERAPP_ARG;
+        return RTNCODE_ERAPP_ARG;
     }
 #ifdef __OS_LINUX__
-    if ( FERTN_OK!=(iRtn=FEFileTest(FileName)) )
+    if ( RTNCODE_OK!=(iRtn=FEFileTest(FileName)) )
     {
         return iRtn;
     }
 #endif
     fp = NULL;
     V = NULL;
-    iRtn = FERTN_OK;
+    iRtn = RTNCODE_OK;
     if ( NULL==(fp=fopen(FileName,"r")) )
     {
-        return FERTN_ERFILE_OPEN;
+        return RTNCODE_ERFILE_OPEN;
     }
     while( 1 )
     {
@@ -66,10 +66,10 @@ INT32 FEKVLoadFromFile(void *Hash,const char *FileName)
         {
             if ( feof(fp) )
             {
-                iRtn = FERTN_OK;
+                iRtn = RTNCODE_OK;
                 break;
             }
-            iRtn = FERTN_ERFILE_READ;
+            iRtn = RTNCODE_ERFILE_READ;
             break;
         }/* if ( NULL==fgets(acLine,sizeof(acLine)-1,fp) ) */
         FEStrTrimChangeLine(acLine);
@@ -85,37 +85,29 @@ INT32 FEKVLoadFromFile(void *Hash,const char *FileName)
             continue;
         }
         memset(&KV,0,sizeof(KV));
-        if (FERTN_OK1!=(iRtn=FEKVAnalyseLine(&KV,acLine)) )
+        if (RTNCODE_OK1!=(iRtn=FEKVAnalyseLine(&KV,acLine)) )
         {
-            if ( FERTN_OK==iRtn )
+            if ( RTNCODE_OK==iRtn )
             {
                 continue;
             }
             break;
         }
-        if ( NULL==(V=FEVarStringSave(KV.Value,strlen(KV.Value))) )
+        if ( NULL==(V=FEVarStringSave2(KV.Key,KV.Value,strlen(KV.Value))) )
         {
-            iRtn = FERTN_ERVAR_NEW;
-            break;
-        }
-        if ( !FEVarCpyKey(V,KV.Key,strlen(KV.Key)) )
-        {
-            iRtn = FERTN_ERVAR_NEW;
+            iRtn = RTNCODE_ERVAR_NEW;
             break;
         }
         if ( !FEVarHashAdd(Hash,V) )
         {
-            iRtn = FERTN_ERVAR_ADD;
+            iRtn = RTNCODE_ERVAR_ADD;
             break;
         }
         V = NULL;
     }
     fclose(fp);
-    if ( FERTN_OK!=iRtn )
-    {
-        FEVarStringFree(V);
-        V = NULL;
-    }
+    FEVarStringFree(V);
+    V = NULL;
     return iRtn;
 }
 
@@ -123,7 +115,7 @@ void *FEKVLoadFromFile2(const char *FileName)
 {
     void *Hash;
 #ifdef __OS_LINUX__
-    if ( FERTN_OK!=FEFileTest(FileName) )
+    if ( RTNCODE_OK!=FEFileTest(FileName) )
     {
         return NULL;
     }
@@ -132,7 +124,7 @@ void *FEKVLoadFromFile2(const char *FileName)
     {
         return NULL;
     }
-    if ( FERTN_OK!=FEKVLoadFromFile(Hash,FileName) )
+    if ( RTNCODE_OK!=FEKVLoadFromFile(Hash,FileName) )
     {
         FEKVFree(Hash);
         Hash = NULL;
@@ -150,18 +142,18 @@ INT32 FEKVAnalyseLine(tFEKVStruct *kv,char *Line)
 
     if ( (NULL==kv)||(NULL==Line) )
     {
-        return FERTN_ERAPP_ARG;
+        return RTNCODE_ERAPP_ARG;
     }
     iLen = strlen(Line);
     iPos = 0;
-    iRtn = FERTN_ER;
+    iRtn = RTNCODE_ER;
     memset(kv,0,sizeof(tFEKVStruct));
     while( 1 )
     {
         if ( 0>=(iPos=FEStrGetOneWordLen(&iKL,Line,iLen \
             ,STR_KEYVALUE_SIGN,strlen(STR_KEYVALUE_SIGN))) )
         {
-            iRtn = (0==iPos)?FERTN_ER:FERTN_OK;
+            iRtn = (0==iPos)?RTNCODE_ER:RTNCODE_OK;
             break;
         }
         if ( 0>FEStrGetOneWordLen(&iVL,Line+iPos,iLen-iPos \
@@ -171,7 +163,7 @@ INT32 FEKVAnalyseLine(tFEKVStruct *kv,char *Line)
         }
         STRNCPY(kv->Key,Line,sizeof(kv->Key),iKL);
         STRNCPY(kv->Value,Line+iPos,sizeof(kv->Value),iVL);
-        iRtn = FERTN_OK1;
+        iRtn = RTNCODE_OK1;
         break;
     }
     return iRtn;

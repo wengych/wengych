@@ -15,7 +15,6 @@
 
 #include <fecom.h>
 #include <ysdef.h>
-#include <ysrtn.h>
 #include <ysmacro.h>
 #include <ysvar.h>
 
@@ -106,39 +105,112 @@ BOOL  YSUserBusArrayReplaceValue(void *UserBus \
     ,const char *Key,INT32 Idx,void *V);
 /****************************************************************************/
 /****************************************************************************/
-
 /****************************************************************************/
 /** Dict                                                                   **/
 /****************************************************************************/
-INT32 YSDictLoadFromFile(void *Dict,const char *Ver);
-void *YSDictLoadFromFile2(const char *Ver);
-void *YSDictNew();
-void *YSDictNew2();
-void  YSDictFree(void *Dict);
-void  YSDictShow(void *Dict,INT32 T,void *Buf);
-BOOL  YSDictSetVer(void *Dict,const char *Ver);
-void *YSServInfoGet(void *Root,const char *SName);
-char *YSDictGetVerString(char *Str,INT32 Size,const char *Ver);
-char *YSDictGetFileName(char *Str,INT32 Size,const char *Ver);
-BOOL  YSDictHashToMem(void *Var,void *IBuf,void *CBuf \
-    ,void *IdxFunc,void *IBufFunc);
-BOOL  YSDictMemToHash(void **Var,void *MHS,void *IdxFunc);
-
-void  YSMHashFree(void *MH);
-void  YSMHashShow(void *MH,INT32 T,void *Buf);
 #ifdef __OS_LINUX__
-BOOL  YSMHashDictToShm(const char *Key,void *Var);
-BOOL  YSMHashShmToDict(void **Var,const char *Key);
+char *YSDictGetFileName(char *Str,INT32 Size,const char *Ver);
 #endif
-BOOL  YSMHashDictToMem(void **MHS,INT32 Size,void *Var);
-BOOL  YSMHashMemToDict(void **Var,void *Mem,INT32 Len);
+char *YSDictGetVerString(char *Str,INT32 Size,const char *Ver);
+
+INT32 YSDictGetFieldLen(INT32 VT);
+INT32 YSDictLoadFromFile(void *Hash,const char *FileName);
+void *YSDictLoadFromFile2(const char *Ver,const char *FileName);
 /****************************************************************************/
-/** Define Dict variablE                                                   **/
+/****************************************************************************/
+
+/****************************************************************************/
+/** Service Info                                                           **/
+/****************************************************************************/
+#ifdef __OS_LINUX__
+char *YSServGetFileName(char *Str,INT32 Size,const char *Ver);
+#endif
+char *YSServGetVerString(char *Str,INT32 Size,const char *Ver);
+
+INT32 YSServGetFiledLen();
+char *YSServGetFieldName(INT32 Idx);
+INT32 YSServLoadFromFile(void *Hash,const char *FileName);
+void *YSServLoadFromFile2(const char *Ver,const char *FileName);
+
+void *YSServVSGetName(void *Var);
+void *YSServVSGetType(void *Var);
+void *YSServVSGetVer(void *Var);
+void *YSServVSGetAppName(void *Var);
+void *YSServVSGetFunc(void *Var);
+void *YSServVSGetLib(void *Var);
+void *YSServVSGetDictVer(void *Var);
+void *YSServVSGetDictIn(void *Var);
+void *YSServVSGetDictOut(void *Var);
+
+INT32 YSServVSType(const char *Type);
+/****************************************************************************/
+/****************************************************************************/
+
+/****************************************************************************/
+/** Host Info                                                              **/
+/****************************************************************************/
+char *YSHostCalAppName(char *Str,INT32 Size,const char *Name,const char *Term);
+#ifdef __OS_LINUX__
+char *YSHostGetFileName(char *Str,INT32 Size,const char *FileName);
+#endif
+INT32 YSHostGetFiledLen();
+INT32 YSHostLoadFromFile(void *Hash,const char *FileName);
+void *YSHostLoadFromFile2(const char *Key,const char *FileName);
+/****************************************************************************/
+/****************************************************************************/
+
+/****************************************************************************/
+/** Share memory func( Shm/Mem <=> VarHash )                               **/
+/****************************************************************************/
+void  YSMPHeadShow(void *Head,INT32 T,void *Buf);
+BOOL  YSMPIsInit(void *MH);
+BOOL  YSMPIsMemInit(void *MH);
+BOOL  YSMPIsShmInit(void *MH);
+BOOL  YSMPIsStructInit(void *MH);
+void *YSMPGetIBuf(void *MH);
+void *YSMPGetCBuf(void *MH);
+void *YSMPNew();
+void  YSMPFree(void *MH);
+void  YSMPShow(void *MH,INT32 T,void *Buf);
+void *YSMPClone(void *MHS);
+BOOL  YSMPMemFind(void *MH,const char *Key,INT32 Idx \
+    ,INT32 *PIdx,void **V,INT32 *PL);
+BOOL  YSMPToMem(void **MHS,void *Var,INT32 Max);
+BOOL  YSMPHashToMem(void *Var,void *IBuf,void *CBuf);
+BOOL  YSMPArrayToMem(void *Var,void *IBuf,void *CBuf);
+void *YSMPFromMem(void *MHS);
+void *YSMPHashFromVarBin(void *Bin);
+void *YSMPArrayFromVarBin(void *Bin);
+#ifdef __OS_LINUX__
+BOOL  YSMPToShm(const char *Key,void *Var,INT32 Max);
+BOOL  YSMPFromShm(void **Var,const char *Key);
+void *YSMPShmFind(const char *File,const char *Key);
+BOOL  YSMPShmFind2(const char *File,const char *Key,INT32 Idx,void *Buf);
+BOOL  YSMPShmMultiFind(const char *Ver,void *Arr,void *Buf);
+#endif
+
+#ifdef __OS_LINUX__
+void *YSMPCloneFromShm(const char *Key);
+#endif
+
+#ifdef __OS_LINUX__
+BOOL  YSDictToShm(const char *Ver);
+BOOL  YSServToShm(const char *Ver);
+BOOL  YSHostToShm(const char *File);
+#endif
+
+/****************************************************************************/
+/****************************************************************************/
+
+/****************************************************************************/
+/** Define Dict variable                                                   **/
 /****************************************************************************/
 #define YSDICT_IN           "__DICT_IN"
 #define YSDICT_IN2          "__DICT_IN2"
 #define YSDICT_OUT          "__DICT_OUT"
 #define YSDICT_OUT2         "__DICT_OUT2"
+#define YSDICT_BIN          "__DICT_BIN"
+#define YSDICT_BIN2         "__DICT_BIN2"
  
 /** Application Information **/
 #define YSDICT_APPNAME      "__DICT_APP_NAME"
@@ -195,11 +267,11 @@ int SocketWriteTimtOut(int sockfd,int iTimeOut);
 int SocketRead(int sockfd,int iTimeOut,char *pcBuffer,int iLength);
 int SocketWrite(int sockfd,int iTimeOut,char *pcBuffer,int iLength);
 #endif
+/****************************************************************************/
+/****************************************************************************/
 
 BOOL  YSServiceClientCallSock(const char *IP,INT32 Port,INT32 TO \
     ,void *SendBus,void **RecvBus);
-/****************************************************************************/
-/****************************************************************************/
 
 #ifdef __cplusplus
 }

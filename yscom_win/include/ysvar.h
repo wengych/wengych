@@ -38,11 +38,16 @@ INT32 YSVarUnPack(void **VVar,void *Buf,INT32 P);
 BOOL  YSVarIsInit(void *Var);
 BOOL  YSVarIsInit2(void *Var,INT32 VT);
 INT32 YSVarGetType(void *Var);
+BOOL  YSVarValueIsNot(void *Var);
+BOOL  YSVarValueIsNull(void *Var);
+BOOL  YSVarValueIsSet(void *Var);
+BOOL  YSVarHasKey(void *Var);
 
 void *YSVarGetRes(void *Var);
 BOOL  YSVarSetRes(void *Var,void *Res,void *Clone,void *Free,void *Show);
 BOOL  YSVarMoveRes(void *NVar,void *OVar);
 
+INT32  YSVarGetKeyHash(void *Var);
 INT32 YSVarGetKeyLen(void *Var);
 char *YSVarGetKey(void *Var);
 BOOL  YSVarCatKey(void *Var,const char *Key);
@@ -114,6 +119,8 @@ void *YSVarDoubleSave(DOUBLE V);
 void *YSVarDoubleSave2(const char *Key,DOUBLE V);
 void *YSVarDoubleClone(void *Var);
 
+void *YSVarBinSetValue(void *V,INT32 Len,INT32 Size);
+BOOL  YSVarBinSetValue2(void *Var,void *V,INT32 Len,INT32 Size);
 void *YSVarBinNew();
 void *YSVarBinNew2(INT32 Size);
 void  YSVarBinFree(void *Var);
@@ -182,6 +189,37 @@ void *YSVarObjectClone(void *Var);
 /****************************************************************************/
 
 /****************************************************************************/
+/** var -- struct                                                          **/
+/****************************************************************************/
+void *YSVarStructNew(INT32 n);
+void *YSVarStructNew_Key(INT32 N,const char *Key);
+void  YSVarStructFree(void *Var);
+void  YSVarStructShow(void *Var,INT32 T,void *Buf);
+BOOL  YSVarStructPack(void *Var,void *Buf);
+INT32 YSVarStructUnPack(void **VVar,void *Buf,INT32 P);
+INT32 YSVarStructGetSize(void *Var);
+BOOL  YSVarStructIsIdxOfRange(void *Var,INT32 Idx);
+void *YSVarStructGet(void *Var,INT32 Idx);
+BOOL  YSVarStructSet(void *Var,INT32 Idx,void *V);
+BOOL  YSVarStructReplace(void *Var,INT32 Idx,void *V);
+ 
+void *YSVarStructGetByKey(void *Var,const char *Key,INT32 Len);
+BOOL  YSVarStructSetByKey(void *Var,const char *Key,INT32 Len,void *V);
+BOOL  YSVarStructReplaceByKey(void *Var,const char *Key,INT32 Len,void *V);
+ 
+void *YSVarStructClone(void *Var);
+BOOL  YSVarStructCloneValue(void *N,void *Var);
+typedef tFEVarStructFieldInfo   tYSVSFieldInfo;
+#define YSVSFIELDINFO_ST_SIZE   FEVARSTRUCTFIELDINFO_ST_SIZE
+#define YSVSFIELDINFO_MEM_T     FEVARSTRUCTFIELDINFO_MEM_T
+#define YSVSFIELDINFO_MEM_F     FEVARSTRUCTFIELDINFO_MEM_F
+#define YSVSFIELDINFO_MEM_N     FEVARSTRUCTFIELDINFO_MEM_N
+INT32 YSVarStructFieldGetIdx(void *Set,INT32 Size,const char *Name,INT32 Len);
+void *YSVarArrayToStruct(void *Array,void *Set,INT32 Size);
+/****************************************************************************/
+/****************************************************************************/
+
+/****************************************************************************/
 /** var -- array                                                           **/
 /****************************************************************************/
 void *YSVarArrayNew(INT32 Max);
@@ -211,6 +249,7 @@ BOOL  YSVarArrayInsert(void *Var,INT32 Idx,void *V);
 BOOL  YSVarArrayReplace(void *Var,INT32 Idx,void *V);
 BOOL  YSVarArrayReplaceValue(void *Var,INT32 Idx,void *V);
 BOOL  YSVarArrayDelete(void *Var,INT32 Idx);
+void *YSVarArrayRemove(void *Var,INT32 Idx);
 void *YSVarArrayGet(void *Var,INT32 Idx);
 BOOL  YSVarArrayGet2(void *Var,INT32 Idx,void **V);
 
@@ -221,6 +260,7 @@ BOOL  YSVarArrayInsertByKey(void *Var,const void *Key,INT32 Len,void *V);
 BOOL  YSVarArrayReplaceByKey(void *Var,void *V);
 BOOL  YSVarArrayReplaceValueByKey(void *Var,const void *Key,INT32 Len,void *V);
 BOOL  YSVarArrayDeleteByKey(void *Var,const void *Key,INT32 Len);
+void *YSVarArrayRemoveByKey(void *Var,const void *Key,INT32 Len);
 
 void *YSVarArrayClone(void *Var);
 BOOL  YSVarArrayCloneValue(void *N,void *Var);

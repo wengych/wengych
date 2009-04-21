@@ -2,7 +2,7 @@
 /**[File Name    ]varfunc.c                                               **/
 /**[File Path    ]$(TOPDIR)/src/libsrc/fecom                              **/
 /**[Library Name ]libfecom.so                                             **/
-/**[Library Path ]$(APPDIR)/lib                                           **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/11/11                                              **/
@@ -33,184 +33,194 @@ static tFEVarFunc gstFuncListVT[] =
 /****************************************************************************/
 /**  free Function                                                         **/
 /****************************************************************************/
-     {FEVARTYPE_MEM_VT_NOT      ,FEVARTYPE_FREE_SUBFIX  ,NULL               }
+     {VARTYPE_MEM_VT_NOT      ,FEVARTYPE_FREE_SUBFIX  ,NULL               }
 
-    ,{FEVARTYPE_MEM_VT_BOOL     ,FEVARTYPE_FREE_SUBFIX  ,FEVarSTypeFree     }
-    ,{FEVARTYPE_MEM_VT_BYTE     ,FEVARTYPE_FREE_SUBFIX  ,FEVarSTypeFree     }
-    ,{FEVARTYPE_MEM_VT_INT16    ,FEVARTYPE_FREE_SUBFIX  ,FEVarSTypeFree     }
-    ,{FEVARTYPE_MEM_VT_INT32    ,FEVARTYPE_FREE_SUBFIX  ,FEVarSTypeFree     }
-    ,{FEVARTYPE_MEM_VT_INT64    ,FEVARTYPE_FREE_SUBFIX  ,FEVarSTypeFree     }
-    ,{FEVARTYPE_MEM_VT_DOUBLE   ,FEVARTYPE_FREE_SUBFIX  ,FEVarSTypeFree     }
-    ,{FEVARTYPE_MEM_VT_BIN      ,FEVARTYPE_FREE_SUBFIX  ,FEVarBinFree       }
-    ,{FEVARTYPE_MEM_VT_STRING   ,FEVARTYPE_FREE_SUBFIX  ,FEVarStringFree    }
-    ,{FEVARTYPE_MEM_VT_OBJECT   ,FEVARTYPE_FREE_SUBFIX  ,FEVarObjectFree    }
+    ,{VARTYPE_MEM_VT_BOOL     ,FEVARTYPE_FREE_SUBFIX  ,FEVarSTypeFree     }
+    ,{VARTYPE_MEM_VT_BYTE     ,FEVARTYPE_FREE_SUBFIX  ,FEVarSTypeFree     }
+    ,{VARTYPE_MEM_VT_INT16    ,FEVARTYPE_FREE_SUBFIX  ,FEVarSTypeFree     }
+    ,{VARTYPE_MEM_VT_INT32    ,FEVARTYPE_FREE_SUBFIX  ,FEVarSTypeFree     }
+    ,{VARTYPE_MEM_VT_INT64    ,FEVARTYPE_FREE_SUBFIX  ,FEVarSTypeFree     }
+    ,{VARTYPE_MEM_VT_DOUBLE   ,FEVARTYPE_FREE_SUBFIX  ,FEVarSTypeFree     }
+    ,{VARTYPE_MEM_VT_BIN      ,FEVARTYPE_FREE_SUBFIX  ,FEVarBinFree       }
+    ,{VARTYPE_MEM_VT_STRING   ,FEVARTYPE_FREE_SUBFIX  ,FEVarStringFree    }
+    ,{VARTYPE_MEM_VT_OBJECT   ,FEVARTYPE_FREE_SUBFIX  ,FEVarObjectFree    }
+    ,{VARTYPE_MEM_VT_STRUCT   ,FEVARTYPE_FREE_SUBFIX  ,FEVarStructFree    }
 
-    ,{FEVARTYPE_MEM_VT_P1       ,FEVARTYPE_FREE_SUBFIX  ,FEVarPointer4Free  }
-    ,{FEVARTYPE_MEM_VT_P2       ,FEVARTYPE_FREE_SUBFIX  ,FEVarPointer4Free  }
-    ,{FEVARTYPE_MEM_VT_P3       ,FEVARTYPE_FREE_SUBFIX  ,FEVarPointer4Free  }
-    ,{FEVARTYPE_MEM_VT_P4       ,FEVARTYPE_FREE_SUBFIX  ,FEVarPointer4Free  }
+    ,{VARTYPE_MEM_VT_P1       ,FEVARTYPE_FREE_SUBFIX  ,FEVarPointer4Free  }
+    ,{VARTYPE_MEM_VT_P2       ,FEVARTYPE_FREE_SUBFIX  ,FEVarPointer4Free  }
+    ,{VARTYPE_MEM_VT_P3       ,FEVARTYPE_FREE_SUBFIX  ,FEVarPointer4Free  }
+    ,{VARTYPE_MEM_VT_P4       ,FEVARTYPE_FREE_SUBFIX  ,FEVarPointer4Free  }
 
-    ,{FEVARTYPE_MEM_VT_ARRAY    ,FEVARTYPE_FREE_SUBFIX  ,FEVarArrayFree     }
-    ,{FEVARTYPE_MEM_VT_FIFO     ,FEVARTYPE_FREE_SUBFIX  ,FEVarFifoFree      }
-    ,{FEVARTYPE_MEM_VT_FILO     ,FEVARTYPE_FREE_SUBFIX  ,FEVarFiloFree      }
-    ,{FEVARTYPE_MEM_VT_CICLE    ,FEVARTYPE_FREE_SUBFIX  ,NULL               }
-    ,{FEVARTYPE_MEM_VT_HASH     ,FEVARTYPE_FREE_SUBFIX  ,FEVarHashFree      }
-    ,{FEVARTYPE_MEM_VT_LINK     ,FEVARTYPE_FREE_SUBFIX  ,FEVarLinkFree      }
-    ,{FEVARTYPE_MEM_VT_TREE     ,FEVARTYPE_FREE_SUBFIX  ,NULL               }
-    ,{FEVARTYPE_MEM_VT_XML      ,FEVARTYPE_FREE_SUBFIX  ,NULL               }
+    ,{VARTYPE_MEM_VT_ARRAY    ,FEVARTYPE_FREE_SUBFIX  ,FEVarArrayFree     }
+    ,{VARTYPE_MEM_VT_FIFO     ,FEVARTYPE_FREE_SUBFIX  ,FEVarFifoFree      }
+    ,{VARTYPE_MEM_VT_FILO     ,FEVARTYPE_FREE_SUBFIX  ,FEVarFiloFree      }
+    ,{VARTYPE_MEM_VT_CICLE    ,FEVARTYPE_FREE_SUBFIX  ,NULL               }
+    ,{VARTYPE_MEM_VT_HASH     ,FEVARTYPE_FREE_SUBFIX  ,FEVarHashFree      }
+    ,{VARTYPE_MEM_VT_LINK     ,FEVARTYPE_FREE_SUBFIX  ,FEVarLinkFree      }
+    ,{VARTYPE_MEM_VT_TREE     ,FEVARTYPE_FREE_SUBFIX  ,NULL               }
+    ,{VARTYPE_MEM_VT_XML      ,FEVARTYPE_FREE_SUBFIX  ,NULL               }
          
 /****************************************************************************/
 /**  Clone Function                                                        **/
 /****************************************************************************/
-    ,{FEVARTYPE_MEM_VT_NOT      ,FEVARTYPE_CLONE_SUBFIX  ,NULL              }
+    ,{VARTYPE_MEM_VT_NOT      ,FEVARTYPE_CLONE_SUBFIX  ,NULL              }
                                                         
-    ,{FEVARTYPE_MEM_VT_BOOL     ,FEVARTYPE_CLONE_SUBFIX  ,FEVarSTypeClone   }
-    ,{FEVARTYPE_MEM_VT_BYTE     ,FEVARTYPE_CLONE_SUBFIX  ,FEVarSTypeClone   }
-    ,{FEVARTYPE_MEM_VT_INT16    ,FEVARTYPE_CLONE_SUBFIX  ,FEVarSTypeClone   }
-    ,{FEVARTYPE_MEM_VT_INT32    ,FEVARTYPE_CLONE_SUBFIX  ,FEVarSTypeClone   }
-    ,{FEVARTYPE_MEM_VT_INT64    ,FEVARTYPE_CLONE_SUBFIX  ,FEVarSTypeClone   }
-    ,{FEVARTYPE_MEM_VT_DOUBLE   ,FEVARTYPE_CLONE_SUBFIX  ,FEVarSTypeClone   }
-    ,{FEVARTYPE_MEM_VT_BIN      ,FEVARTYPE_CLONE_SUBFIX  ,FEVarBinClone     }
-    ,{FEVARTYPE_MEM_VT_STRING   ,FEVARTYPE_CLONE_SUBFIX  ,FEVarStringClone  }
-    ,{FEVARTYPE_MEM_VT_OBJECT   ,FEVARTYPE_CLONE_SUBFIX  ,FEVarObjectClone  }
+    ,{VARTYPE_MEM_VT_BOOL     ,FEVARTYPE_CLONE_SUBFIX  ,FEVarSTypeClone   }
+    ,{VARTYPE_MEM_VT_BYTE     ,FEVARTYPE_CLONE_SUBFIX  ,FEVarSTypeClone   }
+    ,{VARTYPE_MEM_VT_INT16    ,FEVARTYPE_CLONE_SUBFIX  ,FEVarSTypeClone   }
+    ,{VARTYPE_MEM_VT_INT32    ,FEVARTYPE_CLONE_SUBFIX  ,FEVarSTypeClone   }
+    ,{VARTYPE_MEM_VT_INT64    ,FEVARTYPE_CLONE_SUBFIX  ,FEVarSTypeClone   }
+    ,{VARTYPE_MEM_VT_DOUBLE   ,FEVARTYPE_CLONE_SUBFIX  ,FEVarSTypeClone   }
+    ,{VARTYPE_MEM_VT_BIN      ,FEVARTYPE_CLONE_SUBFIX  ,FEVarBinClone     }
+    ,{VARTYPE_MEM_VT_STRING   ,FEVARTYPE_CLONE_SUBFIX  ,FEVarStringClone  }
+    ,{VARTYPE_MEM_VT_OBJECT   ,FEVARTYPE_CLONE_SUBFIX  ,FEVarObjectClone  }
+    ,{VARTYPE_MEM_VT_STRUCT   ,FEVARTYPE_CLONE_SUBFIX  ,FEVarStructClone  }
 
-    ,{FEVARTYPE_MEM_VT_P1       ,FEVARTYPE_CLONE_SUBFIX  ,FEVarPointer4Clone}
-    ,{FEVARTYPE_MEM_VT_P2       ,FEVARTYPE_CLONE_SUBFIX  ,FEVarPointer4Clone}
-    ,{FEVARTYPE_MEM_VT_P3       ,FEVARTYPE_CLONE_SUBFIX  ,FEVarPointer4Clone}
-    ,{FEVARTYPE_MEM_VT_P4       ,FEVARTYPE_CLONE_SUBFIX  ,FEVarPointer4Clone}
+    ,{VARTYPE_MEM_VT_P1       ,FEVARTYPE_CLONE_SUBFIX  ,FEVarPointer4Clone}
+    ,{VARTYPE_MEM_VT_P2       ,FEVARTYPE_CLONE_SUBFIX  ,FEVarPointer4Clone}
+    ,{VARTYPE_MEM_VT_P3       ,FEVARTYPE_CLONE_SUBFIX  ,FEVarPointer4Clone}
+    ,{VARTYPE_MEM_VT_P4       ,FEVARTYPE_CLONE_SUBFIX  ,FEVarPointer4Clone}
 
-    ,{FEVARTYPE_MEM_VT_ARRAY    ,FEVARTYPE_CLONE_SUBFIX  ,FEVarArrayClone   }
-    ,{FEVARTYPE_MEM_VT_FIFO     ,FEVARTYPE_CLONE_SUBFIX  ,FEVarFifoClone    }
-    ,{FEVARTYPE_MEM_VT_FILO     ,FEVARTYPE_CLONE_SUBFIX  ,FEVarFiloClone    }
-    ,{FEVARTYPE_MEM_VT_CICLE    ,FEVARTYPE_CLONE_SUBFIX  ,NULL              }
-    ,{FEVARTYPE_MEM_VT_HASH     ,FEVARTYPE_CLONE_SUBFIX  ,FEVarHashClone    }
-    ,{FEVARTYPE_MEM_VT_LINK     ,FEVARTYPE_CLONE_SUBFIX  ,FEVarLinkClone    }
-    ,{FEVARTYPE_MEM_VT_TREE     ,FEVARTYPE_CLONE_SUBFIX  ,NULL              }
-    ,{FEVARTYPE_MEM_VT_XML      ,FEVARTYPE_CLONE_SUBFIX  ,NULL              }
+    ,{VARTYPE_MEM_VT_ARRAY    ,FEVARTYPE_CLONE_SUBFIX  ,FEVarArrayClone   }
+    ,{VARTYPE_MEM_VT_FIFO     ,FEVARTYPE_CLONE_SUBFIX  ,FEVarFifoClone    }
+    ,{VARTYPE_MEM_VT_FILO     ,FEVARTYPE_CLONE_SUBFIX  ,FEVarFiloClone    }
+    ,{VARTYPE_MEM_VT_CICLE    ,FEVARTYPE_CLONE_SUBFIX  ,NULL              }
+    ,{VARTYPE_MEM_VT_HASH     ,FEVARTYPE_CLONE_SUBFIX  ,FEVarHashClone    }
+    ,{VARTYPE_MEM_VT_LINK     ,FEVARTYPE_CLONE_SUBFIX  ,FEVarLinkClone    }
+    ,{VARTYPE_MEM_VT_TREE     ,FEVARTYPE_CLONE_SUBFIX  ,NULL              }
+    ,{VARTYPE_MEM_VT_XML      ,FEVARTYPE_CLONE_SUBFIX  ,NULL              }
 /****************************************************************************/
 /**  Clone Value Function                                                  **/
 /****************************************************************************/
-    ,{FEVARTYPE_MEM_VT_NOT      ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_NOT      ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
                                                         
-    ,{FEVARTYPE_MEM_VT_BOOL     ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
-    ,{FEVARTYPE_MEM_VT_BYTE     ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
-    ,{FEVARTYPE_MEM_VT_INT16    ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
-    ,{FEVARTYPE_MEM_VT_INT32    ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
-    ,{FEVARTYPE_MEM_VT_INT64    ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
-    ,{FEVARTYPE_MEM_VT_DOUBLE   ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
-    ,{FEVARTYPE_MEM_VT_BIN      ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
-    ,{FEVARTYPE_MEM_VT_STRING   ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
-    ,{FEVARTYPE_MEM_VT_OBJECT   ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_BOOL     ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_BYTE     ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_INT16    ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_INT32    ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_INT64    ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_DOUBLE   ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_BIN      ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_STRING   ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_OBJECT   ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_STRUCT   ,FEVARTYPE_CLONEV_SUBFIX ,FEVarStructCloneValue}
 
-    ,{FEVARTYPE_MEM_VT_P1       ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
-    ,{FEVARTYPE_MEM_VT_P2       ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
-    ,{FEVARTYPE_MEM_VT_P3       ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
-    ,{FEVARTYPE_MEM_VT_P4       ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_P1       ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_P2       ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_P3       ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_P4       ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
 
-    ,{FEVARTYPE_MEM_VT_ARRAY    ,FEVARTYPE_CLONEV_SUBFIX ,FEVarArrayCloneValue}
-    ,{FEVARTYPE_MEM_VT_FIFO     ,FEVARTYPE_CLONEV_SUBFIX ,FEVarFifoCloneValue}
-    ,{FEVARTYPE_MEM_VT_FILO     ,FEVARTYPE_CLONEV_SUBFIX ,FEVarFiloCloneValue}
-    ,{FEVARTYPE_MEM_VT_CICLE    ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
-    ,{FEVARTYPE_MEM_VT_HASH     ,FEVARTYPE_CLONEV_SUBFIX ,FEVarHashCloneValue}
-    ,{FEVARTYPE_MEM_VT_LINK     ,FEVARTYPE_CLONEV_SUBFIX ,FEVarLinkCloneValue}
-    ,{FEVARTYPE_MEM_VT_TREE     ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
-    ,{FEVARTYPE_MEM_VT_XML      ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_ARRAY    ,FEVARTYPE_CLONEV_SUBFIX ,FEVarArrayCloneValue}
+    ,{VARTYPE_MEM_VT_FIFO     ,FEVARTYPE_CLONEV_SUBFIX ,FEVarFifoCloneValue}
+    ,{VARTYPE_MEM_VT_FILO     ,FEVARTYPE_CLONEV_SUBFIX ,FEVarFiloCloneValue}
+    ,{VARTYPE_MEM_VT_CICLE    ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_HASH     ,FEVARTYPE_CLONEV_SUBFIX ,FEVarHashCloneValue}
+    ,{VARTYPE_MEM_VT_LINK     ,FEVARTYPE_CLONEV_SUBFIX ,FEVarLinkCloneValue}
+    ,{VARTYPE_MEM_VT_TREE     ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_XML      ,FEVARTYPE_CLONEV_SUBFIX ,NULL              }
 /****************************************************************************/
 /**  Show Function                                                         **/
 /****************************************************************************/
-    ,{FEVARTYPE_MEM_VT_NOT      ,FEVARTYPE_SHOW_SUBFIX  ,NULL               }
+    ,{VARTYPE_MEM_VT_NOT      ,FEVARTYPE_SHOW_SUBFIX  ,NULL               }
 
-    ,{FEVARTYPE_MEM_VT_BOOL     ,FEVARTYPE_SHOW_SUBFIX  ,FEVarSTypeShow     }
-    ,{FEVARTYPE_MEM_VT_BYTE     ,FEVARTYPE_SHOW_SUBFIX  ,FEVarSTypeShow     }
-    ,{FEVARTYPE_MEM_VT_INT16    ,FEVARTYPE_SHOW_SUBFIX  ,FEVarSTypeShow     }
-    ,{FEVARTYPE_MEM_VT_INT32    ,FEVARTYPE_SHOW_SUBFIX  ,FEVarSTypeShow     }
-    ,{FEVARTYPE_MEM_VT_INT64    ,FEVARTYPE_SHOW_SUBFIX  ,FEVarSTypeShow     }
-    ,{FEVARTYPE_MEM_VT_DOUBLE   ,FEVARTYPE_SHOW_SUBFIX  ,FEVarSTypeShow     }
-    ,{FEVARTYPE_MEM_VT_BIN      ,FEVARTYPE_SHOW_SUBFIX  ,FEVarBinShow       }
-    ,{FEVARTYPE_MEM_VT_STRING   ,FEVARTYPE_SHOW_SUBFIX  ,FEVarStringShow    }
-    ,{FEVARTYPE_MEM_VT_OBJECT   ,FEVARTYPE_SHOW_SUBFIX  ,FEVarObjectShow    }
+    ,{VARTYPE_MEM_VT_BOOL     ,FEVARTYPE_SHOW_SUBFIX  ,FEVarSTypeShow     }
+    ,{VARTYPE_MEM_VT_BYTE     ,FEVARTYPE_SHOW_SUBFIX  ,FEVarSTypeShow     }
+    ,{VARTYPE_MEM_VT_INT16    ,FEVARTYPE_SHOW_SUBFIX  ,FEVarSTypeShow     }
+    ,{VARTYPE_MEM_VT_INT32    ,FEVARTYPE_SHOW_SUBFIX  ,FEVarSTypeShow     }
+    ,{VARTYPE_MEM_VT_INT64    ,FEVARTYPE_SHOW_SUBFIX  ,FEVarSTypeShow     }
+    ,{VARTYPE_MEM_VT_DOUBLE   ,FEVARTYPE_SHOW_SUBFIX  ,FEVarSTypeShow     }
+    ,{VARTYPE_MEM_VT_BIN      ,FEVARTYPE_SHOW_SUBFIX  ,FEVarBinShow       }
+    ,{VARTYPE_MEM_VT_STRING   ,FEVARTYPE_SHOW_SUBFIX  ,FEVarStringShow    }
+    ,{VARTYPE_MEM_VT_OBJECT   ,FEVARTYPE_SHOW_SUBFIX  ,FEVarObjectShow    }
+    ,{VARTYPE_MEM_VT_STRUCT   ,FEVARTYPE_SHOW_SUBFIX  ,FEVarStructShow    }
 
-    ,{FEVARTYPE_MEM_VT_P1       ,FEVARTYPE_SHOW_SUBFIX  ,FEVarPointer4Show  }
-    ,{FEVARTYPE_MEM_VT_P2       ,FEVARTYPE_SHOW_SUBFIX  ,FEVarPointer4Show  }
-    ,{FEVARTYPE_MEM_VT_P3       ,FEVARTYPE_SHOW_SUBFIX  ,FEVarPointer4Show  }
-    ,{FEVARTYPE_MEM_VT_P4       ,FEVARTYPE_SHOW_SUBFIX  ,FEVarPointer4Show  }
+    ,{VARTYPE_MEM_VT_P1       ,FEVARTYPE_SHOW_SUBFIX  ,FEVarPointer4Show  }
+    ,{VARTYPE_MEM_VT_P2       ,FEVARTYPE_SHOW_SUBFIX  ,FEVarPointer4Show  }
+    ,{VARTYPE_MEM_VT_P3       ,FEVARTYPE_SHOW_SUBFIX  ,FEVarPointer4Show  }
+    ,{VARTYPE_MEM_VT_P4       ,FEVARTYPE_SHOW_SUBFIX  ,FEVarPointer4Show  }
 
-    ,{FEVARTYPE_MEM_VT_ARRAY    ,FEVARTYPE_SHOW_SUBFIX  ,FEVarArrayShow     }
-    ,{FEVARTYPE_MEM_VT_FIFO     ,FEVARTYPE_SHOW_SUBFIX  ,FEVarFifoShow      }
-    ,{FEVARTYPE_MEM_VT_FILO     ,FEVARTYPE_SHOW_SUBFIX  ,FEVarFiloShow      }
-    ,{FEVARTYPE_MEM_VT_CICLE    ,FEVARTYPE_SHOW_SUBFIX  ,NULL               }
-    ,{FEVARTYPE_MEM_VT_HASH     ,FEVARTYPE_SHOW_SUBFIX  ,FEVarHashShow      }
-    ,{FEVARTYPE_MEM_VT_LINK     ,FEVARTYPE_SHOW_SUBFIX  ,FEVarLinkShow      }
-    ,{FEVARTYPE_MEM_VT_TREE     ,FEVARTYPE_SHOW_SUBFIX  ,NULL               }
-    ,{FEVARTYPE_MEM_VT_XML      ,FEVARTYPE_SHOW_SUBFIX  ,NULL               }
+    ,{VARTYPE_MEM_VT_ARRAY    ,FEVARTYPE_SHOW_SUBFIX  ,FEVarArrayShow     }
+    ,{VARTYPE_MEM_VT_FIFO     ,FEVARTYPE_SHOW_SUBFIX  ,FEVarFifoShow      }
+    ,{VARTYPE_MEM_VT_FILO     ,FEVARTYPE_SHOW_SUBFIX  ,FEVarFiloShow      }
+    ,{VARTYPE_MEM_VT_CICLE    ,FEVARTYPE_SHOW_SUBFIX  ,NULL               }
+    ,{VARTYPE_MEM_VT_HASH     ,FEVARTYPE_SHOW_SUBFIX  ,FEVarHashShow      }
+    ,{VARTYPE_MEM_VT_LINK     ,FEVARTYPE_SHOW_SUBFIX  ,FEVarLinkShow      }
+    ,{VARTYPE_MEM_VT_TREE     ,FEVARTYPE_SHOW_SUBFIX  ,NULL               }
+    ,{VARTYPE_MEM_VT_XML      ,FEVARTYPE_SHOW_SUBFIX  ,NULL               }
 /****************************************************************************/
 /**  Pack Function (Value)                                                 **/
 /****************************************************************************/
-    ,{FEVARTYPE_MEM_VT_NOT      ,FEVARTYPE_PACK_SUBFIX   ,NULL              }
+    ,{VARTYPE_MEM_VT_NOT      ,FEVARTYPE_PACK_SUBFIX   ,NULL              }
                                                          
-    ,{FEVARTYPE_MEM_VT_BOOL     ,FEVARTYPE_PACK_SUBFIX   ,FEVarSTypePack    }
-    ,{FEVARTYPE_MEM_VT_BYTE     ,FEVARTYPE_PACK_SUBFIX   ,FEVarSTypePack    }
-    ,{FEVARTYPE_MEM_VT_INT16    ,FEVARTYPE_PACK_SUBFIX   ,FEVarSTypePack    }
-    ,{FEVARTYPE_MEM_VT_INT32    ,FEVARTYPE_PACK_SUBFIX   ,FEVarSTypePack    }
-    ,{FEVARTYPE_MEM_VT_INT64    ,FEVARTYPE_PACK_SUBFIX   ,FEVarSTypePack    }
-    ,{FEVARTYPE_MEM_VT_DOUBLE   ,FEVARTYPE_PACK_SUBFIX   ,FEVarSTypePack    }
-    ,{FEVARTYPE_MEM_VT_BIN      ,FEVARTYPE_PACK_SUBFIX   ,FEVarBinPack      }
-    ,{FEVARTYPE_MEM_VT_STRING   ,FEVARTYPE_PACK_SUBFIX   ,FEVarStringPack   }
+    ,{VARTYPE_MEM_VT_BOOL     ,FEVARTYPE_PACK_SUBFIX   ,FEVarSTypePack    }
+    ,{VARTYPE_MEM_VT_BYTE     ,FEVARTYPE_PACK_SUBFIX   ,FEVarSTypePack    }
+    ,{VARTYPE_MEM_VT_INT16    ,FEVARTYPE_PACK_SUBFIX   ,FEVarSTypePack    }
+    ,{VARTYPE_MEM_VT_INT32    ,FEVARTYPE_PACK_SUBFIX   ,FEVarSTypePack    }
+    ,{VARTYPE_MEM_VT_INT64    ,FEVARTYPE_PACK_SUBFIX   ,FEVarSTypePack    }
+    ,{VARTYPE_MEM_VT_DOUBLE   ,FEVARTYPE_PACK_SUBFIX   ,FEVarSTypePack    }
+    ,{VARTYPE_MEM_VT_BIN      ,FEVARTYPE_PACK_SUBFIX   ,FEVarBinPack      }
+    ,{VARTYPE_MEM_VT_STRING   ,FEVARTYPE_PACK_SUBFIX   ,FEVarStringPack   }
 #if 0
-    ,{FEVARTYPE_MEM_VT_OBJECT   ,FEVARTYPE_PACK_SUBFIX   ,FEVarObjectPack   }
+    ,{VARTYPE_MEM_VT_OBJECT   ,FEVARTYPE_PACK_SUBFIX   ,FEVarObjectPack   }
+#endif
+    ,{VARTYPE_MEM_VT_STRUCT   ,FEVARTYPE_PACK_SUBFIX   ,FEVarStructPack   }
 
-    ,{FEVARTYPE_MEM_VT_P1       ,FEVARTYPE_PACK_SUBFIX   ,FEVarPointer4Pack }
-    ,{FEVARTYPE_MEM_VT_P2       ,FEVARTYPE_PACK_SUBFIX   ,FEVarPointer4Pack }
-    ,{FEVARTYPE_MEM_VT_P3       ,FEVARTYPE_PACK_SUBFIX   ,FEVarPointer4Pack }
-    ,{FEVARTYPE_MEM_VT_P4       ,FEVARTYPE_PACK_SUBFIX   ,FEVarPointer4Pack }
+#if 0
+    ,{VARTYPE_MEM_VT_P1       ,FEVARTYPE_PACK_SUBFIX   ,FEVarPointer4Pack }
+    ,{VARTYPE_MEM_VT_P2       ,FEVARTYPE_PACK_SUBFIX   ,FEVarPointer4Pack }
+    ,{VARTYPE_MEM_VT_P3       ,FEVARTYPE_PACK_SUBFIX   ,FEVarPointer4Pack }
+    ,{VARTYPE_MEM_VT_P4       ,FEVARTYPE_PACK_SUBFIX   ,FEVarPointer4Pack }
 #endif
                                                          
-    ,{FEVARTYPE_MEM_VT_ARRAY    ,FEVARTYPE_PACK_SUBFIX   ,FEVarArrayPack    }
+    ,{VARTYPE_MEM_VT_ARRAY    ,FEVARTYPE_PACK_SUBFIX   ,FEVarArrayPack    }
 #if 0
-    ,{FEVARTYPE_MEM_VT_FIFO     ,FEVARTYPE_PACK_SUBFIX   ,FEVarFiloPack     }
-    ,{FEVARTYPE_MEM_VT_FILO     ,FEVARTYPE_PACK_SUBFIX   ,FEVarFiloPack     }
-    ,{FEVARTYPE_MEM_VT_CICLE    ,FEVARTYPE_PACK_SUBFIX   ,NULL              }
+    ,{VARTYPE_MEM_VT_FIFO     ,FEVARTYPE_PACK_SUBFIX   ,FEVarFiloPack     }
+    ,{VARTYPE_MEM_VT_FILO     ,FEVARTYPE_PACK_SUBFIX   ,FEVarFiloPack     }
+    ,{VARTYPE_MEM_VT_CICLE    ,FEVARTYPE_PACK_SUBFIX   ,NULL              }
 #endif
-    ,{FEVARTYPE_MEM_VT_HASH     ,FEVARTYPE_PACK_SUBFIX   ,FEVarHashPack     }
+    ,{VARTYPE_MEM_VT_HASH     ,FEVARTYPE_PACK_SUBFIX   ,FEVarHashPack     }
 #if 0
-    ,{FEVARTYPE_MEM_VT_LINK     ,FEVARTYPE_PACK_SUBFIX   ,FEVarLinkPack     }
-    ,{FEVARTYPE_MEM_VT_TREE     ,FEVARTYPE_PACK_SUBFIX   ,NULL              }
-    ,{FEVARTYPE_MEM_VT_XML      ,FEVARTYPE_PACK_SUBFIX   ,NULL              }
+    ,{VARTYPE_MEM_VT_LINK     ,FEVARTYPE_PACK_SUBFIX   ,FEVarLinkPack     }
+    ,{VARTYPE_MEM_VT_TREE     ,FEVARTYPE_PACK_SUBFIX   ,NULL              }
+    ,{VARTYPE_MEM_VT_XML      ,FEVARTYPE_PACK_SUBFIX   ,NULL              }
 #endif
 /****************************************************************************/
 /**  UnPack Function (Value)                                               **/
 /****************************************************************************/
-    ,{FEVARTYPE_MEM_VT_NOT      ,FEVARTYPE_UNPACK_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_NOT      ,FEVARTYPE_UNPACK_SUBFIX ,NULL              }
                                                          
-    ,{FEVARTYPE_MEM_VT_BOOL     ,FEVARTYPE_UNPACK_SUBFIX ,FEVarSTypeUnPack  }
-    ,{FEVARTYPE_MEM_VT_BYTE     ,FEVARTYPE_UNPACK_SUBFIX ,FEVarSTypeUnPack  }
-    ,{FEVARTYPE_MEM_VT_INT16    ,FEVARTYPE_UNPACK_SUBFIX ,FEVarSTypeUnPack  }
-    ,{FEVARTYPE_MEM_VT_INT32    ,FEVARTYPE_UNPACK_SUBFIX ,FEVarSTypeUnPack  }
-    ,{FEVARTYPE_MEM_VT_INT64    ,FEVARTYPE_UNPACK_SUBFIX ,FEVarSTypeUnPack  }
-    ,{FEVARTYPE_MEM_VT_DOUBLE   ,FEVARTYPE_UNPACK_SUBFIX ,FEVarSTypeUnPack  }
-    ,{FEVARTYPE_MEM_VT_BIN      ,FEVARTYPE_UNPACK_SUBFIX ,FEVarBinUnPack    }
-    ,{FEVARTYPE_MEM_VT_STRING   ,FEVARTYPE_UNPACK_SUBFIX ,FEVarStringUnPack }
+    ,{VARTYPE_MEM_VT_BOOL     ,FEVARTYPE_UNPACK_SUBFIX ,FEVarSTypeUnPack  }
+    ,{VARTYPE_MEM_VT_BYTE     ,FEVARTYPE_UNPACK_SUBFIX ,FEVarSTypeUnPack  }
+    ,{VARTYPE_MEM_VT_INT16    ,FEVARTYPE_UNPACK_SUBFIX ,FEVarSTypeUnPack  }
+    ,{VARTYPE_MEM_VT_INT32    ,FEVARTYPE_UNPACK_SUBFIX ,FEVarSTypeUnPack  }
+    ,{VARTYPE_MEM_VT_INT64    ,FEVARTYPE_UNPACK_SUBFIX ,FEVarSTypeUnPack  }
+    ,{VARTYPE_MEM_VT_DOUBLE   ,FEVARTYPE_UNPACK_SUBFIX ,FEVarSTypeUnPack  }
+    ,{VARTYPE_MEM_VT_BIN      ,FEVARTYPE_UNPACK_SUBFIX ,FEVarBinUnPack    }
+    ,{VARTYPE_MEM_VT_STRING   ,FEVARTYPE_UNPACK_SUBFIX ,FEVarStringUnPack }
 #if 0
-    ,{FEVARTYPE_MEM_VT_OBJECT   ,FEVARTYPE_UNPACK_SUBFIX ,FEVarObjectUnPack }
+    ,{VARTYPE_MEM_VT_OBJECT   ,FEVARTYPE_UNPACK_SUBFIX ,FEVarObjectUnPack }
+#endif
+    ,{VARTYPE_MEM_VT_STRUCT   ,FEVARTYPE_UNPACK_SUBFIX ,FEVarStructUnPack }
 
-    ,{FEVARTYPE_MEM_VT_P1       ,FEVARTYPE_UNPACK_SUBFIX ,FEVarPointer4Pack }
-    ,{FEVARTYPE_MEM_VT_P2       ,FEVARTYPE_UNPACK_SUBFIX ,FEVarPointer4Pack }
-    ,{FEVARTYPE_MEM_VT_P3       ,FEVARTYPE_UNPACK_SUBFIX ,FEVarPointer4Pack }
-    ,{FEVARTYPE_MEM_VT_P4       ,FEVARTYPE_UNPACK_SUBFIX ,FEVarPointer4Pack }
+#if 0
+    ,{VARTYPE_MEM_VT_P1       ,FEVARTYPE_UNPACK_SUBFIX ,FEVarPointer4Pack }
+    ,{VARTYPE_MEM_VT_P2       ,FEVARTYPE_UNPACK_SUBFIX ,FEVarPointer4Pack }
+    ,{VARTYPE_MEM_VT_P3       ,FEVARTYPE_UNPACK_SUBFIX ,FEVarPointer4Pack }
+    ,{VARTYPE_MEM_VT_P4       ,FEVARTYPE_UNPACK_SUBFIX ,FEVarPointer4Pack }
                                                          
 #endif
                                                          
-    ,{FEVARTYPE_MEM_VT_ARRAY    ,FEVARTYPE_UNPACK_SUBFIX ,FEVarArrayUnPack  }
+    ,{VARTYPE_MEM_VT_ARRAY    ,FEVARTYPE_UNPACK_SUBFIX ,FEVarArrayUnPack  }
 #if 0
-    ,{FEVARTYPE_MEM_VT_FIFO     ,FEVARTYPE_UNPACK_SUBFIX ,FEVarFiloUnPack   }
-    ,{FEVARTYPE_MEM_VT_FILO     ,FEVARTYPE_UNPACK_SUBFIX ,FEVarFiloUnPack   }
-    ,{FEVARTYPE_MEM_VT_CICLE    ,FEVARTYPE_UNPACK_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_FIFO     ,FEVARTYPE_UNPACK_SUBFIX ,FEVarFiloUnPack   }
+    ,{VARTYPE_MEM_VT_FILO     ,FEVARTYPE_UNPACK_SUBFIX ,FEVarFiloUnPack   }
+    ,{VARTYPE_MEM_VT_CICLE    ,FEVARTYPE_UNPACK_SUBFIX ,NULL              }
 #endif
-    ,{FEVARTYPE_MEM_VT_HASH     ,FEVARTYPE_UNPACK_SUBFIX ,FEVarHashUnPack   }
+    ,{VARTYPE_MEM_VT_HASH     ,FEVARTYPE_UNPACK_SUBFIX ,FEVarHashUnPack   }
 #if 0
-    ,{FEVARTYPE_MEM_VT_LINK     ,FEVARTYPE_UNPACK_SUBFIX ,FEVarLinkUnPack   }
-    ,{FEVARTYPE_MEM_VT_TREE     ,FEVARTYPE_UNPACK_SUBFIX ,NULL              }
-    ,{FEVARTYPE_MEM_VT_XML      ,FEVARTYPE_UNPACK_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_LINK     ,FEVARTYPE_UNPACK_SUBFIX ,FEVarLinkUnPack   }
+    ,{VARTYPE_MEM_VT_TREE     ,FEVARTYPE_UNPACK_SUBFIX ,NULL              }
+    ,{VARTYPE_MEM_VT_XML      ,FEVARTYPE_UNPACK_SUBFIX ,NULL              }
 #endif
 };
 #define FEVARFUNCVT_ST_NUM        (sizeof(gstFuncListVT)/FEVARFUNC_ST_SIZE)

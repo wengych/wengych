@@ -2,7 +2,7 @@
 /**[File Name    ]servcli.c                                               **/
 /**[File Path    ]$(TOPDIR)/src/libsrc/yscom                              **/
 /**[Library Name ]libyscom.so                                             **/
-/**[Library Path ]$(APPDIR)/lib                                           **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/11/11                                              **/

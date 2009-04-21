@@ -2,7 +2,7 @@
 /**[File Name    ]varfifo.c                                               **/
 /**[File Path    ]$(TOPDIR)/src/libsrc/fecom                              **/
 /**[Library Name ]libfecom.so                                             **/
-/**[Library Path ]$(APPDIR)/lib                                           **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/11/11                                              **/
@@ -25,7 +25,7 @@ void *FEVarFifoNew(INT32 Max)
     {
         return NULL;
     }
-    FEVarTypeVTSet(Var,FEVARTYPE_MEM_VT_FIFO);
+    FEVarTypeVTSet(Var,VARTYPE_MEM_VT_FIFO);
     FEVarRootSetMax(Var,Max);
     FEVarRootSetSize(Var,0);
     FEVarRootSetLen(Var,0);
@@ -103,7 +103,7 @@ void  FEVarFifoNFree(void *Var)
 void  FEVarFifoVFree(void *Var)
 {
     void *V;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_FIFO) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_FIFO) )
     {
         return;
     }
@@ -122,11 +122,11 @@ void  FEVarFifoVFree(void *Var)
 
 void  FEVarFifoShow(void *Var,INT32 T,void *Buf)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_FIFO) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_FIFO) )
     {
         return ;
     }
-    if ( !FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_STRING) )
     {
         return ;
     }
@@ -140,11 +140,11 @@ void  FEVarFifoVShow(void *Var,INT32 T,void *Buf)
     INT32 Len;
     INT32 i;
 
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_FIFO) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_FIFO) )
     {
         return;
     }
-    if ( !FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_STRING) )
     {
         return ;
     }
@@ -174,7 +174,7 @@ BOOL  FEVarFifoRealloc(void *Var,INT32 S)
     INT32 i;
     void *V;
 
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_FIFO) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_FIFO) )
     {
         return FALSE;
     }
@@ -235,7 +235,7 @@ void  FEVarFifoInitPointer(void *Var)
 
 BOOL  FEVarFifoSetMax(void *Var,INT32 Max)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_FIFO) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_FIFO) )
     {
         return FALSE;
     }
@@ -259,7 +259,7 @@ INT32 FEVarFifoGetLen(void *Var)
 
 BOOL  FEVarFifoIsIdxOfValue(void *Var,INT32 Idx)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_FIFO) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_FIFO) )
     {
         return FALSE;
     }
@@ -267,24 +267,24 @@ BOOL  FEVarFifoIsIdxOfValue(void *Var,INT32 Idx)
     {
         return FALSE;
     }
-    return FERTN_CMPBOOL( (FEVarRootGetPushIdx(Var)>Idx) \
+    return RTNCODE_CMPBOOL( (FEVarRootGetPushIdx(Var)>Idx) \
         && (FEVarRootGetPopIdx(Var)<=Idx) );
 }
 
 BOOL  FEVarFifoIsIdxOfRange(void *Var,INT32 Idx)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_FIFO) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_FIFO) )
     {
         return FALSE;
     }
-    return FERTN_CMPBOOL( (0<=Idx)&&(FEVarFifoGetMax(Var)>Idx) );
+    return RTNCODE_CMPBOOL( (0<=Idx)&&(FEVarFifoGetMax(Var)>Idx) );
 }
 
 void *FEVarFifoGetNode(void *Var,INT32 Idx)
 {
     INT32 Size;
     void *V;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_FIFO) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_FIFO) )
     {
         return NULL;
     }
@@ -310,7 +310,7 @@ BOOL  FEVarFifoPush(void *Var,void *V)
     void *Node;
     INT32 PopIdx;
     INT32 PushIdx;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_FIFO) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_FIFO) )
     {
         return FALSE;
     }
@@ -329,7 +329,11 @@ BOOL  FEVarFifoPush(void *Var,void *V)
     {
         return FALSE;
     }
+#if 0
     if ( !FEVarPointer4SetP0(Node,V) )
+#else
+    if ( !FEVarPointer4Set2P0(Node,V) )
+#endif
     {
         return FALSE;
     }
@@ -443,7 +447,7 @@ BOOL  FEVarFifoMove(void *Var)
     INT32 PopIdx;
     INT32 PushIdx;
     INT32 Len;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_FIFO) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_FIFO) )
     {
         return FALSE;
     }
@@ -479,7 +483,7 @@ BOOL  FEVarFifoMove(void *Var)
 void *FEVarFifoClone(void *Var)
 {
     void *N;
-    if ( FEVARTYPE_MEM_VT_FIFO!=FEVarTypeVTGet(Var) )
+    if ( VARTYPE_MEM_VT_FIFO!=FEVarTypeVTGet(Var) )
     {
         return NULL;
     }
@@ -508,11 +512,11 @@ BOOL  FEVarFifoCloneValue(void *N,void *Var)
     void *V;
     BOOL bRtn;
 
-    if ( !FEVarTypeIsInit2(N,FEVARTYPE_MEM_VT_FIFO) )
+    if ( !FEVarTypeIsInit2(N,VARTYPE_MEM_VT_FIFO) )
     {
         return FALSE;
     }
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_FIFO) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_FIFO) )
     {
         return TRUE;
     }

@@ -36,6 +36,7 @@ extern "C" {
 
 #define YSCAL_MIN(N1,N2)            CALCULATE_MIN(N1,N2) 
 #define YSCAL_MAX(N1,N2)            CALCULATE_MAX(N1,N2)
+#define YSCAL_RANGE(n,min,max)      CALCULATE_RANGE((n),(min),(max))
 
 #define YSLUCK_NUM                  LUCK_NUM
 #define YSLUCK_NUM2                 LUCK_NUM2
@@ -57,7 +58,7 @@ extern "C" {
 #define YSARRAYSIZE_GETSIZE(Max,Size) \
     (YSCAL_MIN(YSARRAYSIZE_GETMAX((Max)),YSCAL_MAX(1,(Size))))
 #define YSARRAYSIZE_ISREALLOC(Max,Size) \
-    YSRTN_CMP(YSARRAYSIZE_GETMAX((Max))>=YSCAL_MAX(0,(Size)))
+    RTNCODE_CMP(YSARRAYSIZE_GETMAX((Max))>=YSCAL_MAX(0,(Size)))
 /****************************************************************************/
 /****************************************************************************/
 

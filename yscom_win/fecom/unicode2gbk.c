@@ -3059,7 +3059,7 @@ INT32 FE2BytesUni2Gbk(char *uniStr,INT32 uniLen \
     if ( (NULL==uniStr)||(0>=uniLen)||(0!=uniLen%2) \
         ||(NULL==gbStr)||(NULL==gbLen)||(0>=gbSize) )
     {
-        return FERTN_ERAPP_ARG;
+        return RTNCODE_ERAPP_ARG;
     }
     i = 0;
     j = 0;
@@ -3069,7 +3069,7 @@ INT32 FE2BytesUni2Gbk(char *uniStr,INT32 uniLen \
     {
         if ( j+1>=gbSize )
         {
-            j = FERTN_ERAPP_ARG;
+            j = RTNCODE_ERAPP_ARG;
             break;
         }
 		if ( 0==uniStr[i] )
@@ -3081,7 +3081,7 @@ INT32 FE2BytesUni2Gbk(char *uniStr,INT32 uniLen \
         {	
             if ( j+1>=gbSize )
             {
-                j = FERTN_ERAPP_ARG;
+                j = RTNCODE_ERAPP_ARG;
                 break;
             }
             /* ºº×Ö */
@@ -3099,7 +3099,7 @@ INT32 FE2BytesUni2Gbk(char *uniStr,INT32 uniLen \
         *gbLen = j;
     }
 	
-	return FERTN_CMP(0<j,j);
+	return RTNCODE_CMP(0<j,j);
 }
 
 //INT32 FE2BytesGbk2Uni(char *gbStr,INT32 gbLen, char *uniStr,INT32 uniSize)
@@ -3115,7 +3115,7 @@ INT32 FE2BytesGbk2Uni(char *gbStr,INT32 gbLen \
     if ( (NULL==gbStr)||(0>=gbLen) \
         ||(NULL==uniStr)||(NULL==uniLen)||(0>=uniSize) )
     {
-        return FERTN_ERAPP_ARG;
+        return RTNCODE_ERAPP_ARG;
     }
 
 	len = strlen(gbStr);
@@ -3128,7 +3128,7 @@ INT32 FE2BytesGbk2Uni(char *gbStr,INT32 gbLen \
 	{
         if ( j+2>=uniSize )
         {
-            j = FERTN_ERAPP_ARG;
+            j = RTNCODE_ERAPP_ARG;
             break;
         }
 		ch=(unsigned char)gbStr[i];
@@ -3150,7 +3150,7 @@ INT32 FE2BytesGbk2Uni(char *gbStr,INT32 gbLen \
         *uniLen = j;
     }
 
-	return FERTN_CMP(0<j,j);
+	return RTNCODE_CMP(0<j,j);
 }
 
 #ifdef __cplusplus

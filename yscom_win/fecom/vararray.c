@@ -2,7 +2,7 @@
 /**[File Name    ]vararray.c                                              **/
 /**[File Path    ]$(TOPDIR)/src/libsrc/fecom                              **/
 /**[Library Name ]libfecom.so                                             **/
-/**[Library Path ]$(APPDIR)/lib                                           **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/11/11                                              **/
@@ -35,7 +35,7 @@ void *FEVarArrayNew(INT32 Max)
     {
         return NULL;
     }
-    FEVarTypeVTSet(Var,FEVARTYPE_MEM_VT_ARRAY);
+    FEVarTypeVTSet(Var,VARTYPE_MEM_VT_ARRAY);
     FEVarRootSetMax(Var,Max);
     FEVarRootSetSize(Var,0);
     FEVarRootSetLen(Var,0);
@@ -112,7 +112,7 @@ void  FEVarArrayVFree(void *Var)
 {
     INT32 i;
     INT32 Len;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_ARRAY) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_ARRAY) )
     {
         return;
     }
@@ -128,11 +128,11 @@ void  FEVarArrayVFree(void *Var)
 
 void  FEVarArrayShow(void *Var,INT32 T,void *Buf)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_ARRAY) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_ARRAY) )
     {
         return ;
     }
-    if ( !FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_STRING) )
     {
         return ;
     }
@@ -146,11 +146,11 @@ void  FEVarArrayVShow(void *Var,INT32 T,void *Buf)
     INT32 Len;
     INT32 i;
 
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_ARRAY) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_ARRAY) )
     {
         return;
     }
-    if ( !FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_STRING) )
     {
         return ;
     }
@@ -163,7 +163,7 @@ void  FEVarArrayVShow(void *Var,INT32 T,void *Buf)
 
 BOOL  FEVarArrayPackInfo(void *Var,void *Buf)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_ARRAY) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_ARRAY) )
     {
         return FALSE;
     }
@@ -183,7 +183,8 @@ BOOL  FEVarArrayPack(void *Var,void *Buf)
  
     INT32 Idx;
     INT32 Len;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_ARRAY) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_ARRAY) \
+        ||!FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_BIN) )
     {
         return FALSE;
     }
@@ -238,11 +239,11 @@ INT32 FEVarArrayUnPack(void **VVar,void *Buf,INT32 P)
     {
         return iRtn;
     }
-    if ( FEVARTYPE_MEM_VT_ARRAY!=((BYTE*)V)[P] )
+    if ( VARTYPE_MEM_VT_ARRAY!=((BYTE*)V)[P] )
     {
         return iRtn;
     }
-    if ( FERTN_OK>(iRtn=FEVarTypeUnPack(&PL,&VarType,Buf,P+BYTE_SIZE)) )
+    if ( RTNCODE_OK>(iRtn=FEVarTypeUnPack(&PL,&VarType,Buf,P+BYTE_SIZE)) )
     {
         return iRtn;
     }
@@ -252,7 +253,7 @@ INT32 FEVarArrayUnPack(void **VVar,void *Buf,INT32 P)
     *VVar = NULL;
     Var = NULL;
     N = NULL;
-    iRtn = FERTN_ERVAR_UNPACK;
+    iRtn = RTNCODE_ERVAR_UNPACK;
     while( 1 )
     {
         /* Max */
@@ -288,13 +289,13 @@ INT32 FEVarArrayUnPack(void **VVar,void *Buf,INT32 P)
         }
         if ( Idx<Len )
         {
-            iRtn = FERTN_ERVAR_UNPACK;
+            iRtn = RTNCODE_ERVAR_UNPACK;
             break;
         }
-        iRtn = FERTN_OK;
+        iRtn = RTNCODE_OK;
         break;
     }
-    if ( FERTN_OK==iRtn )
+    if ( RTNCODE_OK==iRtn )
     {
         iRtn = PL;
         *VVar = Var;
@@ -324,7 +325,7 @@ BOOL  FEVarArrayRealloc(void *Var,INT32 S)
     INT32 i;
     void *V;
 
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_ARRAY) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_ARRAY) )
     {
         return FALSE;
     }
@@ -374,7 +375,7 @@ void  FEVarArrayInitPointer(void *Var)
 
 BOOL  FEVarArraySetMax(void *Var,INT32 Max)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_ARRAY) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_ARRAY) )
     {
         return FALSE;
     }
@@ -428,7 +429,7 @@ BOOL  FEVarArrayPlusUserCnt(void *Var,BOOL Flag)
 
 INT32 FEVarArrayGetUserCnt(void *Var)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_ARRAY) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_ARRAY) )
     {
         return RTNCODE_ERVAR_VT;
     }
@@ -437,27 +438,27 @@ INT32 FEVarArrayGetUserCnt(void *Var)
 
 BOOL  FEVarArrayIsIdxOfValue(void *Var,INT32 Idx)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_ARRAY) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_ARRAY) )
     {
         return FALSE;
     }
-    return FERTN_CMPBOOL( (0<=Idx)&&(FEVarArrayGetLen(Var)>Idx) );
+    return RTNCODE_CMPBOOL( (0<=Idx)&&(FEVarArrayGetLen(Var)>Idx) );
 }
 
 BOOL  FEVarArrayIsIdxOfRange(void *Var,INT32 Idx)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_ARRAY) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_ARRAY) )
     {
         return FALSE;
     }
-    return FERTN_CMPBOOL( (0<=Idx)&&(FEVarArrayGetMax(Var)>Idx) );
+    return RTNCODE_CMPBOOL( (0<=Idx)&&(FEVarArrayGetMax(Var)>Idx) );
 }
 
 void *FEVarArrayGetNode(void *Var,INT32 Idx)
 {
     INT32 Size;
     void *V;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_ARRAY) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_ARRAY) )
     {
         return NULL;
     }
@@ -473,9 +474,11 @@ void *FEVarArrayGetNode(void *Var,INT32 Idx)
             return NULL;
         }
     }
-    V = FEVarRootGetValue(Var);
-    V = ((tFEVarPointer4*)V)+Idx;
-    return V;
+    if ( NULL==(V=FEVarRootGetValue(Var)) )
+    {
+        return NULL;
+    }
+    return ((tFEVarPointer4*)V)+Idx;
 }
 
 void *FEVarArrayGet(void *Var,INT32 Idx)
@@ -514,7 +517,11 @@ BOOL  FEVarArrayAdd(void *Var,void *V)
     {
         return FALSE;
     }
+#if 0
     if ( !FEVarPointer4SetP0(Node,V) )
+#else
+    if ( !FEVarPointer4Set2P0(Node,V) )
+#endif
     {
         return FALSE;
     }
@@ -534,7 +541,11 @@ BOOL  FEVarArrayInsert(void *Var,INT32 Idx,void *V)
     {
         return FALSE;
     }
+#if 0
     if ( !FEVarPointer4SetP0(Node,V) )
+#else
+    if ( !FEVarPointer4Set2P0(Node,V) )
+#endif
     {
         return FALSE;
     }
@@ -585,21 +596,31 @@ BOOL  FEVarArrayReplaceValue(void *Var,INT32 Idx,void *V)
 
 BOOL  FEVarArrayDelete(void *Var,INT32 Idx)
 {
+    void *V;
+    if ( NULL==(V=FEVarArrayRemove(Var,Idx)) )
+    {
+        return FALSE;
+    }
+    FEVarFree(V);
+    return TRUE;
+}
+
+void *FEVarArrayRemove(void *Var,INT32 Idx)
+{
     void *Node;
     void *V;
     if ( NULL==(Node=FEVarArrayGetNode(Var,Idx)) )
     {
-        return FALSE;
+        return NULL;
     }
     if ( FEVARTYPEVALUE_ISNOT(Node) )
     {
-        return FALSE;
+        return NULL;
     }
     V = FEVarPointer4GetP0(Node);
     FEVarArrayMove(Var,Idx,-1);
     FEVarRootAddLen(Var,FALSE);
-    FEVarFree(V);
-    return TRUE;
+    return V;
 }
 
 BOOL  FEVarArrayMove(void *Var,INT32 Src,INT32 Len)
@@ -608,7 +629,7 @@ BOOL  FEVarArrayMove(void *Var,INT32 Src,INT32 Len)
     void *V;
     INT32 L;
     INT32 ALen;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_ARRAY) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_ARRAY) )
     {
         return FALSE;
     }
@@ -683,9 +704,9 @@ INT32 FEVarArrayGetIdxByKey(void *Var,const void *Key,INT32 Len)
     INT32 Idx;
     INT32 L;
     BOOL Flag;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_ARRAY) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_ARRAY) )
     {
-        return FERTN_ER;
+        return RTNCODE_ER;
     }
     L = FEVarArrayGetLen(Var);
     for ( Idx=0;Idx<L;Idx++ )
@@ -704,13 +725,13 @@ INT32 FEVarArrayGetIdxByKey(void *Var,const void *Key,INT32 Len)
             break;
         }
     }
-    return (Idx>=Len)?FERTN_ER:Idx;
+    return (Idx>=Len)?RTNCODE_ER:Idx;
 }
 
 void *FEVarArrayGetNodeByKey(void *Var,const void *Key,INT32 Len)
 {
     INT32 Idx;
-    if ( FERTN_ER==(Idx=FEVarArrayGetIdxByKey(Var,Key,Len)) )
+    if ( RTNCODE_ER==(Idx=FEVarArrayGetIdxByKey(Var,Key,Len)) )
     {
         return NULL;
     }
@@ -720,7 +741,7 @@ void *FEVarArrayGetNodeByKey(void *Var,const void *Key,INT32 Len)
 void *FEVarArrayGetByKey(void *Var,const void *Key,INT32 Len)
 {
     INT32 Idx;
-    if ( FERTN_ER==(Idx=FEVarArrayGetIdxByKey(Var,Key,Len)) )
+    if ( RTNCODE_ER==(Idx=FEVarArrayGetIdxByKey(Var,Key,Len)) )
     {
         return NULL;
     }
@@ -730,7 +751,7 @@ void *FEVarArrayGetByKey(void *Var,const void *Key,INT32 Len)
 BOOL  FEVarArrayGet2ByKey(void *Var,const void *Key,INT32 Len,void **V)
 {
     INT32 Idx;
-    if ( FERTN_ER==(Idx=FEVarArrayGetIdxByKey(Var,Key,Len)) )
+    if ( RTNCODE_ER==(Idx=FEVarArrayGetIdxByKey(Var,Key,Len)) )
     {
         return FALSE;
     }
@@ -740,7 +761,7 @@ BOOL  FEVarArrayGet2ByKey(void *Var,const void *Key,INT32 Len,void **V)
 BOOL  FEVarArrayInsertByKey(void *Var,const void *Key,INT32 Len,void *V)
 {
     INT32 Idx;
-    if ( FERTN_ER==(Idx=FEVarArrayGetIdxByKey(Var,Key,Len)) )
+    if ( RTNCODE_ER==(Idx=FEVarArrayGetIdxByKey(Var,Key,Len)) )
     {
         return FALSE;
     }
@@ -750,7 +771,7 @@ BOOL  FEVarArrayInsertByKey(void *Var,const void *Key,INT32 Len,void *V)
 BOOL  FEVarArrayReplaceByKey(void *Var,void *V)
 {
     INT32 Idx;
-    if ( FERTN_ER==(Idx=FEVarArrayGetIdxByKey(Var \
+    if ( RTNCODE_ER==(Idx=FEVarArrayGetIdxByKey(Var \
         ,FEVarGetKey(V),FEVarGetKeyLen(V))) )
     {
         return FALSE;
@@ -761,7 +782,7 @@ BOOL  FEVarArrayReplaceByKey(void *Var,void *V)
 BOOL  FEVarArrayReplaceValueByKey(void *Var,const void *Key,INT32 Len,void *V)
 {
     INT32 Idx;
-    if ( FERTN_ER==(Idx=FEVarArrayGetIdxByKey(Var,Key,Len)) )
+    if ( RTNCODE_ER==(Idx=FEVarArrayGetIdxByKey(Var,Key,Len)) )
     {
         return FALSE;
     }
@@ -771,17 +792,27 @@ BOOL  FEVarArrayReplaceValueByKey(void *Var,const void *Key,INT32 Len,void *V)
 BOOL  FEVarArrayDeleteByKey(void *Var,const void *Key,INT32 Len)
 {
     INT32 Idx;
-    if ( FERTN_ER==(Idx=FEVarArrayGetIdxByKey(Var,Key,Len)) )
+    if ( RTNCODE_ER==(Idx=FEVarArrayGetIdxByKey(Var,Key,Len)) )
     {
         return FALSE;
     }
     return FEVarArrayDelete(Var,Idx);
 }
 
+void *FEVarArrayRemoveByKey(void *Var,const void *Key,INT32 Len)
+{
+    INT32 Idx;
+    if ( RTNCODE_ER==(Idx=FEVarArrayGetIdxByKey(Var,Key,Len)) )
+    {
+        return FALSE;
+    }
+    return FEVarArrayRemove(Var,Idx);
+}
+
 void *FEVarArrayClone(void *Var)
 {
     void *N;
-    if ( FEVARTYPE_MEM_VT_ARRAY!=FEVarTypeVTGet(Var) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_ARRAY) )
     {
         return NULL;
     }
@@ -810,13 +841,13 @@ BOOL  FEVarArrayCloneValue(void *N,void *Var)
     void *V;
     BOOL bRtn;
 
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_ARRAY) )
-    {
-        return TRUE;
-    }
-    if ( !FEVarTypeIsInit2(N,FEVARTYPE_MEM_VT_ARRAY) )
+    if ( !FEVarTypeIsInit2(N,VARTYPE_MEM_VT_ARRAY) )
     {
         return FALSE;
+    }
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_ARRAY) )
+    {
+        return TRUE;
     }
 
     bRtn = TRUE;

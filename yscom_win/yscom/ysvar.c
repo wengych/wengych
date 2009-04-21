@@ -2,7 +2,7 @@
 /**[File Name    ]ysvar.c                                                 **/
 /**[File Path    ]$(SRCDIR)/libsrc/yscom                                  **/
 /**[Library Name ]libyscom.so                                             **/
-/**[Library Path ]$(HOME)/lib                                             **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/04/28                                              **/
@@ -71,6 +71,26 @@ INT32 YSVarGetType(void *Var)
     return FEVarGetType(Var);
 }
 
+BOOL  YSVarValueIsNot(void *Var)
+{
+    return FEVarValueIsNot(Var);
+}
+
+BOOL  YSVarValueIsNull(void *Var)
+{
+    return FEVarValueIsNull(Var);
+}
+
+BOOL  YSVarValueIsSet(void *Var)
+{
+    return FEVarValueIsSet(Var);
+}
+
+BOOL  YSVarHasKey(void *Var)
+{
+    return FEVarHasKey(Var);
+}
+
 void *YSVarGetRes(void *Var)
 {
     return FEVarGetRes(Var);
@@ -84,6 +104,11 @@ BOOL  YSVarSetRes(void *Var,void *Res,void *Clone,void *Free,void *Show)
 BOOL  YSVarMoveRes(void *NVar,void *OVar)
 {
     return FEVarMoveRes(NVar,OVar);
+}
+
+INT32  YSVarGetKeyHash(void *Var)
+{
+    return FEVarGetKeyHash(Var);
 }
 
 INT32  YSVarGetKeyLen(void *Var)
@@ -399,6 +424,16 @@ void *YSVarDoubleClone(void *Var)
     return FEVarDoubleClone(Var);
 }
 
+void *YSVarBinSetValue(void *V,INT32 Len,INT32 Size)
+{
+    return FEVarBinSetValue(V,Len,Size);
+}
+
+BOOL  YSVarBinSetValue2(void *Var,void *V,INT32 Len,INT32 Size)
+{
+    return FEVarBinSetValue2(Var,V,Len,Size);
+}
+
 void *YSVarBinNew()
 {
     return FEVarBinNew();
@@ -705,6 +740,96 @@ void *YSVarObjectClone(void *Var)
     return FEVarObjectClone(Var);
 }
 
+void *YSVarStructNew(INT32 n)
+{
+    return FEVarStructNew(n);
+}
+
+void *YSVarStructNew_Key(INT32 N,const char *Key)
+{
+    return FEVarStructNew_Key(N,Key);
+}
+
+void  YSVarStructFree(void *Var)
+{
+    FEVarStructFree(Var);
+}
+
+void  YSVarStructShow(void *Var,INT32 T,void *Buf)
+{
+    FEVarStructShow(Var,T,Buf);
+}
+
+BOOL  YSVarStructPack(void *Var,void *Buf)
+{
+    return FEVarStructPack(Var,Buf);
+}
+
+INT32 YSVarStructUnPack(void **VVar,void *Buf,INT32 P)
+{
+    return FEVarStructUnPack(VVar,Buf,P);
+}
+
+INT32 YSVarStructGetSize(void *Var)
+{
+    return FEVarStructGetSize(Var);
+}
+
+BOOL  YSVarStructIsIdxOfRange(void *Var,INT32 Idx)
+{
+    return FEVarStructIsIdxOfRange(Var,Idx);
+}
+
+void *YSVarStructGet(void *Var,INT32 Idx)
+{
+    return FEVarStructGet(Var,Idx);
+}
+
+BOOL  YSVarStructSet(void *Var,INT32 Idx,void *V)
+{
+    return FEVarStructSet(Var,Idx,V);
+}
+
+BOOL  YSVarStructReplace(void *Var,INT32 Idx,void *V)
+{
+    return FEVarStructReplace(Var,Idx,V);
+}
+ 
+void *YSVarStructGetByKey(void *Var,const char *Key,INT32 Len)
+{
+    return FEVarStructGetByKey(Var,Key,Len);
+}
+
+BOOL  YSVarStructSetByKey(void *Var,const char *Key,INT32 Len,void *V)
+{
+    return FEVarStructSetByKey(Var,Key,Len,V);
+}
+
+BOOL  YSVarStructReplaceByKey(void *Var,const char *Key,INT32 Len,void *V)
+{
+    return FEVarStructReplaceByKey(Var,Key,Len,V);
+}
+ 
+void *YSVarStructClone(void *Var)
+{
+    return FEVarStructClone(Var);
+}
+
+BOOL  YSVarStructCloneValue(void *N,void *Var)
+{
+    return FEVarStructCloneValue(N,Var);
+}
+
+INT32 YSVarStructFieldGetIdx(void *Set,INT32 Size,const char *Name,INT32 Len)
+{
+    return FEVarStructFieldGetIdx(Set,Size,Name,Len);
+}
+
+void *YSVarArrayToStruct(void *Array,void *Set,INT32 Size)
+{
+    return FEVarArrayToStruct(Array,Set,Size);
+}
+
 void *YSVarArrayNew(INT32 Max)
 {
     return FEVarArrayNew(Max);
@@ -840,6 +965,10 @@ BOOL  YSVarArrayDelete(void *Var,INT32 Idx)
     return FEVarArrayDelete(Var,Idx);
 }
 
+void *YSVarArrayRemove(void *Var,INT32 Idx)
+{
+    return FEVarArrayRemove(Var,Idx);
+}
 
 void *YSVarArrayGet(void *Var,INT32 Idx)
 {
@@ -884,6 +1013,11 @@ BOOL  YSVarArrayReplaceValueByKey(void *Var,const void *Key,INT32 Len,void *V)
 BOOL  YSVarArrayDeleteByKey(void *Var,const void *Key,INT32 Len)
 {
     return FEVarArrayDeleteByKey(Var,Key,Len);
+}
+
+void *YSVarArrayRemoveByKey(void *Var,const void *Key,INT32 Len)
+{
+    return FEVarArrayRemoveByKey(Var,Key,Len);
 }
 
 void *YSVarArrayClone(void *Var)

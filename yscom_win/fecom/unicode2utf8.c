@@ -2,7 +2,7 @@
 /**[File Name    ]unicode2utf8.c                                          **/
 /**[File Path    ]$(TOPDIR)/src/libsrc/fecom                              **/
 /**[Library Name ]libfecom.so                                             **/
-/**[Library Path ]$(APPDIR)/lib                                           **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/11/11                                              **/
@@ -23,7 +23,7 @@ extern "C"{
 #define FEUNICODE2UTF8_BUFSIZE_TOSMALL(L1,L2,S) \
     if ( (L1)+(L2)>=(S) ) \
     { \
-        return FERTN_ERAPP_SIZE; \
+        return RTNCODE_ERAPP_SIZE; \
     }
 
 INT32 FEUniToUTF8BigEndian(BYTE *Unicode,INT32 ULen \
@@ -35,9 +35,9 @@ INT32 FEUniToUTF8BigEndian(BYTE *Unicode,INT32 ULen \
 
     if ( (NULL==Unicode)||(NULL==UTF8)||(NULL==PLen) )
     {
-        return FERTN_ERAPP_ARG;
+        return RTNCODE_ERAPP_ARG;
     }
-    iRtn = FERTN_OK;
+    iRtn = RTNCODE_OK;
     *PLen = 0;
     UPos = 0;
     Len = 0;
@@ -66,7 +66,7 @@ INT32 FEUniToUTF8BigEndian(BYTE *Unicode,INT32 ULen \
             }
             else
             {
-                return FERTN_ERSYS_UNICODENOT;
+                return RTNCODE_ERSYS_UNICODENOT;
             }
         }
         else if ( 0x00!=(UCHAR)(Unicode[UPos+1]) )
@@ -138,9 +138,9 @@ INT32 FEUTF8ToUniBigEndian(BYTE *UTF8,INT32 *PLen \
 
     if ( (NULL==UTF8)||(NULL==Unicode)||(NULL==PLen)||(ULen>=Size) )
     {
-        return FERTN_ERAPP_ARG;
+        return RTNCODE_ERAPP_ARG;
     }
-    iRtn = FERTN_OK;
+    iRtn = RTNCODE_OK;
     UTF8Len = *PLen;
     *PLen = 0;
     UPos = 0;
@@ -225,15 +225,15 @@ INT32 FE2BytesUniToUTF8BigEndian(BYTE *Unicode,INT32 ULen \
 
     if ( (NULL==Unicode)||(NULL==UTF8)||(NULL==PLen) )
     {
-        return FERTN_ERAPP_ARG;
+        return RTNCODE_ERAPP_ARG;
     }
-    iRtn = FERTN_OK;
+    iRtn = RTNCODE_OK;
     *PLen = 0;
     UPos = 0;
     Len = 0;
     while ( (UPos+FEUNICODE_2BYTES<=ULen)&&(Len<Size) )
     {
-        if ( FERTN_OK!=(iRtn=FEUniToUTF8BigEndian(Unicode+UPos \
+        if ( RTNCODE_OK!=(iRtn=FEUniToUTF8BigEndian(Unicode+UPos \
             ,FEUNICODE_2BYTES \
             ,UTF8+Len,&LL,Size-Len)) )
         {
@@ -242,7 +242,7 @@ INT32 FE2BytesUniToUTF8BigEndian(BYTE *Unicode,INT32 ULen \
         UPos += FEUNICODE_2BYTES;
         Len += LL;
     }/* while ( UPos<ULen ) */
-    if ( FERTN_OK==iRtn )
+    if ( RTNCODE_OK==iRtn )
     {
         *PLen = Len;
     }
@@ -259,16 +259,16 @@ INT32 FE2BytesUTF8ToUniBigEndian(BYTE *UTF8,INT32 ULen \
 
     if ( (NULL==UTF8)||(NULL==Unicode)||(NULL==PLen) )
     {
-        return FERTN_ERAPP_ARG;
+        return RTNCODE_ERAPP_ARG;
     }
-    iRtn = FERTN_OK;
+    iRtn = RTNCODE_OK;
     *PLen = 0;
     UPos = 0;
     Len = 0;
     while ( (UPos<ULen)&&(Len+FEUNICODE_2BYTES<Size) )
     {
         LL = ULen - UPos;
-        if ( FERTN_OK!=(iRtn=FEUTF8ToUniBigEndian(UTF8+UPos,&LL \
+        if ( RTNCODE_OK!=(iRtn=FEUTF8ToUniBigEndian(UTF8+UPos,&LL \
             ,Unicode+Len,FEUNICODE_2BYTES,Size-Len)) )
         {
             break;
@@ -276,7 +276,7 @@ INT32 FE2BytesUTF8ToUniBigEndian(BYTE *UTF8,INT32 ULen \
         UPos += LL;
         Len += FEUNICODE_2BYTES;
     }
-    if ( FERTN_OK==iRtn )
+    if ( RTNCODE_OK==iRtn )
     {
         *PLen = Len;
     }
@@ -293,15 +293,15 @@ INT32 FE4BytesUniToUTF8BigEndian(BYTE *Unicode,INT32 ULen \
 
     if ( (NULL==Unicode)||(NULL==UTF8)||(NULL==PLen) )
     {
-        return FERTN_ERAPP_ARG;
+        return RTNCODE_ERAPP_ARG;
     }
-    iRtn = FERTN_OK;
+    iRtn = RTNCODE_OK;
     *PLen = 0;
     UPos = 0;
     Len = 0;
     while ( (UPos+FEUNICODE_4BYTES<=ULen)&&(Len<Size) )
     {
-        if ( FERTN_OK!=(iRtn=FEUniToUTF8BigEndian(Unicode+UPos \
+        if ( RTNCODE_OK!=(iRtn=FEUniToUTF8BigEndian(Unicode+UPos \
             ,FEUNICODE_4BYTES \
             ,UTF8+Len,&LL,Size-Len)) )
         {
@@ -310,7 +310,7 @@ INT32 FE4BytesUniToUTF8BigEndian(BYTE *Unicode,INT32 ULen \
         UPos += FEUNICODE_4BYTES;
         Len += LL;
     }/* while ( UPos<ULen ) */
-    if ( FERTN_OK==iRtn )
+    if ( RTNCODE_OK==iRtn )
     {
         *PLen = Len;
     }
@@ -327,16 +327,16 @@ INT32 FE4BytesUTF8ToUniBigEndian(BYTE *UTF8,INT32 ULen \
 
     if ( (NULL==UTF8)||(NULL==Unicode)||(NULL==PLen) )
     {
-        return FERTN_ERAPP_ARG;
+        return RTNCODE_ERAPP_ARG;
     }
-    iRtn = FERTN_OK;
+    iRtn = RTNCODE_OK;
     *PLen = 0;
     UPos = 0;
     Len = 0;
     while ( (UPos<ULen)&&(Len+FEUNICODE_4BYTES<Size) )
     {
         LL = ULen - UPos;
-        if ( FERTN_OK!=(iRtn=FEUTF8ToUniBigEndian(UTF8+UPos,&LL \
+        if ( RTNCODE_OK!=(iRtn=FEUTF8ToUniBigEndian(UTF8+UPos,&LL \
             ,Unicode+Len,FEUNICODE_4BYTES,Size-Len)) )
         {
             break;
@@ -344,7 +344,7 @@ INT32 FE4BytesUTF8ToUniBigEndian(BYTE *UTF8,INT32 ULen \
         UPos += LL;
         Len += FEUNICODE_4BYTES;
     }
-    if ( FERTN_OK==iRtn )
+    if ( RTNCODE_OK==iRtn )
     {
         *PLen = Len;
     }

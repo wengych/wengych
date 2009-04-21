@@ -2,7 +2,7 @@
 /**[File Name    ]varlink.c                                               **/
 /**[File Path    ]$(TOPDIR)/src/libsrc/fecom                              **/
 /**[Library Name ]libfecom.so                                             **/
-/**[Library Path ]$(APPDIR)/lib                                           **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/11/11                                              **/
@@ -32,7 +32,7 @@ void *FEVarLinkNew(INT32 Max)
     {
         return NULL;
     }
-    FEVarTypeVTSet(Var,FEVARTYPE_MEM_VT_LINK);
+    FEVarTypeVTSet(Var,VARTYPE_MEM_VT_LINK);
     FEVarRootSetMax(Var,Max);
     FEVarRootSetSize(Var,0);
     FEVarRootSetLen(Var,0);
@@ -70,7 +70,7 @@ void  FEVarLinkNFree(void *Var)
 
 void  FEVarLinkVFree(void *Var)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_LINK) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_LINK) )
     {
         return;
     }
@@ -82,11 +82,11 @@ void  FEVarLinkVFree(void *Var)
 
 void  FEVarLinkShow(void *Var,INT32 T,void *Buf)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_LINK) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_LINK) )
     {
         return ;
     }
-    if ( !FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_STRING) )
     {
         return ;
     }
@@ -98,11 +98,11 @@ void  FEVarLinkShow(void *Var,INT32 T,void *Buf)
 void  FEVarLinkVShow(void *Var,INT32 T,void *Buf)
 {
     void *Node;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_LINK) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_LINK) )
     {
         return ;
     }
-    if ( !FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_STRING) )
     {
         return ;
     }
@@ -136,7 +136,7 @@ void  FEVarLinkInitPointer(void *Var)
 
 BOOL  FEVarLinkSetMax(void *Var,INT32 Max)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_LINK) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_LINK) )
     {
         return FALSE;
     }
@@ -160,27 +160,27 @@ INT32 FEVarLinkGetLen(void *Var)
 
 BOOL  FEVarLinkIsIdxOfValue(void *Var,INT32 Idx)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_LINK) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_LINK) )
     {
         return FALSE;
     }
-    return FERTN_CMPBOOL( (0<=Idx)&&(FEVarLinkGetLen(Var)>Idx) );
+    return RTNCODE_CMPBOOL( (0<=Idx)&&(FEVarLinkGetLen(Var)>Idx) );
 }
 
 BOOL  FEVarLinkIsIdxOfRange(void *Var,INT32 Idx)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_LINK) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_LINK) )
     {
         return FALSE;
     }
-    return FERTN_CMPBOOL( (0<=Idx)&&(FEVarLinkGetMax(Var)>Idx) );
+    return RTNCODE_CMPBOOL( (0<=Idx)&&(FEVarLinkGetMax(Var)>Idx) );
 }
 
 void *FEVarLinkGetNode(void *Var,INT32 Idx)
 {
     INT32 Num;
     void *V;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_LINK) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_LINK) )
     {
         return NULL;
     }
@@ -237,7 +237,7 @@ BOOL  FEVarLinkAdd(void *Var,void *V)
     void *RV;
     BOOL bRtn;
     INT32 Len;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_LINK) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_LINK) )
     {
         return FALSE;
     }
@@ -258,11 +258,19 @@ BOOL  FEVarLinkAdd(void *Var,void *V)
         {
             break;
         }
+#if 0
         if ( !FEVarPointer4SetP1(Node,NULL) )
+#else
+        if ( !FEVarPointer4Set2P1(Node,NULL) )
+#endif
         {
             break;
         }
+#if 0
         if ( !FEVarPointer4SetP2(Node,NULL) )
+#else
+        if ( !FEVarPointer4Set2P2(Node,NULL) )
+#endif
         {
             break;
         }
@@ -276,8 +284,13 @@ BOOL  FEVarLinkAdd(void *Var,void *V)
         }
         else
         {
+#if 0
             FEVarPointer4SetP1(RV,Node);
             FEVarPointer4SetP2(Node,RV);
+#else
+            FEVarPointer4Set2P1(RV,Node);
+            FEVarPointer4Set2P2(Node,RV);
+#endif
         }
         FEVarRootAddLen(Var,TRUE);
         bRtn = TRUE;
@@ -295,7 +308,7 @@ BOOL  FEVarLinkInsert(void *Var,INT32 Idx,void *V)
     void *Node;
     void *RV;
     BOOL bRtn;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_LINK) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_LINK) )
     {
         return FALSE;
     }
@@ -329,15 +342,27 @@ BOOL  FEVarLinkInsert(void *Var,INT32 Idx,void *V)
     bRtn = FALSE;
     while( 1 )
     {
+#if 0
         if ( !FEVarPointer4SetP0(Node,V) )
+#else
+        if ( !FEVarPointer4Set2P0(Node,V) )
+#endif
         {
             break;
         }
+#if 0
         if ( !FEVarPointer4SetP1(Node,NULL) )
+#else
+        if ( !FEVarPointer4Set2P1(Node,NULL) )
+#endif
         {
             break;
         }
+#if 0
         if ( !FEVarPointer4SetP2(Node,NULL) )
+#else
+        if ( !FEVarPointer4Set2P2(Node,NULL) )
+#endif
         {
             break;
         }
@@ -345,9 +370,15 @@ BOOL  FEVarLinkInsert(void *Var,INT32 Idx,void *V)
         {
             FEVarRootSetValue(Var,Node);
         }
+#if 0
         FEVarPointer4SetP1(Node,RV);
         FEVarPointer4SetP2(Node,FEVarPointer4GetP2(RV));
         FEVarPointer4SetP2(RV,Node);
+#else
+        FEVarPointer4Set2P1(Node,RV);
+        FEVarPointer4Set2P2(Node,FEVarPointer4GetP2(RV));
+        FEVarPointer4Set2P2(RV,Node);
+#endif
         FEVarRootAddLen(Var,TRUE);
         bRtn = TRUE;
         break;
@@ -430,20 +461,33 @@ BOOL  FEVarLinkDeleteNode(void *Var,void *Node)
     }
     if ( NULL!=NP )
     {
+#if 0
         if ( !FEVarPointer4SetP1(NP,NC) )
+#else
+        if ( !FEVarPointer4Set2P1(NP,NC) )
+#endif
         {
             return FALSE;
         }
     }
     if ( NULL!=NC )
     {
+#if 0
         if ( !FEVarPointer4SetP2(NC,NP) )
+#else
+        if ( !FEVarPointer4Set2P2(NC,NP) )
+#endif
         {
             return FALSE;
         }
     }
+#if 0
     FEVarPointer4SetP1(Node,NULL);
     FEVarPointer4SetP2(Node,NULL);
+#else
+    FEVarPointer4Set2P1(Node,NULL);
+    FEVarPointer4Set2P2(Node,NULL);
+#endif
     FEVarPointer4Free(Node);
     FEVarRootAddLen(Var,FALSE);
     return TRUE;
@@ -455,9 +499,9 @@ INT32 FEVarLinkGetIdxByKey(void *Var,const void *Key,INT32 Len)
     INT32 Idx;
     INT32 L;
     BOOL  Flag;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_LINK) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_LINK) )
     {
-        return FERTN_ER;
+        return RTNCODE_ER;
     }
     L = FEVarLinkGetLen(Var);
     Flag = FALSE;
@@ -477,7 +521,7 @@ INT32 FEVarLinkGetIdxByKey(void *Var,const void *Key,INT32 Len)
             break;
         }
     }
-    return (Flag)?Idx:FERTN_ER;
+    return (Flag)?Idx:RTNCODE_ER;
 }
 
 void *FEVarLinkGetNodeByKey(void *Var,const void *Key,INT32 Len)
@@ -486,7 +530,7 @@ void *FEVarLinkGetNodeByKey(void *Var,const void *Key,INT32 Len)
     INT32 Idx;
     INT32 L;
     BOOL  Flag;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_LINK) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_LINK) )
     {
         return NULL;
     }
@@ -553,7 +597,7 @@ BOOL  FEVarLinkInsertByKey(void *Var,const void *Key,INT32 Len,void *V)
     void *Node;
     void *RV;
     BOOL bRtn;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_LINK) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_LINK) )
     {
         return FALSE;
     }
@@ -573,15 +617,27 @@ BOOL  FEVarLinkInsertByKey(void *Var,const void *Key,INT32 Len,void *V)
     bRtn = FALSE;
     while( 1 )
     {
+#if 0
         if ( !FEVarPointer4SetP0(Node,V) )
+#else
+        if ( !FEVarPointer4Set2P0(Node,V) )
+#endif
         {
             break;
         }
+#if 0
         if ( !FEVarPointer4SetP1(Node,NULL) )
+#else
+        if ( !FEVarPointer4Set2P1(Node,NULL) )
+#endif
         {
             break;
         }
+#if 0
         if ( !FEVarPointer4SetP2(Node,NULL) )
+#else
+        if ( !FEVarPointer4Set2P2(Node,NULL) )
+#endif
         {
             break;
         }
@@ -589,9 +645,15 @@ BOOL  FEVarLinkInsertByKey(void *Var,const void *Key,INT32 Len,void *V)
         {
             FEVarRootSetValue(Var,Node);
         }
+#if 0
         FEVarPointer4SetP1(Node,RV);
         FEVarPointer4SetP2(Node,FEVarPointer4GetP2(RV));
         FEVarPointer4SetP2(RV,Node);
+#else
+        FEVarPointer4Set2P1(Node,RV);
+        FEVarPointer4Set2P2(Node,FEVarPointer4GetP2(RV));
+        FEVarPointer4Set2P2(RV,Node);
+#endif
         FEVarRootAddLen(Var,TRUE);
         bRtn = TRUE;
         break;
@@ -651,7 +713,7 @@ void *FEVarLinkClone(void *Var)
 {
     void *N;
 
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_LINK) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_LINK) )
     {
         return NULL;
     }
@@ -679,11 +741,11 @@ BOOL  FEVarLinkCloneValue(void *N,void *Var)
     void *V;
     BOOL bRtn;
 
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_LINK) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_LINK) )
     {
         return FALSE;
     }
-    if ( !FEVarTypeIsInit2(N,FEVARTYPE_MEM_VT_LINK) )
+    if ( !FEVarTypeIsInit2(N,VARTYPE_MEM_VT_LINK) )
     {
         return FALSE;
     }

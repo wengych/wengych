@@ -2,7 +2,7 @@
 /**[File Name    ]yspkg.c                                                 **/
 /**[File Path    ]$(SRCDIR)/libsrc/yscom                                  **/
 /**[Library Name ]libyscom.so                                             **/
-/**[Library Path ]$(HOME)/lib                                             **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/04/28                                              **/
@@ -10,13 +10,12 @@
 /**[Memo         ]define func for pkg                                     **/
 /**[Modify       ]                                                        **/
 /***************************************************************************/
-#include <stdio.h>
-#include <stdlib.h>
-
 #ifdef __OS_WIN__
 #include <winsock2.h>
 #ifdef _WINDEF_
+#ifndef __OS_WIN_WINDEF__
 #define __OS_WIN_WINDEF__ 1
+#endif
 #endif
 #endif
 #include <yscom.h>
@@ -154,7 +153,7 @@ INT32 YSPkgStructToData(void *Pkg,INT32 PkgSize,void *PkgStruct)
     INT32 DataPos;
     if ( (NULL==Pkg)||(YSPKG_HEADPKG_LEN>PkgSize)||(NULL==PkgStruct) )
     {
-        return YSRTN_ERAPP_ARG;
+        return RTNCODE_ERAPP_ARG;
     }
     memset(Pkg,0,PkgSize);
     
@@ -165,14 +164,14 @@ INT32 YSPkgStructToData(void *Pkg,INT32 PkgSize,void *PkgStruct)
 
     if ( !YSPKG_HEADPKG_ISREQT(YSPKG_HEADSTRUCT_MEM_REQT(PkgStruct)) )
     {
-        return YSRTN_ERPKG_PACK;
+        return RTNCODE_ERPKG_PACK;
     }
     ((UCHAR*)Pkg)[YSPKG_HEADPKG_REQT_POS] \
         = YSPKG_HEADSTRUCT_MEM_REQT(PkgStruct);
         
     if ( 0==strlen(YSPKG_HEADSTRUCT_MEM_TYPE(PkgStruct)) )
     {
-        return YSRTN_ERPKG_PACK;
+        return RTNCODE_ERPKG_PACK;
     }
     memcpy(((UCHAR*)Pkg)+YSPKG_HEADPKG_TYPE_POS \
         ,YSPKG_HEADSTRUCT_MEM_TYPE(PkgStruct),YSPKG_HEADPKG_TYPE_LEN);
@@ -181,19 +180,21 @@ INT32 YSPkgStructToData(void *Pkg,INT32 PkgSize,void *PkgStruct)
         ||(YSPKG_HEADSTRUCT_MEM_NUM(PkgStruct) \
         >YSPKG_HEADSTRUCT_MEM_SUM(PkgStruct)) )
     {
-        return YSRTN_ERPKG_PACK;
+        return RTNCODE_ERPKG_PACK;
     }
     ((UCHAR*)Pkg)[YSPKG_HEADPKG_SUM_POS] = YSPKG_HEADSTRUCT_MEM_SUM(PkgStruct);
     ((UCHAR*)Pkg)[YSPKG_HEADPKG_NUM_POS] = YSPKG_HEADSTRUCT_MEM_NUM(PkgStruct);
 
+#if 0
     if ( PkgSize<YSPKG_HEADPKG_LEN+YSPKG_HEADSTRUCT_MEM_DLEN(PkgStruct) )
     {
-        return YSRTN_ERPKG_PACK;
+        return RTNCODE_ERPKG_PACK;
     }
+#endif
     if ( YSPKG_HEADSTRUCT_MEM_DLEN(PkgStruct) \
         >YSPKG_HEADSTRUCT_MEM_DSUM(PkgStruct) )
     {
-        return YSRTN_ERPKG_PACK;
+        return RTNCODE_ERPKG_PACK;
     }
     memcpy(((UCHAR*)Pkg)+YSPKG_HEADPKG_DSUM_POS \
         ,(UCHAR*)(&(YSPKG_HEADSTRUCT_MEM_DSUM(PkgStruct))) \
@@ -217,7 +218,7 @@ INT32 YSPkgStructToData(void *Pkg,INT32 PkgSize,void *PkgStruct)
         if ( (PkgSize<RtnPos)||(0>=YSPKG_HEADSTRUCT_MEM_RTNLEN(PkgStruct)) \
             ||(PkgSize<MsgPos)||(PkgSize<DataPos) )
         {
-            return YSRTN_ERPKG_PACK;
+            return RTNCODE_ERPKG_PACK;
         }
         if ( 0<YSPKG_HEADSTRUCT_MEM_RTNLEN(PkgStruct) )
         {
@@ -234,13 +235,13 @@ INT32 YSPkgStructToData(void *Pkg,INT32 PkgSize,void *PkgStruct)
     {
         if ( NULL==YSPKG_HEADSTRUCT_MEM_DATA(PkgStruct) )
         {
-            return YSRTN_ERPKG_PACK;
+            return RTNCODE_ERPKG_PACK;
         }
     }
     if ( YSPKG_HEADSTRUCT_MEM_PKGLEN(PkgStruct) \
         !=YSPKG_HEADPKG_LEN+YSPKG_HEADSTRUCT_MEM_DLEN(PkgStruct) )
     {
-        return YSRTN_ERPKG_PACK;
+        return RTNCODE_ERPKG_PACK;
     }
     return YSPKG_HEADSTRUCT_MEM_PKGLEN(PkgStruct);
 }
@@ -374,11 +375,10 @@ BOOL  YSPkgTcpRead(INT32 Sock,INT32 TO,void *Pkg,void *Head)
 #ifdef __OS_LINUX__
     char Tmp[TMP_MAX_BUFFER];
 #endif
-	char aa[1024];
-	FILE * fp;
+
     if ( (0>Sock)||!YSVarIsInit2(Pkg,VARTYPE_MEM_VT_BIN)||(NULL==Head) )
     {
-        return FALSE;
+        return RTNCODE_ERAPP_ARG;
     }
 
     Buf = NULL;
@@ -413,12 +413,6 @@ BOOL  YSPkgTcpRead(INT32 Sock,INT32 TO,void *Pkg,void *Head)
             ,YSVarStringGet(Buf),&Len,YSPKG_HEADSTRUCT_MEM_PKGLEN((Head)));
 #elif __OS_WIN__
         Len = YSPKG_HEADSTRUCT_MEM_PKGLEN(Head);
-		
-		fp = fopen("lib.log", "a+");
-		memset(aa,0,sizeof(aa));
-		sprintf(aa,"Len=%d,%d,%d,%08X\n",Len,YSPKG_HEADSTRUCT_MEM_PKGLEN(Head),*(INT32*)(SBuf+YSPKG_HEADPKG_DSUM_POS),*(INT32*)(SBuf+YSPKG_HEADPKG_DSUM_POS));
-		fprintf(fp,"%s",aa);
-		fclose(fp);
         if ( Len!=(iRtn=SocketRead(Sock,T,YSVarStringGet(Buf),Len)) )
         {
             Len = 0;
@@ -519,7 +513,7 @@ BOOL  YSPkgTcpWrite(INT32 Sock,INT32 TO,void *Head)
         P = P+Pos;
         memset(&HS,0,sizeof(HS));
         if ( !YSPkgStructInit(&HS \
-            ,YSRTN_CMPBOOL(YSPKG_HEADPKG_REQT_REQ \
+            ,RTNCODE_CMPBOOL(YSPKG_HEADPKG_REQT_REQ \
                 ==YSPKG_HEADSTRUCT_MEM_REQT(Head)) \
             ,YSPKG_HEADSTRUCT_MEM_TYPE(Head) \
             ,Sum,Num,DSum,DLen,P \
@@ -555,7 +549,7 @@ BOOL  YSPkgTcpWritePkg(INT32 Sock,INT32 TO,void *Head)
         return FALSE;
     }
     bRtn = FALSE;
-    iRtn = YSRTN_OK;
+    iRtn = RTNCODE_OK;
     T = YSCAL_MAX(1,TO);
     T = YSCAL_MIN(T,TCP_TIMEOUT);
     while( 1 )
@@ -682,54 +676,42 @@ int SocketWriteTimtOut(int sockfd,int iTimeOut)
 
 int SocketRead(int sockfd,int iTimeOut,char *pcBuffer,int iLength)
 {
-	int r;
-	int p;
-	int l;
-	FILE *fp;
-	int i;
-    unsigned char* pBuffer;
-
-	p = 0;
-	r = 0;
-	l = iLength;
-	while( p<l )
-	{
-		if ( !SocketReadTimtOut(sockfd,iTimeOut) )
-		{
-			break;
-		}
-		if ( 0>(r=recv(sockfd,pcBuffer,l-p,0)) )
-		{
-			continue;
-		}
-		fp = fopen("lib.log", "a+");
-		fprintf(fp,"SocketRead: l=%d,r=%d,p=%d,r+p=%d\n",l,r,p,r+p);
-		fclose(fp);
-		p += r;
-	}
-	fp = fopen("lib.log", "a+");
-	fprintf(fp,"SocketRead: l=%d,p=%d\n",l,p);
-
-    pBuffer = pcBuffer;
-	for (i = 0; i < iLength /16; ++i) {
-		fprintf(fp, "%6d %02x %02x %02x %02x %02x %02x %02x %02x  %02x %02x %02x %02x %02x %02x %02x %02x  $ %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c $\n",
-			i,
-			pBuffer[i*16 + 0], pBuffer[i*16 + 1], pBuffer[i*16 + 2], pBuffer[i*16 + 3], pBuffer[i*16 + 4], pBuffer[i*16 + 5], pBuffer[i*16 + 6], pBuffer[i*16 + 7],
-			pBuffer[i*16 + 8], pBuffer[i*16 + 9], pBuffer[i*16 + 10], pBuffer[i*16 + 11], pBuffer[i*16 + 12], pBuffer[i*16 + 13], pBuffer[i*16 + 14], pBuffer[i*16 + 15],
-			pBuffer[i*16 + 0], pBuffer[i*16 + 1], pBuffer[i*16 + 2], pBuffer[i*16 + 3], pBuffer[i*16 + 4], pBuffer[i*16 + 5], pBuffer[i*16 + 6], pBuffer[i*16 + 7],
-			pBuffer[i*16 + 8], pBuffer[i*16 + 9], pBuffer[i*16 + 10], pBuffer[i*16 + 11], pBuffer[i*16 + 12], pBuffer[i*16 + 13], pBuffer[i*16 + 14], pBuffer[i*16 + 15]);
-	}
-	fclose(fp);
-	return p;
+    INT32 L;
+    INT32 P;
+    L = 0;
+    while( L<iLength )
+    {
+        if ( !SocketReadTimtOut(sockfd,iTimeOut) )
+        {
+            break;
+        }
+        if ( SOCKET_ERROR==(P=recv(sockfd,pcBuffer+L,iLength-L,0)) )
+        {
+            break;
+        }
+        L += P;
+    }
+    return L;
 }
 
 int SocketWrite(int sockfd,int iTimeOut,char *pcBuffer,int iLength)
 {
-    if ( !SocketWriteTimtOut(sockfd,iTimeOut) )
+    INT32 L;
+    INT32 P;
+    L = 0;
+    while( L<iLength )
     {
-        return -1;
+        if ( !SocketWriteTimtOut(sockfd,iTimeOut) )
+        {
+            break;
+        }
+        if ( SOCKET_ERROR==(P=send(sockfd,pcBuffer+L,iLength-L,0)) )
+        {
+            break;
+        }
+        L += P;
     }
-    return send( sockfd,pcBuffer,iLength,0 );
+    return L;
 }
 
 #endif

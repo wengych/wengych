@@ -131,8 +131,13 @@ extern "C" {
 #define BUFSIZE_8192                8192
 #define BUFSIZE_MAX                 16777216 /* 16*1024*1024 */
 
+#define FILE_NAME_MAX               (BUFSIZE_128-1)
 #ifndef PATH_MAX
+#ifndef FILENAME_MAX
 #define PATH_MAX                    (BUFSIZE_4096)
+#else
+#define PATH_MAX                    FILENAME_MAX
+#endif
 #endif
 
 #ifndef MAXPATH
@@ -163,6 +168,7 @@ PATH_MAX = 4096
 #define LOG_MAX_BUFFER              BUFSIZE_4096
 #define PKG_MIN_BUFFER              BUFSIZE_512
 #define TMP_MAX_BUFFER              BUFSIZE_1024
+#define TMP_BUFFER                  BUFSIZE_64
 
 #define VARNAMELEN                  (MAXFUNCNAME-BUFSIZE_16)
 
@@ -219,6 +225,7 @@ typedef INT32 (*funcarg0int)();
 typedef INT32 (*funcarg1int)(void *);
 typedef INT32 (*funcarg2int)(void *,void *);
 typedef INT32 (*funcarg3int)(void *,void *,void *);
+typedef INT32 (*funcarg4int)(void *,void *,void *,void *);
 typedef void* (*funcarg0vp)();
 typedef void* (*funcarg1vp)(void *);
 typedef void* (*funcarg2vp)(void *,void *);
@@ -287,6 +294,7 @@ typedef void* (*funcarg3vp)(void *,void *,void *);
 #define VARTYPE_MEM_VT_BIN        7  
 #define VARTYPE_MEM_VT_STRING     8  
 #define VARTYPE_MEM_VT_OBJECT     9  
+#define VARTYPE_MEM_VT_STRUCT     10 
 
 #define VARTYPE_MEM_VT_P1         50  
 #define VARTYPE_MEM_VT_P2         51  

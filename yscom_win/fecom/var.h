@@ -1,8 +1,8 @@
 /***************************************************************************/
-/**[File Name    ]variant.h                                               **/
+/**[File Name    ]var.h                                                   **/
 /**[File Path    ]$(TOPDIR)/libsrc/fecom                                  **/
 /**[Library Name ]$(LIBDIR)/libfecom.so                                   **/
-/**[Library Path ]$(APPDIR)/lib                                           **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/11/11                                              **/
@@ -10,8 +10,8 @@
 /**[Memo         ]define head for variant                                 **/
 /**[Modify       ]                                                        **/
 /***************************************************************************/
-#ifndef VARIANT_H__
-#define VARIANT_H__
+#ifndef VAR_H__
+#define VAR_H__
 
 #include <fecom.h>
 
@@ -43,38 +43,12 @@ extern "C" {
 #define FEVARTYPE_MEM_VV_NULL       1
 #define FEVARTYPE_MEM_VV_VALUE      2
 
-#define FEVARTYPE_MEM_VT_NOT        VARTYPE_MEM_VT_NOT
-           
-#define FEVARTYPE_MEM_VT_BOOL       VARTYPE_MEM_VT_BOOL
-#define FEVARTYPE_MEM_VT_BYTE       VARTYPE_MEM_VT_BYTE
-#define FEVARTYPE_MEM_VT_INT16      VARTYPE_MEM_VT_INT16
-#define FEVARTYPE_MEM_VT_INT32      VARTYPE_MEM_VT_INT32
-#define FEVARTYPE_MEM_VT_INT64      VARTYPE_MEM_VT_INT64
-#define FEVARTYPE_MEM_VT_DOUBLE     VARTYPE_MEM_VT_DOUBLE
-#define FEVARTYPE_MEM_VT_BIN        VARTYPE_MEM_VT_BIN
-#define FEVARTYPE_MEM_VT_STRING     VARTYPE_MEM_VT_STRING
-#define FEVARTYPE_MEM_VT_OBJECT     VARTYPE_MEM_VT_OBJECT
-           
-#define FEVARTYPE_MEM_VT_P1         VARTYPE_MEM_VT_P1
-#define FEVARTYPE_MEM_VT_P2         VARTYPE_MEM_VT_P2
-#define FEVARTYPE_MEM_VT_P3         VARTYPE_MEM_VT_P3
-#define FEVARTYPE_MEM_VT_P4         VARTYPE_MEM_VT_P4
-           
-#define FEVARTYPE_MEM_VT_ARRAY      VARTYPE_MEM_VT_ARRAY
-#define FEVARTYPE_MEM_VT_FIFO       VARTYPE_MEM_VT_FIFO
-#define FEVARTYPE_MEM_VT_FILO       VARTYPE_MEM_VT_FILO
-#define FEVARTYPE_MEM_VT_CICLE      VARTYPE_MEM_VT_CICLE
-#define FEVARTYPE_MEM_VT_HASH       VARTYPE_MEM_VT_HASH
-#define FEVARTYPE_MEM_VT_LINK       VARTYPE_MEM_VT_LINK
-#define FEVARTYPE_MEM_VT_TREE       VARTYPE_MEM_VT_TREE
-#define FEVARTYPE_MEM_VT_XML        VARTYPE_MEM_VT_XML
-
 #define FEVARTYPE_IS_STYPE(VT) \
-    FERTN_CMPBOOL( \
-    ( (FEVARTYPE_MEM_VT_BOOL==(VT)) \
-    ||(FEVARTYPE_MEM_VT_BYTE==(VT))||(FEVARTYPE_MEM_VT_INT16==(VT)) \
-    ||(FEVARTYPE_MEM_VT_INT32==(VT))||(FEVARTYPE_MEM_VT_INT64==(VT)) \
-    ||(FEVARTYPE_MEM_VT_DOUBLE==(VT)) ) \
+    RTNCODE_CMPBOOL( \
+    ( (VARTYPE_MEM_VT_BOOL==(VT)) \
+    ||(VARTYPE_MEM_VT_BYTE==(VT))||(VARTYPE_MEM_VT_INT16==(VT)) \
+    ||(VARTYPE_MEM_VT_INT32==(VT))||(VARTYPE_MEM_VT_INT64==(VT)) \
+    ||(VARTYPE_MEM_VT_DOUBLE==(VT)) ) \
     )
 #define FEVARTYPE_PKG_MINLEN    (INT32_SIZE+INT16_SIZE)
 
@@ -143,7 +117,7 @@ typedef struct tagFEVarType
 #define FEVARTYPE_MEM_VM(v)         (((tFEVarType*)(v))->VerM)
 #define FEVARTYPE_MEM_VS(v)         (((tFEVarType*)(v))->VerS)
 #define FEVARTYPE_MEM_V(v)          (((tFEVarType*)(v))->VV)
-#define FEVARTYPE_MEM_VT(v)         (((tFEVarType*)(v))->VT)
+#define VARTYPE_MEM_VT(v)         (((tFEVarType*)(v))->VT)
 #define FEVARTYPE_MEM_ED(v)         (((tFEVarType*)(v))->ED)
 #define FEVARTYPE_MEM_SL(v)         (((tFEVarType*)(v))->SL)
 #define FEVARTYPE_MEM_DP(v)         (((tFEVarType*)(v))->DP)
@@ -250,6 +224,7 @@ BOOL  FEVarTypeResMove(void *v,void *v2);
 void  FEVarTypeResShow(void *v,INT32 T,void *Buf);
 BOOL  FEVarTypeResClone(void *v,void *v2);
 
+INT32 FEVarTypeKeyGetHash(void *v);
 INT32 FEVarTypeKeyGetLen(void *v);
 void *FEVarTypeKeyGet(void *v);
 void  FEVarTypeKeyDelete(void *v);
@@ -286,10 +261,10 @@ typedef struct tFEVarPointer4
 #define FEVARP4_MEM_A(v)              (((tFEVarPointer4*)(v))->A)
 #define FEVARP4_MEM_V(v,IDX)          (((tFEVarPointer4*)(v))->P[IDX])
 #define FEVARP4_IDX_IS(IDX)   \
-    FERTN_CMPBOOL((0<=(IDX))||(4>(IDX)))
+    RTNCODE_CMPBOOL((0<=(IDX))||(4>(IDX)))
 #define FEVARP4_TYPE_IS(v) \
-   ( (FEVARTYPE_MEM_VT_P1==(v))||(FEVARTYPE_MEM_VT_P2==(v)) \
-   ||(FEVARTYPE_MEM_VT_P3==(v))||(FEVARTYPE_MEM_VT_P4==(v)) )
+   ( (VARTYPE_MEM_VT_P1==(v))||(VARTYPE_MEM_VT_P2==(v)) \
+   ||(VARTYPE_MEM_VT_P3==(v))||(VARTYPE_MEM_VT_P4==(v)) )
 
 void *FEVarPointer4New();
 void  FEVarPointer4Free(void *Var);
@@ -304,16 +279,22 @@ BOOL  FEVarPointer4IsFlag(void *Var,INT32 IDX);
 BOOL  FEVarPointer4SetFlag(void *Var,INT32 IDX);
 BOOL  FEVarPointer4ClearFlag(void *Var,INT32 IDX);
 
-BOOL  FEVarPointer4SetP(void *Var,INT32 IDX,void *Value);
+BOOL  FEVarPointer4SetFunc(void *Var,INT32 IDX,void *Value,BOOL Flag);
 void *FEVarPointer4GetP(void *Var,INT32 IDX);
-BOOL  FEVarPointer4SetP0(void *Var,void *Value);
-void *FEVarPointer4GetP0(void *Var);
-BOOL  FEVarPointer4SetP1(void *Var,void *Value);
-void *FEVarPointer4GetP1(void *Var);
-BOOL  FEVarPointer4SetP2(void *Var,void *Value);
-void *FEVarPointer4GetP2(void *Var);
-BOOL  FEVarPointer4SetP3(void *Var,void *Value);
-void *FEVarPointer4GetP3(void *Var);
+#define FEVarPointer4Set(v1,i,v2)   FEVarPointer4SetFunc((v1),i,(v2),TRUE)
+#define FEVarPointer4Set2(v1,i,v2)  FEVarPointer4SetFunc((v1),i,(v2),FALSE)
+#define FEVarPointer4SetP0(v1,v2)   FEVarPointer4Set((v1),0,(v2))
+#define FEVarPointer4Set2P0(v1,v2)  FEVarPointer4Set2((v1),0,(v2))
+#define FEVarPointer4GetP0(v)       FEVarPointer4GetP((v),0)
+#define FEVarPointer4SetP1(v1,v2)   FEVarPointer4Set((v1),1,(v2))
+#define FEVarPointer4Set2P1(v1,v2)  FEVarPointer4Set2((v1),1,(v2))
+#define FEVarPointer4GetP1(v)       FEVarPointer4GetP((v),1)
+#define FEVarPointer4SetP2(v1,v2)   FEVarPointer4Set((v1),2,(v2))
+#define FEVarPointer4Set2P2(v1,v2)  FEVarPointer4Set2((v1),2,(v2))
+#define FEVarPointer4GetP2(v)       FEVarPointer4GetP((v),2)
+#define FEVarPointer4SetP3(v1,v2)   FEVarPointer4Set((v1),3,(v2))
+#define FEVarPointer4Set2P3(v1,v2)  FEVarPointer4Set2((v1),3,(v2))
+#define FEVarPointer4GetP3(v)       FEVarPointer4GetP((v),3)
 
 void *FEVarPointer4Clone(void *Var);
 /***************************************************************************/
@@ -386,7 +367,7 @@ BOOL  FEVarStringRealloc(void *Var,INT32 L);
 /**  Var -- Object                                                        **/
 /***************************************************************************/
 #define FEVarObjectIsType(Var) \
-    ( FEVARTYPE_MEM_VT_OBJECT==FEVarTypeVTGet(Var) )
+    ( VARTYPE_MEM_VT_OBJECT==FEVarTypeVTGet(Var) )
 void  FEVarObjectNFree(void *Var);
 void  FEVarObjectVFree(void *Var);
 #define FEVarObjectNShow1       FEVarTypeNShow1
@@ -431,6 +412,21 @@ void *FEVarRootGetValue(void *Var);
 /***************************************************************************/
 
 /***************************************************************************/
+/**  Var -- Struct                                                        **/
+/***************************************************************************/
+#define FEVARSTRUCT_NODE_P_NUM          1
+#define FEVarStructNFree                FEVarTypeNFree
+#define FEVarStructNShow1               FEVarRootNShow1
+void FEVarStructVFree(void *Var);
+void  FEVarStructVShow(void *Var,INT32 T,void *Buf);
+BOOL  FEVarStructPackInfo(void *Var,void *Buf);
+void  FEVarStructInitPointer(void *Var);
+void *FEVarStructGetNode(void *Var,INT32 Idx);
+void *FEVarStructGetNodeByKey(void *Var,const char *Key,INT32 Len);
+/***************************************************************************/
+/***************************************************************************/
+
+/***************************************************************************/
 /**  Var -- Array                                                         **/
 /***************************************************************************/
 #define FEVARARRAY_NODE_P_NUM       1
@@ -452,7 +448,7 @@ void *FEVarArrayGetNodeByKey(void *Var,const void *Key,INT32 Len);
 /**  Var -- Fifo                                                          **/
 /***************************************************************************/
 #define FEVarFifoIsType(Var) \
-    ( FEVARTYPE_MEM_VT_FIFO==FEVarTypeVTGet(Var) )
+    ( VARTYPE_MEM_VT_FIFO==FEVarTypeVTGet(Var) )
 #define FEVARFIFO_NODE_P_NUM        1
 #define FEVARFIFO_UNIT_MIN          FEVARARRAY_UNIT_MIN
 void  FEVarFifoNFree(void *Var);
@@ -471,7 +467,7 @@ BOOL  FEVarFifoMove(void *Var);
 /**  Var -- Filo                                                          **/
 /***************************************************************************/
 #define FEVarFiloIsType(Var) \
-    ( FEVARTYPE_MEM_VT_FILO==FEVarTypeVTGet(Var) )
+    ( VARTYPE_MEM_VT_FILO==FEVarTypeVTGet(Var) )
 #define FEVARFILO_NODE_P_NUM        1
 #define FEVARFILO_UNIT_MIN          FEVARARRAY_UNIT_MIN
 void  FEVarFiloNFree(void *Var);
@@ -489,7 +485,7 @@ void *FEVarFiloGetNode(void *Var,INT32 Idx);
 /**  Var -- Link                                                          **/
 /***************************************************************************/
 #define FEVarLinkIsType(Var) \
-    ( FEVARTYPE_MEM_VT_Link==FEVarTypeVTGet(Var) )
+    ( VARTYPE_MEM_VT_Link==FEVarTypeVTGet(Var) )
 #define FEVARLINK_NODE_P_NUM        3
 void  FEVarLinkNFree(void *Var);
 void  FEVarLinkVFree(void *Var);
@@ -527,5 +523,5 @@ void *FEVarHashGetNode(void *Var,const void *Key,INT32 Len);
 }
 #endif
 
-#endif /* #ifndef VARIANT_H__ */ 
+#endif /* #ifndef VAR_H__ */ 
 

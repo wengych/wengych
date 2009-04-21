@@ -2,7 +2,7 @@
 /**[File Name    ]varfilo.c                                               **/
 /**[File Path    ]$(TOPDIR)/src/libsrc/fecom                              **/
 /**[Library Name ]libfecom.so                                             **/
-/**[Library Path ]$(APPDIR)/lib                                           **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/11/11                                              **/
@@ -25,7 +25,7 @@ void *FEVarFiloNew(INT32 Max)
     {
         return NULL;
     }
-    FEVarTypeVTSet(Var,FEVARTYPE_MEM_VT_FILO);
+    FEVarTypeVTSet(Var,VARTYPE_MEM_VT_FILO);
     FEVarRootSetMax(Var,Max);
     FEVarRootSetSize(Var,0);
     FEVarRootSetLen(Var,0);
@@ -101,7 +101,7 @@ void  FEVarFiloNFree(void *Var)
 void  FEVarFiloVFree(void *Var)
 {
     void *V;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_FILO) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_FILO) )
     {
         return;
     }
@@ -120,11 +120,11 @@ void  FEVarFiloVFree(void *Var)
 
 void  FEVarFiloShow(void *Var,INT32 T,void *Buf)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_FILO) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_FILO) )
     {
         return ;
     }
-    if ( !FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_STRING) )
     {
         return ;
     }
@@ -138,11 +138,11 @@ void  FEVarFiloVShow(void *Var,INT32 T,void *Buf)
     INT32 Len;
     INT32 i;
 
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_FILO) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_FILO) )
     {
         return;
     }
-    if ( !FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_STRING) )
     {
         return ;
     }
@@ -213,7 +213,7 @@ void  FEVarFiloInitPointer(void *Var)
 
 BOOL  FEVarFiloSetMax(void *Var,INT32 Max)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_FILO) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_FILO) )
     {
         return FALSE;
     }
@@ -237,27 +237,27 @@ INT32 FEVarFiloGetLen(void *Var)
 
 BOOL  FEVarFiloIsIdxOfValue(void *Var,INT32 Idx)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_FILO) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_FILO) )
     {
         return FALSE;
     }
-    return FERTN_CMPBOOL( (0<=Idx)&&(FEVarFiloGetLen(Var)>Idx) );
+    return RTNCODE_CMPBOOL( (0<=Idx)&&(FEVarFiloGetLen(Var)>Idx) );
 }
 
 BOOL  FEVarFiloIsIdxOfRange(void *Var,INT32 Idx)
 {
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_FILO) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_FILO) )
     {
         return FALSE;
     }
-    return FERTN_CMPBOOL( (0<=Idx)&&(FEVarFiloGetMax(Var)>Idx) );
+    return RTNCODE_CMPBOOL( (0<=Idx)&&(FEVarFiloGetMax(Var)>Idx) );
 }
 
 void *FEVarFiloGetNode(void *Var,INT32 Idx)
 {
     INT32 Size;
     void *V;
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_FILO) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_FILO) )
     {
         return NULL;
     }
@@ -285,7 +285,11 @@ BOOL  FEVarFiloPush(void *Var,void *V)
     {
         return FALSE;
     }
+#if 0
     if ( !FEVarPointer4SetP0(Node,V) )
+#else
+    if ( !FEVarPointer4Set2P0(Node,V) )
+#endif
     {
         return FALSE;
     }
@@ -393,7 +397,7 @@ void *FEVarFiloClone(void *Var)
 {
     void *N;
 
-    if ( FEVARTYPE_MEM_VT_FILO!=FEVarTypeVTGet(Var) )
+    if ( VARTYPE_MEM_VT_FILO!=FEVarTypeVTGet(Var) )
     {
         return NULL;
     }
@@ -422,11 +426,11 @@ BOOL  FEVarFiloCloneValue(void *N,void *Var)
     void *V;
     BOOL bRtn;
 
-    if ( !FEVarTypeIsInit2(N,FEVARTYPE_MEM_VT_FILO) )
+    if ( !FEVarTypeIsInit2(N,VARTYPE_MEM_VT_FILO) )
     {
         return FALSE;
     }
-    if ( !FEVarTypeIsInit2(Var,FEVARTYPE_MEM_VT_FILO) )
+    if ( !FEVarTypeIsInit2(Var,VARTYPE_MEM_VT_FILO) )
     {
         return TRUE;
     }

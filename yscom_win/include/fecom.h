@@ -124,6 +124,9 @@ char *FESetTrace(char *Buf,INT32 Size \
 
 INT32 FEHexToBufLine(char *Hex,INT32 Size,INT32 MaxLine \
     ,const char *Log,INT32 Len);
+
+INT32 FEStrCmp(const char *S1,INT32 L1,const char *S2,INT32 L2);
+INT32 FEFieldArrayGetIdx(char **Ns,INT32 Size,const char *Name);
 /****************************************************************************/
 /****************************************************************************/
 
@@ -134,6 +137,16 @@ void *FEKVNew();
 void  FEKVFree(void *V);
 INT32 FEKVLoadFromFile(void *Hash,const char *FileName);
 void *FEKVLoadFromFile2(const char *FileName);
+/****************************************************************************/
+/****************************************************************************/
+
+/****************************************************************************/
+/** inifile.c                                                              **/
+/****************************************************************************/
+void *FEIniNew();
+void  FEIniFree(void *V);
+INT32 FEIniLoadFromFile(void *Hash,const char *FileName,void *Func);
+void *FEIniLoadFromFile2(const char *Key,const char *FileName,void *Func);
 /****************************************************************************/
 /****************************************************************************/
 

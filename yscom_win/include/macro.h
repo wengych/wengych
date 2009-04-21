@@ -25,8 +25,9 @@ extern "C" {
 #define snprintf    _snprintf
 #endif
 
-#define CALCULATE_MIN(N1,N2)            (((N1)>=(N2))?(N2):(N1))
-#define CALCULATE_MAX(N1,N2)            (((N1)>=(N2))?(N1):(N2))
+#define CALCULATE_MIN(N1,N2)        (((N1)>=(N2))?(N2):(N1))
+#define CALCULATE_MAX(N1,N2)        (((N1)>=(N2))?(N1):(N2))
+#define CALCULATE_RANGE(N,i,a)      (((i)>=(N))?(i):(((a)<(N))?(a):(N)))
 
 #define STRCPY(d,s,size,len)  strncpy((d),(s),CALCULATE_MIN((size),(len)))
 #define STRNCPY(d,s,size,len) strncpy((d),(s),CALCULATE_MIN((size-1),(len)))
@@ -45,6 +46,8 @@ extern "C" {
 /****************************************************************************/
 #define ARRAYSIZE_MIN               8
 #define ARRAYSIZE_MAX               0x00FFFFFF
+#define STRUCTSIZE_MIN              0
+#define STRUCTSIZE_MAX              0x0000FFFF
 /****************************************************************************/
 /****************************************************************************/
 

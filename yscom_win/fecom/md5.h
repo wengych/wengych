@@ -1,8 +1,8 @@
 /***************************************************************************/
 /**[File Name    ]md5.h                                                   **/
-/**[File Path    ]$(APPDIR)/libsrc/fecom                                  **/
+/**[File Path    ]$(SRCDIR)/libsrc/fecom                                  **/
 /**[Library Name ]libfecom.so                                             **/
-/**[Library Path ]$(HOME)/lib                                             **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Honggang . Wang                                         **/
 /**[Copyright    ]Honggang . Wang . 2002                                  **/
 /**[Date         ]2002/01/01                                              **/

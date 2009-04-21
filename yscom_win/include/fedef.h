@@ -106,6 +106,7 @@ extern "C" {
 
 #define FECAL_MIN(N1,N2)            CALCULATE_MIN(N1,N2) 
 #define FECAL_MAX(N1,N2)            CALCULATE_MAX(N1,N2)
+#define FECAL_RANGE(n,min,max)      CALCULATE_RANGE((n),(min),(max))
 
 #define FELUCK_NUM                  LUCK_NUM  
 #define FELUCK_NUM2                 LUCK_NUM2 
@@ -127,132 +128,9 @@ extern "C" {
 #define FEARRAYSIZE_GETSIZE(Max,Size) \
     (FECAL_MIN(FEARRAYSIZE_GETMAX((Max)),FECAL_MAX(1,(Size))))
 #define FEARRAYSIZE_ISREALLOC(Max,Size) \
-    FERTN_CMP(FEARRAYSIZE_GETMAX((Max))>=FECAL_MAX(0,(Size)))
+    RTNCODE_CMP(FEARRAYSIZE_GETMAX((Max))>=FECAL_MAX(0,(Size)))
 /****************************************************************************/
 /****************************************************************************/
-
-/****************************************************************************/
-/** Endian                                                                 **/
-/****************************************************************************/
-/****************************************************************************/
-/****************************************************************************/
-
-/***************************************************************************/
-/**                                                                       **/
-/***************************************************************************/
-#define FERTN_CMP(v,Rtn)           RTNCODE_CMP(v,Rtn)
-#define FERTN_CMP1(v)              RTNCODE_CMP1(v)   
-#define FERTN_CMPOKER(v)           RTNCODE_CMPOKER(v)
-#define FERTN_CMPBOOL(v)           RTNCODE_CMPBOOL(v)
-
-#define FERTN_OK                    RTNCODE_OK 
-#define FERTN_OK1                   RTNCODE_OK1
-#define FERTN_OK2                   RTNCODE_OK2
-#define FERTN_OK3                   RTNCODE_OK3
-#define FERTN_OK4                   RTNCODE_OK4
-                                             
-#define FERTN_ER                    RTNCODE_ER 
-#define FERTN_ER2                   RTNCODE_ER2
-#define FERTN_ER3                   RTNCODE_ER3
-#define FERTN_ER4                   RTNCODE_ER4
-
-/***************************************************************************/
-/** System error (-100~-119)                                              **/
-/***************************************************************************/
-#define FERTN_ERBASE                RTNCODE_ERBASE               
-#define FERTN_ERBASE_SYS            RTNCODE_ERBASE_SYS           
-#define FERTN_ERSYS_MALLOC          RTNCODE_ERSYS_MALLOC         
-#define FERTN_ERSYS_UN2BYTES2UTF8   RTNCODE_ERSYS_UN2BYTES2UTF8  
-#define FERTN_ERSYS_UNICODENOT      RTNCODE_ERSYS_UNICODENOT     
-#define FERTN_ERSYS_UN2BYTESNOT     RTNCODE_ERSYS_UN2BYTESNOT    
-#define FERTN_ERSYS_UN4BYTESNOT     RTNCODE_ERSYS_UN4BYTESNOT    
-#define FERTN_ERSYS_DLSYM           RTNCODE_ERSYS_DLSYM          
-                                    
-/***************************************************************************/
-/** System error (-120~-139)                                              **/
-/***************************************************************************/
-#define FERTN_ERBASE_FILE           RTNCODE_ERBASE_FILE          
-#define FERTN_ERFILE_DIROPEN        RTNCODE_ERFILE_DIROPEN       
-#define FERTN_ERFILE_MKDIR          RTNCODE_ERFILE_MKDIR         
-#define FERTN_ERFILE_OPEN           RTNCODE_ERFILE_OPEN          
-#define FERTN_ERFILE_LOCK           RTNCODE_ERFILE_LOCK          
-#define FERTN_ERFILE_READ           RTNCODE_ERFILE_READ          
-#define FERTN_ERFILE_WRITE          RTNCODE_ERFILE_WRITE         
-                                    
-/***************************************************************************/
-/** System error (-140~-159)                                              **/
-/***************************************************************************/
-#define FERTN_ERBASE_SOCK           RTNCODE_ERBASE_SOCK          
-#define FERTN_ERSOCK_SOCKET         RTNCODE_ERSOCK_SOCKET        
-#define FERTN_ERSOCK_LISTEN         RTNCODE_ERSOCK_LISTEN        
-#define FERTN_ERSOCK_BIND           RTNCODE_ERSOCK_BIND          
-#define FERTN_ERSOCK_READ           RTNCODE_ERSOCK_READ          
-#define FERTN_ERSOCK_WRITE          RTNCODE_ERSOCK_WRITE         
-#define FERTN_ERSOCK_CONNECT        RTNCODE_ERSOCK_CONNECT       
-#define FERTN_ERSOCK_PTON           RTNCODE_ERSOCK_PTON          
-#define FERTN_ERSOCK_SOCKNAME       RTNCODE_ERSOCK_SOCKNAME      
-#define FERTN_ERSOCK_SELECT         RTNCODE_ERSOCK_SELECT        
-#define FERTN_ERPKG_PACK            RTNCODE_ERPKG_PACK
-#define FERTN_ERPKG_UNPACK          RTNCODE_ERPKG_UNPACK
-                                    
-/***************************************************************************/
-/** System error (-160~-199)                                              **/
-/***************************************************************************/
-#define FERTN_ERBASE_PTHREAD        RTNCODE_ERBASE_PTHREAD       
-#define FERTN_ERTHD_MUTEX           RTNCODE_ERTHD_MUTEX          
-#define FERTN_ERTHD_COND            RTNCODE_ERTHD_COND           
-#define FERTN_ERTHD_BUSY            RTNCODE_ERTHD_BUSY           
-#define FERTN_ERTHD_TIMEOUT         RTNCODE_ERTHD_TIMEOUT        
-#define FERTN_ERTHD_RESFREE         RTNCODE_ERTHD_RESFREE        
-                                    
-/***************************************************************************/
-/** System error (-200~-500)                                              **/
-/***************************************************************************/
-#define FERTN_ERBASE_APP            RTNCODE_ERBASE_APP           
-#define FERTN_ERAPP_ARG             RTNCODE_ERAPP_ARG            
-#define FERTN_ERAPP_SIZE            RTNCODE_ERAPP_SIZE           
-#define FERTN_ERAPP_LOCK            RTNCODE_ERAPP_LOCK           
-#define FERTN_ERAPP_INITARG         RTNCODE_ERAPP_INITARG        
-#define FERTN_ERAPP_BINARY          RTNCODE_ERAPP_BINARY         
-#define FERTN_ERAPP_CWDDIR          RTNCODE_ERAPP_CWDDIR         
-#define FERTN_ERAPP_APPDIR          RTNCODE_ERAPP_APPDIR         
-#define FERTN_ERAPP_DIRS            RTNCODE_ERAPP_DIRS           
-#define FERTN_ERAPP_LOGARGS         RTNCODE_ERAPP_LOGARGS        
-#define FERTN_ERAPP_LOADLOGLIST     RTNCODE_ERAPP_LOADLOGLIST    
-#define FERTN_ERAPP_INITFIFO        RTNCODE_ERAPP_INITFIFO       
-#define FERTN_ERAPP_INITMGR         RTNCODE_ERAPP_INITMGR        
-                                    
-#define FERTN_ERAPP_LOADCFG         RTNCODE_ERAPP_LOADCFG        
-#define FERTN_ERAPP_SAVECFG         RTNCODE_ERAPP_SAVECFG        
-#define FERTN_ERAPP_CFG             RTNCODE_ERAPP_CFG            
-#define FERTN_ERAPP_NOTFOUNDCFG     RTNCODE_ERAPP_NOTFOUNDCFG    
-#define FERTN_ERAPP_ANALYSE         RTNCODE_ERAPP_ANALYSE
-#define FERTN_ERAPP_EXISTVALUE      RTNCODE_ERAPP_EXISTVALUE
-                                    
-#define FERTN_ERAPP_LOADDICT        RTNCODE_ERAPP_LOADDICT       
-#define FERTN_ERAPP_SAVEDICT        RTNCODE_ERAPP_SAVEDICT       
-#define FERTN_ERAPP_EXISTDICT       RTNCODE_ERAPP_EXISTDICT      
-                                    
-#define FERTN_ERAPP_LOADSERVINFO    RTNCODE_ERAPP_LOADSERVINFO   
-#define FERTN_ERAPP_LOADSERVINFO2   RTNCODE_ERAPP_LOADSERVINFO2  
-#define FERTN_ERAPP_SAVESERVINFO    RTNCODE_ERAPP_SAVESERVINFO   
-#define FERTN_ERAPP_EXISTSERVINFO   RTNCODE_ERAPP_EXISTSERVINFO  
-                                    
-#define FERTN_ERAPP_SAVESERVCALL    RTNCODE_ERAPP_SAVESERVCALL   
-#define FERTN_ERAPP_SCALL_NEWBUS    RTNCODE_ERAPP_SCALL_NEWBUS   
-#define FERTN_ERAPP_SCALL_SAVEBUS   RTNCODE_ERAPP_SCALL_SAVEBUS  
-                                                               
-#define FERTN_ERBASE_VAR            RTNCODE_ERBASE_VAR           
-#define FERTN_ERVAR_VT              RTNCODE_ERVAR_VT             
-#define FERTN_ERVAR_NEW             RTNCODE_ERVAR_NEW            
-#define FERTN_ERVAR_ADD             RTNCODE_ERVAR_ADD            
-#define FERTN_ERVAR_GET             RTNCODE_ERVAR_GET
-#define FERTN_ERVAR_PACK            RTNCODE_ERVAR_PACK           
-#define FERTN_ERVAR_UNPACK          RTNCODE_ERVAR_UNPACK         
-                                    
-#define FERTN_ERBASE_SERVICE        RTNCODE_ERBASE_SERVICE       
-#define FERTN_ERSERV_GETINFO        RTNCODE_ERSERV_GETINFO       
-#define FERTN_ERSERV_SAVERTN        RTNCODE_ERSERV_SAVERTN       
 
 #ifdef __cplusplus
 }

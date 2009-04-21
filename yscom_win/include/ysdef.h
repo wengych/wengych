@@ -61,6 +61,19 @@ extern "C" {
 /****************************************************************************/
 /****************************************************************************/
 
+#define YSAPP_LOADCFG_BASE 1000
+#define YSAPP_LOADCFG_FILE_CAL(f,fs,t,v,d) \
+    memset((f),0,(fs)); \
+    snprintf((f),(fs),"%s%s%03d",(t),(v),(d)%YSAPP_LOADCFG_BASE)
+#define YSAPP_LOADCFG_FILE_CAL2(f,fs,t,v,d) \
+    memset((f),0,(fs)); \
+    snprintf((f),(fs),"%s_%s_%03d",(t),(v),(d)%YSAPP_LOADCFG_BASE)
+#define YSAPP_LOADCFG_FILE_CAL3(f,fs,t,v,d) \
+    memset((f),0,(fs)); \
+    snprintf((f),(fs),"%s_%s%03d",(t),(v),(d)%YSAPP_LOADCFG_BASE)
+#define YSAPP_LOADCFG_FILE_CAL4(f,fs,t,v,d) \
+    memset((f),0,(fs)); \
+    snprintf((f),(fs),"%s%s_%03d",(t),(v),(d)%YSAPP_LOADCFG_BASE)
 /****************************************************************************/
 /** define CONFIG FILE                                                     **/
 /** KeyValue of cfgfile : LOAD_CFG_[000~999] = <cfg_file>                  **/
@@ -71,8 +84,9 @@ extern "C" {
 /** Key | Value                                                            **/
 /** Key \t Value                                                           **/
 /****************************************************************************/
-#define YSAPP_LOAD_CFG_         "LOAD_CFG_%03d"
-#define YSAPP_LOAD_CFG_BASE     1000
+#define YSAPP_LOAD_CFG_         "LOAD_CFG_"
+#define YSAPP_LOAD_CFG_CAL(b,s,v) \
+    YSAPP_LOADCFG_FILE_CAL((b),(s),YSAPP_LOAD_CFG_,"",(v))
 /****************************************************************************/
 /****************************************************************************/
 #define YSENV_APPDIR                    ENV_APPDIR
@@ -99,9 +113,10 @@ APP_INSTALL_[000,999] = <type>|Name
 APP_INSTALL_[000,999] = <type>\tName
 <Type> is [USERTHD,DBUS,TCP]
 **/
-#define YSAPP_LOAD_INSTALL              "APP_INSTALL_%03d"
+#define YSAPP_LOAD_INSTALL              "APP_INSTALL_"
 #define YSAPP_LOAD_INSTALL_CAL(b,s,v) \
-    snprintf((b),(s),YSAPP_LOAD_INSTALL,(v)%1000)
+    YSAPP_LOADCFG_FILE_CAL((b),(s),YSAPP_LOAD_INSTALL,"",(v))
+
 #define YSAPP_INSTALL                   "__YSAPP_INSTALL"
 #define YSAPP_INSTALL_TYPE_THD          1
 #define YSAPP_INSTALL_TYPE_THD_STR      "USERTHD"
@@ -152,9 +167,9 @@ APP_TCPSRV_<Name>_[000,999]   = <Port>\t<FifoName>
 <Port> = [1,65535)
 <FifoName> is [YSAPP_LOAD_USERTHD_<%03d>=<Name>]
 **/
-#define YSAPP_LOAD_TCPSRV               "APP_TCPSRV_%s_%03d"
+#define YSAPP_LOAD_TCPSRV               "APP_TCPSRV_"
 #define YSAPP_LOAD_TCPSRV_CAL(b,s,v1,v2) \
-    snprintf((b),(s),YSAPP_LOAD_TCPSRV,(v1),(v2)%1000)
+    YSAPP_LOADCFG_FILE_CAL4((b),(s),YSAPP_LOAD_TCPSRV,(v1),(v2))
 #define YSAPP_TCPSRV                    "__YSAPP_TCPSRV_%s"
 #define YSAPP_TCPSRV_THD_DEFAULT        YSAPP_USERTHD_THD_DEFAULT
 
@@ -168,11 +183,12 @@ APP_TCPSRV_<Name>_[000,999]   = <Port>\t<FifoName>
 #define YSAPP_DICT_VER_CAL(V,VS,ver) \
     memset((V),0,(VS)); \
     snprintf((V),(VS),YSAPP_DICT,(ver))
-#define YSAPP_LOAD_DICT_        "LOAD_DICT_%03d"
-#define YSAPP_LOAD_DICT_BASE    1000
+#define YSAPP_LOAD_DICT_VER     "YSAPP_DICT_VER"
+#define YSAPP_LOAD_DICT_        "LOAD_DICT_"
+#define YSAPP_LOAD_DICT_CAL(f,fs,d) \
+    YSAPP_LOADCFG_FILE_CAL((f),(fs),YSAPP_LOAD_DICT_,"",(d))
 #define YSAPP_LOAD_DICT_FILE_   "%s/dict.%s.ini"
 #define YSAPP_LOAD_DICT_FILE_CAL(f,fs,v,d) \
-    memset((f),0,(fs)); \
     snprintf((f),(fs),YSAPP_LOAD_DICT_FILE_,(v),(d))
 /****************************************************************************/
 /****************************************************************************/
@@ -181,16 +197,31 @@ APP_TCPSRV_<Name>_[000,999]   = <Port>\t<FifoName>
 /** define SERVICE INFO                                                    **/
 /** Service file name is : LOAD_SERVICE_[000~999] = <serv_version>         **/
 /****************************************************************************/
-#define YSAPP_SERV_INFO             "__YSAPP_SERVICE_INFO_%s"
-#define YSAPP_SERV_INFO_VER_CAL(V,VS,ver) \
+#define YSAPP_SERV             "__YSAPP_SERV_%s"
+#define YSAPP_SERV_VER_CAL(V,VS,ver) \
     memset((V),0,(VS)); \
-    snprintf((V),(VS),YSAPP_SERV_INFO,(ver))
-#define YSAPP_LOAD_SERV_INFO_        "LOAD_SERVICE_INFO_%03d"
-#define YSAPP_LOAD_SERV_INFO_BASE    1000
-#define YSAPP_LOAD_SERV_INFO_FILE_   "%s/serviceinfo.%s.ini"
-#define YSAPP_LOAD_SERV_INFO_FILE_CAL(f,fs,v,d) \
-    memset((f),0,(fs)); \
-    snprintf((f),(fs),YSAPP_LOAD_SERV_INFO_FILE_,(v),(d))
+    snprintf((V),(VS),YSAPP_SERV,(ver))
+#define YSAPP_LOAD_SERV_VER     "YSAPP_SERV_VER"
+#define YSAPP_LOAD_SERV_        "LOAD_SERV_"
+#define YSAPP_LOAD_SERV_CAL(f,fs,d) \
+    YSAPP_LOADCFG_FILE_CAL((f),(fs),YSAPP_LOAD_SERV_FILE_,"",(d))
+#define YSAPP_LOAD_SERV_FILE_   "%s/serviceinfo.%s.ini"
+#define YSAPP_LOAD_SERV_FILE_CAL(f,fs,v,d) \
+    snprintf((f),(fs),YSAPP_LOAD_SERV_FILE_,(v),(d))
+
+/****************************************************************************/
+/****************************************************************************/
+
+/****************************************************************************/
+/** define HOST                                                            **/
+/** Host file name is : LOAD_HOST [000~999] = <host_file>                  **/
+/****************************************************************************/
+#define YSAPP_LOAD_HOST_        "LOAD_HOST_"
+#define YSAPP_LOAD_HOST_CAL(f,fs,d) \
+    YSAPP_LOADCFG_FILE_CAL((f),(fs),YSAPP_LOAD_HOST_,"",(d))
+#define YSAPP_LOAD_HOST_FILE_   "%s/%s.ini"
+#define YSAPP_LOAD_HOST_FILE_CAL(f,fs,v,d) \
+    snprintf((f),(fs),YSAPP_LOAD_HOST_FILE_,(v),(d))
 /****************************************************************************/
 /****************************************************************************/
 
@@ -359,28 +390,70 @@ typedef struct tagYSPkgHeadStruct
 
 
 /****************************************************************************/
+/** define app                                                             **/
+/** MAXKEYBUF must < 0x7F                                                  **/
+/****************************************************************************/
+#define YSAPP_CMD_LEN           MAXKEYBUF
+#define YSAPP_SID_LEN           (BUFSIZE_32-1)
+/* YYYYMMDDHHMMSS[0000,9999][000000,000000][0000000,9999999] */
+#define YSAPP_NAME_LEN          MAXKEYBUF
+#define YSAPP_VER_LEN           MAXKEYBUF
+#define YSAPP_TMP_LEN           TMP_MAX_BUFFER
+#define YSAPP_FILENAME_LEN      (FILE_NAME_MAX-1)
+
+#define YSAPP_MIN_RECORD        64
+#define YSAPP_MAX_RECORD        1024
+ 
+#define YSDICT_VER_LEN          YSAPP_VER_LEN
+#define YSSERV_VER_LEN          YSAPP_VER_LEN
+#define YSSERV_NAME_LEN         YSAPP_NAME_LEN
+#define YSSERV_LIB_LEN          YSAPP_NAME_LEN
+/****************************************************************************/
+/****************************************************************************/
+
+/****************************************************************************/
 /** Service Call Tcp Type                                                  **/
 /****************************************************************************/
 #define YSPKG_HEAD_TYPE_SERVHASH    "SERVHASH"
 #define YSPKG_HEAD_TYPE_DICTHASH    "DICTHASH"
 
+#define YSAPP_SERV_CFG_TYPE_SYNC        0
+#define YSAPP_SERV_CFG_TYPE_SYNC_STR    "SYNC"
+#define YSAPP_SERV_CFG_TYPE_ASYNC       1
+#define YSAPP_SERV_CFG_TYPE_ASYNC_STR   "ASYNC"
+#define YSAPP_SERV_CFG_TYPE_ASYNC2      2
+#define YSAPP_SERV_CFG_TYPE_ASYNC2_STR  "ASYNC2"
+ 
+#define YSSERVICECALL_TYPE_MSG(t) \
+    ((YSAPP_SERV_CFG_TYPE_SYNC==(t)) \
+        ?YSAPP_SERV_CFG_TYPE_SYNC_STR \
+        :( \
+            (YSAPP_SERV_CFG_TYPE_ASYNC==(t)) \
+                ?YSAPP_SERV_CFG_TYPE_ASYNC_STR \
+                :YSAPP_SERV_CFG_TYPE_ASYNC2_STR \
+         ) \
+    )
+#define YSSERVICECALL_RTYPE_MSG(t) \
+    ((TRUE==(t))?"Remote Service":"Local Service")
 /****************************************************************************/
+/****************************************************************************/
+ 
+/****************************************************************************/
+/** YsPay Application manager                                              **/
 /****************************************************************************/
 
-/****************************************************************************/
-/** define app                                                             **/
-/****************************************************************************/
-#define YSAPP_CMD_LEN           (BUFSIZE_64-1)
-#define YSAPP_SID_LEN           (BUFSIZE_32-1)
-/* YYYYMMDDHHMMSS[0000,9999][000000,000000][0000000,9999999] */
-#define YSAPP_NAME_LEN          (BUFSIZE_64-1)
-#define YSAPP_VER_LEN           (BUFSIZE_64-1)
-#define YSAPP_TMP_LEN           (TMP_MAX_BUFFER)
- 
-#define YSDICT_VER_LEN          YSAPP_VER_LEN
-#define YSSERV_VER_LEN          YSAPP_VER_LEN
-#define YSSERV_NAME_LEN         YSAPP_NAME_LEN
-#define YSSERV_LIB_LEN          (BUFSIZE_128-1)
+#define YSMGR_TYPE_NOT              0
+#define YSMGR_TYPE_FILE             1
+#define YSMGR_TYPE_DICT             11
+#define YSMGR_TYPE_SERV             12
+#define YSMGR_TYPE_HOST             13
+#define YSMGR_TYPE_APP              14
+#define YSMGR_TYPE_MGRAPP           15
+#define YSMGR_TYPE_IS(v) \
+    ((YSMGR_TYPE_NOT==(v))||(YSMGR_TYPE_FILE==(v)) \
+    ||(YSMGR_TYPE_DICT==(v))||(YSMGR_TYPE_SERV==(v)) \
+    ||(YSMGR_TYPE_HOST==(v))||(YSMGR_TYPE_APP==(v)) \
+    ||(YSMGR_TYPE_MGRAPP==(v)) )
 /****************************************************************************/
 /****************************************************************************/
 

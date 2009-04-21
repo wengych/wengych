@@ -2,7 +2,7 @@
 /**[File Name    ]userbus.c                                               **/
 /**[File Path    ]$(SRCDIR)/libsrc/yscom                                  **/
 /**[Library Name ]libyscom.so                                             **/
-/**[Library Path ]$(HOME)/lib                                             **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/04/28                                              **/
@@ -309,7 +309,7 @@ void  YSUserBusShow(void *UserBus,INT32 T,void *Buf)
     Lock = NULL;
     if ( NULL!=(Lock=YSVarGetRes(UserBus)) )
     {
-        if ( YSRTN_OK!=YSPLockReadTryLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockReadTryLock(Lock) )
         {
             return ;
         }
@@ -328,7 +328,7 @@ BOOL  YSUserBusPack(void *UserBus,void *Buf)
     Lock = NULL;
     if ( NULL!=(Lock=YSVarGetRes(UserBus)) )
     {
-        if ( YSRTN_OK!=YSPLockReadTryLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockReadTryLock(Lock) )
         {
             return FALSE;
         }
@@ -357,7 +357,7 @@ INT32 YSUserBusUnPack(void **UserBus,void *Buf,INT32 P)
     }
     Pos = iRtn;
     Lock = NULL;
-    iRtn = YSRTN_ERVAR_UNPACK;
+    iRtn = RTNCODE_ERVAR_UNPACK;
     while( 1 )
     {
         if ( NULL==(Lock=YSPLockNewRWLock()) )
@@ -401,7 +401,7 @@ BOOL  YSUserBusIsEmpty(void *UserBus)
     Lock = NULL;
     if ( NULL!=(Lock=YSVarGetRes(UserBus)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");
@@ -439,7 +439,7 @@ void *YSUserBusGetArray(void *UserBus,const char *Key)
     Lock = NULL;
     if ( NULL!=(Lock=YSVarGetRes(UserBus)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");
@@ -482,7 +482,7 @@ void *YSUserBusArrayGet(void *UserBus,const char *Key,INT32 Idx)
     Lock = NULL;
     if ( NULL!=(Lock=YSVarGetRes(UserBus)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");
@@ -521,7 +521,7 @@ BOOL  YSUserBusDelete(void *UserBus,const char *Key)
 
     if ( NULL!=(Lock=YSVarGetRes(UserBus)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");
@@ -553,7 +553,7 @@ BOOL  YSUserBusArrayDelete(void *UserBus,const char *Key,INT32 Idx)
 
     if ( NULL!=(Lock=YSVarGetRes(UserBus)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");
@@ -693,7 +693,7 @@ BOOL  YSUserBusArrayAddVar(void *UserBus,INT32 Idx,void *V)
     }
     if ( NULL!=(Lock=YSVarGetRes(UserBus)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");
@@ -746,11 +746,11 @@ INT32 YSUserBusGetLen(void *UserBus)
     Lock = NULL;
     if ( NULL!=(Lock=YSVarGetRes(UserBus)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");
-            return YSRTN_ERAPP_ARG;
+            return RTNCODE_ERAPP_ARG;
         }
     }
     iRtn = YSVarHashGetLen(UserBus);
@@ -773,22 +773,22 @@ INT32 YSUserBusArrayGetLen(void *UserBus,const char *Key)
     {
         YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
             ,"Error : Key is null.");
-        return FERTN_ERAPP_ARG;
+        return RTNCODE_ERAPP_ARG;
     }
     if ( 0==strlen(Key) )
     {
         YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
             ,"Error : Key is null .");
-        return FERTN_ERAPP_ARG;
+        return RTNCODE_ERAPP_ARG;
     }
 
     if ( NULL!=(Lock=YSVarGetRes(UserBus)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");
-            return YSRTN_ERAPP_ARG;
+            return RTNCODE_ERAPP_ARG;
         }
     }
     iRtn = 0;
@@ -820,7 +820,7 @@ BOOL  YSUserBusArrayReplaceValue(void *UserBus \
 
     if ( NULL!=(Lock=YSVarGetRes(UserBus)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");

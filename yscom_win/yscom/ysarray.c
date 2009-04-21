@@ -2,7 +2,7 @@
 /**[File Name    ]ysarray.c                                               **/
 /**[File Path    ]$(SRCDIR)/libsrc/yscom                                  **/
 /**[Library Name ]libyscom.so                                             **/
-/**[Library Path ]$(HOME)/lib                                             **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/04/28                                              **/
@@ -232,7 +232,7 @@ void  YSArrayShow(void *Array,INT32 T,void *Buf)
     Lock = NULL;
     if ( NULL!=(Lock=YSVarGetRes(Array)) )
     {
-        if ( YSRTN_OK!=YSPLockReadTryLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockReadTryLock(Lock) )
         {
             return ;
         }
@@ -254,7 +254,7 @@ BOOL  YSArrayIsEmpty(void *Array)
     Lock = NULL;
     if ( NULL!=(Lock=YSVarGetRes(Array)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");
@@ -279,7 +279,7 @@ BOOL  YSArrayIsFull(void *Array)
     Lock = NULL;
     if ( NULL!=(Lock=YSVarGetRes(Array)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");
@@ -303,11 +303,11 @@ INT32 YSArrayGetLen(void *Array)
     Lock = NULL;
     if ( NULL!=(Lock=YSVarGetRes(Array)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");
-            return FERTN_ER;
+            return RTNCODE_ER;
         }
     }
     iRtn = YSVarArrayGetLen(Array);
@@ -328,7 +328,7 @@ void *YSArrayGet(void *Array,INT32 Idx)
     Obj = NULL;
     if ( NULL!=(Lock=YSVarGetRes(Array)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");
@@ -407,7 +407,7 @@ BOOL  YSArrayInsertVar(void *Array,INT32 Idx,void *Var)
     }
     if ( NULL!=(Lock=YSVarGetRes(Array)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");
@@ -486,7 +486,7 @@ BOOL  YSArrayAddVar(void *Array,void *Var)
     }
     if ( NULL!=(Lock=YSVarGetRes(Array)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");
@@ -511,7 +511,7 @@ BOOL  YSArrayDelete(void *Array,INT32 Idx)
     bRtn = FALSE;
     if ( NULL!=(Lock=YSVarGetRes(Array)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");

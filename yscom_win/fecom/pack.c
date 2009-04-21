@@ -2,7 +2,7 @@
 /**[File Name    ]pack.c                                                  **/
 /**[File Path    ]$(SRCDIR)/libsrc/fecom                                  **/
 /**[Library Name ]libfecom.so                                             **/
-/**[Library Path ]$(HOME)/lib                                             **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/04/28                                              **/
@@ -78,7 +78,7 @@ BOOL  FEUnPackFuncBool(void *Buf,INT32 P,BOOL *v)
     {
         return FALSE;
     }
-    *v = FERTN_CMPBOOL(0==vv);
+    *v = RTNCODE_CMPBOOL(0==vv);
     return TRUE;
 }
 

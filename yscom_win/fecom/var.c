@@ -2,7 +2,7 @@
 /**[File Name    ]var.c                                                   **/
 /**[File Path    ]$(TOPDIR)/src/libsrc/fecom                              **/
 /**[Library Name ]libfecom.so                                             **/
-/**[Library Path ]$(APPDIR)/lib                                           **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/11/11                                              **/
@@ -61,19 +61,19 @@ INT32 FEVarUnPack(void **VVar,void *Buf,INT32 P)
 {
     void *F;
     void *V;
-    if ( (NULL==VVar)||!FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_BIN) )
+    if ( (NULL==VVar)||!FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_BIN) )
     {
-        return FERTN_ERVAR_UNPACK;
+        return RTNCODE_ERVAR_UNPACK;
     }
     if ( NULL==(V=FEVarBinGet(Buf)) )
     {
-        return FERTN_ERVAR_UNPACK;
+        return RTNCODE_ERVAR_UNPACK;
     }
     if ( NULL!=(F=FEVarFuncVTGetFunc(((BYTE*)V)[P],FEVARTYPE_UNPACK_SUBFIX)) )
     {
         return ((funcarg3int)F)(VVar,Buf,(void *)P);
     }
-    return FERTN_ER;
+    return RTNCODE_ER;
 }
 
 BOOL  FEVarIsInit(void *Var)
@@ -89,6 +89,42 @@ BOOL  FEVarIsInit2(void *Var,INT32 VT)
 INT32 FEVarGetType(void *Var)
 {
     return FEVarTypeVTGet(Var);
+}
+
+BOOL  FEVarValueIsNot(void *Var)
+{
+    if ( !FEVarTypeIsInit(Var) )
+    {
+        return FALSE;
+    }
+    return RTNCODE_CMPBOOL(FEVARTYPEVALUE_ISNOT(Var));
+}
+ 
+BOOL  FEVarValueIsNull(void *Var)
+{
+    if ( !FEVarTypeIsInit(Var) )
+    {
+        return FALSE;
+    }
+    return RTNCODE_CMPBOOL(FEVARTYPEVALUE_ISNULL(Var));
+}
+
+BOOL  FEVarValueIsSet(void *Var)
+{
+    if ( !FEVarTypeIsInit(Var) )
+    {
+        return FALSE;
+    }
+    return RTNCODE_CMPBOOL(FEVARTYPEVALUE_ISSET(Var));
+}
+
+BOOL  FEVarHasKey(void *Var)
+{
+    if ( !FEVarTypeIsInit(Var) )
+    {
+        return FALSE;
+    }
+    return RTNCODE_CMPBOOL(FEVARTYPEKEY_HAVE(Var));
 }
 
 void *FEVarGetRes(void *Var)
@@ -118,6 +154,11 @@ BOOL  FEVarSetRes(void *Var,void *Res,void *Clone,void *Free,void *Show)
 BOOL  FEVarMoveRes(void *NVar,void *OVar)
 {
     return FEVarTypeResMove(NVar,OVar);
+}
+
+INT32 FEVarGetKeyHash(void *Var)
+{
+    return FEVarTypeKeyGetHash(Var);
 }
 
 INT32 FEVarGetKeyLen(void *Var)

@@ -2,7 +2,7 @@
 /**[File Name    ]ysfifo.c                                                **/
 /**[File Path    ]$(SRCDIR)/libsrc/yscom                                  **/
 /**[Library Name ]libyscom.so                                             **/
-/**[Library Path ]$(HOME)/lib                                             **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/04/28                                              **/
@@ -200,7 +200,7 @@ void  YSFifoShow(void *Fifo,INT32 T,void *Buf)
     Lock = NULL;
     if ( NULL!=(Lock=YSVarGetRes(Fifo)) )
     {
-        if ( YSRTN_OK!=YSPLockReadTryLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockReadTryLock(Lock) )
         {
             return ;
         }
@@ -222,7 +222,7 @@ BOOL  YSFifoIsEmpty(void *Fifo)
     Lock = NULL;
     if ( NULL!=(Lock=YSVarGetRes(Fifo)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");
@@ -246,11 +246,11 @@ INT32 YSFifoGetLen(void *Fifo)
     Lock = NULL;
     if ( NULL!=(Lock=YSVarGetRes(Fifo)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");
-            return YSRTN_ER;
+            return RTNCODE_ER;
         }
     }
     iRtn = YSVarFifoGetLen(Fifo);
@@ -273,7 +273,7 @@ BOOL  YSFifoPop(void *Fifo,void **V)
     Obj = NULL;
     if ( NULL!=(Lock=YSVarGetRes(Fifo)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");
@@ -320,7 +320,7 @@ BOOL  YSFifoPushValue(void *Fifo \
     Obj = NULL;
     if ( NULL!=(Lock=YSVarGetRes(Fifo)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");
@@ -370,7 +370,7 @@ BOOL  YSFifoPushString(void *Fifo,const char *Str,INT32 Len)
     }
     if ( NULL!=(Lock=YSVarGetRes(Fifo)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");
@@ -425,7 +425,7 @@ BOOL  YSFifoPushVar(void *Fifo,void *Var)
     }
     if ( NULL!=(Lock=YSVarGetRes(Fifo)) )
     {
-        if ( YSRTN_OK!=YSPLockWriteLock(Lock) )
+        if ( RTNCODE_OK!=YSPLockWriteLock(Lock) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSPLockWriteLock.");

@@ -2,7 +2,7 @@
 /**[File Name    ]vartype.c                                               **/
 /**[File Path    ]$(TOPDIR)/src/libsrc/fecom                              **/
 /**[Library Name ]libfecom.so                                             **/
-/**[Library Path ]$(APPDIR)/lib                                           **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/11/11                                              **/
@@ -22,24 +22,24 @@ INT32 FEVarVersionTest(void *v)
 {
     if ( !FEVarTypeIsInit(v) )
     {
-        return FERTN_ERAPP_ARG;
+        return RTNCODE_ERAPP_ARG;
     }
     if ( FEVARTYPE_VER_MAJOR<FEVARTYPE_MEM_VM(v) )
     {
-        return FERTN_OK2;
+        return RTNCODE_OK2;
     }
     if ( FEVARTYPE_VER_MAJOR==FEVARTYPE_MEM_VM(v) )
     {
         if ( FEVARTYPE_VER_SUB==FEVARTYPE_MEM_VS(v) )
         {
-            return FERTN_OK1;
+            return RTNCODE_OK1;
         }
         else if ( FEVARTYPE_VER_SUB<FEVARTYPE_MEM_VS(v) )
         {
-            return FERTN_OK2;
+            return RTNCODE_OK2;
         }
     }
-    return FERTN_OK;
+    return RTNCODE_OK;
 }
 
 void  FEVarTypeNFree(void *v)
@@ -80,7 +80,7 @@ BOOL  FEVarTypeIsInit2(void *v,INT32 VT)
     {
         return FALSE;
     }
-    return FERTN_CMPBOOL(VT==FEVARTYPE_MEM_VT(v));
+    return RTNCODE_CMPBOOL(VT==VARTYPE_MEM_VT(v));
 }
 
 BOOL  FEVarTypeMove(void *v,void *v2)
@@ -120,7 +120,7 @@ void  FEVarTypeInit(void *v)
     FEVARTYPE_INIT_VER(v);
     FEVARTYPE_MEM_VK_SET(v,FEVARTYPE_MEM_VK_NOT);
     FEVARTYPE_MEM_VV_SET(v,FEVARTYPE_MEM_VV_NOT);
-    FEVARTYPE_MEM_VT(v) = FEVARTYPE_MEM_VT_NOT;
+    VARTYPE_MEM_VT(v) = VARTYPE_MEM_VT_NOT;
     FEVARTYPE_MEM_ED(v) = FEVARTYPE_MEM_ED_BIG;
     FEVARTYPE_MEM_DP(v) = FEVARTYPE_MEM_DP_DEFAULT;
     FEVARTYPE_MEM_RES(v) = NULL;
@@ -145,7 +145,7 @@ BOOL  FEVarTypeVKIsNot(void *v)
     {
         return TRUE;
     }
-    return FERTN_CMPBOOL(FEVARTYPE_MEM_VK_NOT==FEVARTYPE_MEM_VK_GET(v));
+    return RTNCODE_CMPBOOL(FEVARTYPE_MEM_VK_NOT==FEVARTYPE_MEM_VK_GET(v));
 }
 
 void  FEVarTypeVKSetNot(void *v)
@@ -276,7 +276,7 @@ BOOL  FEVarTypePack(void *Buf,void *v,INT32 PL,void *PackInfo)
     {
         return FALSE;
     }
-    if ( !FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_BIN) )
+    if ( !FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_BIN) )
     {
         return FALSE;
     }
@@ -285,7 +285,7 @@ BOOL  FEVarTypePack(void *Buf,void *v,INT32 PL,void *PackInfo)
     {
         return FALSE;
     }
-    if ( !FEPackFuncByte(Buf,FEVARTYPE_MEM_VT(v)) )
+    if ( !FEPackFuncByte(Buf,VARTYPE_MEM_VT(v)) )
     {
         return FALSE;
     }
@@ -315,16 +315,16 @@ INT32 FEVarTypeUnPack(INT32 *PL,tFEVarType *VarType,void *Buf,INT32 P)
     
     if ( (NULL==PL)||(NULL==VarType)||(NULL==Buf) )
     {
-        return FERTN_ERAPP_ARG;
+        return RTNCODE_ERAPP_ARG;
     }
     if ( !FEUnPackFuncInt32(Buf,P,&LL) )
     {
-        return FERTN_ERVAR_UNPACK;
+        return RTNCODE_ERVAR_UNPACK;
     }
     memset(VarType,0,FEVARTYPE_ST_SIZE);
     if ( 0>=(iRtn=FEVarTypeKeyUnPack(VarType,Buf,P+INT32_SIZE)) )
     {
-        return FERTN_ERVAR_UNPACK;
+        return RTNCODE_ERVAR_UNPACK;
     }
     *PL = LL-INT32_SIZE-INT16_SIZE-FEVARTYPE_MEM_KL(VarType);
     return iRtn;
@@ -353,17 +353,17 @@ BYTE  FEVarTypeVTGet(void *v)
     {
         return 0;
     }
-    return FEVARTYPE_MEM_VT(v);
+    return VARTYPE_MEM_VT(v);
 }
 
 INT32 FEVarTypeVTSet(void *v,const BYTE vt)
 {
     if ( !FEVarTypeIsInit(v) )
     {
-        return FERTN_ERAPP_ARG;
+        return RTNCODE_ERAPP_ARG;
     }
-    FEVARTYPE_MEM_VT(v) = vt;
-    return FERTN_OK;
+    VARTYPE_MEM_VT(v) = vt;
+    return RTNCODE_OK;
 }
 
 BYTE  FEVarTypeEDGet(void *v)
@@ -579,6 +579,15 @@ BOOL  FEVarTypeResClone(void *v,void *v2)
     return TRUE;
 }
 
+INT32 FEVarTypeKeyGetHash(void *v)
+{
+    if ( FEVarTypeVKIsNot(v) )
+    {
+        return 0;
+    }
+    return FEVARTYPE_MEM_KH(v);
+}
+
 INT32 FEVarTypeKeyGetLen(void *v)
 {
     if ( FEVarTypeVKIsNot(v) )
@@ -776,7 +785,7 @@ BOOL  FEVarTypeKeyCmp(void *v,const char *Key,INT32 Len)
     {
         return FALSE;
     }
-    return FERTN_CMPBOOL(0==memcmp(FEVARTYPE_MEM_KEY(v),Key,Len));
+    return RTNCODE_CMPBOOL(0==memcmp(FEVARTYPE_MEM_KEY(v),Key,Len));
 }
 
 void  FEVarTypeKeyShow(void *v,INT32 T,void *Buf)
@@ -809,7 +818,7 @@ void  FEVarTypeKeyShow(void *v,INT32 T,void *Buf)
 
 BOOL  FEVarTypeKeyPack(void *v,void *Buf)
 {
-    if ( !FEVarTypeIsInit(v) || !FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_BIN) )
+    if ( !FEVarTypeIsInit(v) || !FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_BIN) )
     {
         return FALSE;
     }
@@ -832,11 +841,11 @@ INT32 FEVarTypeKeyUnPack(tFEVarType *VarType,void *Buf,INT32 P)
     void *V;
     if ( !FEUnPackFuncInt16(Buf,P,&(FEVARTYPE_MEM_KL(VarType))) )
     {
-        return FERTN_ERVAR_UNPACK;
+        return RTNCODE_ERVAR_UNPACK;
     }
     if ( NULL==(V=FEVarBinGet(Buf)) )
     {
-        return FERTN_ERVAR_UNPACK;
+        return RTNCODE_ERVAR_UNPACK;
     }
     FEVARTYPE_MEM_KEY(VarType) = ((char *)V)+P+INT16_SIZE;
     return P+INT16_SIZE+FEVARTYPE_MEM_KL(VarType);

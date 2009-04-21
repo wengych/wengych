@@ -2,7 +2,7 @@
 /**[File Name    ]varpointer.c                                            **/
 /**[File Path    ]$(TOPDIR)/src/libsrc/fecom                              **/
 /**[Library Name ]libfecom.so                                             **/
-/**[Library Path ]$(APPDIR)/lib                                           **/
+/**[Library Path ]$(SRCDIR)/lib                                           **/
 /**[Author       ]Wang Honggang                                           **/
 /**[Copyright    ]Wang Honggang                                           **/
 /**[Date         ]2008/11/11                                              **/
@@ -79,17 +79,17 @@ BOOL  FEVarPointer4Init(void *Var,INT32 Num)
     switch( Num )
     {
         case 1:
-            FEVarTypeVTSet(Var,FEVARTYPE_MEM_VT_P1);
+            FEVarTypeVTSet(Var,VARTYPE_MEM_VT_P1);
             break;
         case 2:
-            FEVarTypeVTSet(Var,FEVARTYPE_MEM_VT_P2);
+            FEVarTypeVTSet(Var,VARTYPE_MEM_VT_P2);
             break;
         case 3:
-            FEVarTypeVTSet(Var,FEVARTYPE_MEM_VT_P3);
+            FEVarTypeVTSet(Var,VARTYPE_MEM_VT_P3);
             break;
         case 4:
         default:
-            FEVarTypeVTSet(Var,FEVARTYPE_MEM_VT_P4);
+            FEVarTypeVTSet(Var,VARTYPE_MEM_VT_P4);
             break;
     }
     FEVARP4_MEM_V(Var,0) = NULL;
@@ -105,7 +105,7 @@ void  FEVarPointer4Show(void *Var,INT32 T,void *Buf)
     {
         return ;
     }
-    if ( !FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_STRING) )
     {
         return ;
     }
@@ -120,19 +120,19 @@ void  FEVarPointer4VShow(void *Var,INT32 T,void *Buf)
     {
         return;
     }
-    if ( !FEVarTypeIsInit2(Buf,FEVARTYPE_MEM_VT_STRING) )
+    if ( !FEVarTypeIsInit2(Buf,VARTYPE_MEM_VT_STRING) )
     {
         return ;
     }
     switch( FEVarTypeVTGet(Var) )
     {
-        case FEVARTYPE_MEM_VT_P4:
+        case VARTYPE_MEM_VT_P4:
             FEVarShow(FEVarPointer4GetP3(Var),T+1,Buf);
-        case FEVARTYPE_MEM_VT_P3:
+        case VARTYPE_MEM_VT_P3:
             FEVarShow(FEVarPointer4GetP2(Var),T+1,Buf);
-        case FEVARTYPE_MEM_VT_P2:
+        case VARTYPE_MEM_VT_P2:
             FEVarShow(FEVarPointer4GetP1(Var),T+1,Buf);
-        case FEVARTYPE_MEM_VT_P1:
+        case VARTYPE_MEM_VT_P1:
             FEVarShow(FEVarPointer4GetP0(Var),T+1,Buf);
             break;
         default:
@@ -142,80 +142,40 @@ void  FEVarPointer4VShow(void *Var,INT32 T,void *Buf)
  
 BOOL  FEVarPointer4IsFlag(void *Var,INT32 IDX)
 {
-#if 0
-    INT32 Idx;
-    UCHAR T;
-    if ( !FEVarTypeIsInit(Var) )
-    {
-        return FALSE;
-    }
-    if ( !FEVARP4_IDX_IS(IDX) )
-    {
-        return TRUE;
-    }
-    Idx = IDX/8;
-    T = 0x01 << (IDX%8);
-    return FERTN_CMPBOOL(0!=((FEVARP4_MEM_A(Var)[Idx]) & T));
-#else
     return FECharIsSetBit((FEVARP4_MEM_A(Var))[IDX/8],IDX%8);
-#endif
 }
 
 BOOL  FEVarPointer4SetFlag(void *Var,INT32 IDX)
 {
-#if 0
-    INT32 Idx;
-    UCHAR T;
-    if ( !FEVarTypeIsInit(Var) || !FEVARP4_IDX_IS(IDX) )
-    {
-        return FALSE;
-    }
-    Idx = IDX/8;
-    T = 0x01 << (IDX%8);
-    FEVARP4_MEM_A(Var)[Idx] = ((FEVARP4_MEM_A(Var)[Idx]) | T);
-    return TRUE;
-#else
     if ( !FEVarTypeIsInit(Var) || !FEVARP4_IDX_IS(IDX) )
     {
         return FALSE;
     }
     return FECharSetBit(&(FEVARP4_MEM_A(Var)[IDX/8]),(IDX%8),TRUE);
-#endif
 }
 
 BOOL  FEVarPointer4ClearFlag(void *Var,INT32 IDX)
 {
-#if 0
-    INT32 Idx;
-    UCHAR T;
-    if ( !FEVarTypeIsInit(Var) || !FEVARP4_IDX_IS(IDX) )
-    {
-        return FALSE;
-    }
-    Idx = IDX/8;
-    T = 0x01 << (IDX%8);
-    T = T ^ 0xFF;
-    FEVARP4_MEM_A(Var)[Idx] = ((FEVARP4_MEM_A(Var)[Idx]) & T);
-    return TRUE;
-#else
     if ( !FEVarTypeIsInit(Var) || !FEVARP4_IDX_IS(IDX) )
     {
         return FALSE;
     }
     return FECharSetBit(&(FEVARP4_MEM_A(Var)[IDX/8]),(IDX%8),FALSE);
-#endif
 }
 
-BOOL  FEVarPointer4SetP(void *Var,INT32 IDX,void *Value)
+BOOL  FEVarPointer4SetFunc(void *Var,INT32 IDX,void *Value,BOOL Flag)
 {
     if ( !FEVarTypeIsInit(Var) || !FEVARP4_IDX_IS(IDX) )
     {
         return FALSE;
     }
-    if ( FEVarPointer4IsFlag(Var,IDX) )
+    if ( Flag )
     {
-        FEVarFree(FEVarPointer4GetP(Var,IDX));
-        FEVARP4_MEM_V(Var,IDX) = NULL;
+        if ( FEVarPointer4IsFlag(Var,IDX) )
+        {
+            FEVarFree(FEVarPointer4GetP(Var,IDX));
+            FEVARP4_MEM_V(Var,IDX) = NULL;
+        }
     }
     FEVARP4_MEM_V(Var,IDX) = Value;
     if ( (NULL==FEVARP4_MEM_V(Var,0)) \
@@ -239,46 +199,6 @@ void *FEVarPointer4GetP(void *Var,INT32 IDX)
         return NULL;
     }
     return FEVARP4_MEM_V(Var,IDX);
-}
-
-BOOL  FEVarPointer4SetP0(void *Var,void *Value)
-{
-    return FEVarPointer4SetP(Var,0,Value);
-}
-
-void *FEVarPointer4GetP0(void *Var)
-{
-    return FEVarPointer4GetP(Var,0);
-}
-
-BOOL  FEVarPointer4SetP1(void *Var,void *Value)
-{
-    return FEVarPointer4SetP(Var,1,Value);
-}
-
-void *FEVarPointer4GetP1(void *Var)
-{
-    return FEVarPointer4GetP(Var,1);
-}
-
-BOOL  FEVarPointer4SetP2(void *Var,void *Value)
-{
-    return FEVarPointer4SetP(Var,2,Value);
-}
-
-void *FEVarPointer4GetP2(void *Var)
-{
-    return FEVarPointer4GetP(Var,2);
-}
-
-BOOL  FEVarPointer4SetP3(void *Var,void *Value)
-{
-    return FEVarPointer4SetP(Var,3,Value);
-}
-
-void *FEVarPointer4GetP3(void *Var)
-{
-    return FEVarPointer4GetP(Var,3);
 }
 
 void *FEVarPointer4Clone(void *Var)
@@ -310,7 +230,7 @@ void *FEVarPointer4Clone(void *Var)
                 Flag = FALSE;
                 break;
             }
-            if ( !FEVarPointer4SetP(N,i,V) )
+            if ( !FEVarPointer4Set(N,i,V) )
             {
                 Flag = FALSE;
                 break;
