@@ -92,49 +92,6 @@ BOOL  YSMHashUnPackIdx(void *MH,INT32 Idx,tYSMHashIdx *IB)
     return TRUE;
 }
 
-void *YSMHashNew()
-{
-    tYSMHashHead HS;
-    tYSMHashStruct *a;
-    void *MH;
-    BOOL bRtn;
-    if ( NULL==(MH=malloc(YSMHASH_ST_SIZE)) )
-    {
-        return NULL;
-    }
-    a = (tYSMHashStruct*)MH;
-    memset(MH,0,YSMHASH_ST_SIZE);
-    bRtn = FALSE;
-    while( 1 )
-    {
-        YSMHASH_MEM_ST(MH) = YSMHASH_ST_STRUCT;
-        if ( NULL==(YSMHASH_MEM_IBUF(MH)=YSVarBinNew()) )
-        {
-            break;
-        }
-        memset(&HS,0,sizeof(HS));
-        YSMHASHHEAD_INIT_LUCK(&HS);
-        YSMHASHHEAD_MEM_STA(&HS) = YSAPP_STATUS_NOT;
-        if ( !YSVarBinCat(YSMHASH_MEM_IBUF(MH),(void *)(&HS),sizeof(HS)) )
-        {
-            break;
-        }
-        if ( NULL==(YSMHASH_MEM_CBUF(MH)=YSVarBinNew()) )
-        {
-            break;
-        }
-        YSMHASH_INIT_LUCK(MH);
-        bRtn = TRUE;
-        break;
-    }
-    if ( !bRtn )
-    {
-        YSMHashFree(MH);
-        MH = NULL;
-    }
-    return MH;
-}
-
 void  YSMHashFree(void *MH)
 {
     if ( !YSMHashIsInit(MH) )
@@ -184,6 +141,49 @@ void  YSMHashFree(void *MH)
     YSMHASH_MEM_CLEN(MH) = 0;
     memset(YSMHASH_MEM_IIDX(MH),0,sizeof(YSMHASH_MEM_IIDX(MH)));
     free(MH);
+}
+
+void *YSMHashNew()
+{
+    tYSMHashHead HS;
+    tYSMHashStruct *a;
+    void *MH;
+    BOOL bRtn;
+    if ( NULL==(MH=malloc(YSMHASH_ST_SIZE)) )
+    {
+        return NULL;
+    }
+    a = (tYSMHashStruct*)MH;
+    memset(MH,0,YSMHASH_ST_SIZE);
+    bRtn = FALSE;
+    while( 1 )
+    {
+        YSMHASH_MEM_ST(MH) = YSMHASH_ST_STRUCT;
+        if ( NULL==(YSMHASH_MEM_IBUF(MH)=YSVarBinNew()) )
+        {
+            break;
+        }
+        memset(&HS,0,sizeof(HS));
+        YSMHASHHEAD_INIT_LUCK(&HS);
+        YSMHASHHEAD_MEM_STA(&HS) = YSAPP_STATUS_NOT;
+        if ( !YSVarBinCat(YSMHASH_MEM_IBUF(MH),(void *)(&HS),sizeof(HS)) )
+        {
+            break;
+        }
+        if ( NULL==(YSMHASH_MEM_CBUF(MH)=YSVarBinNew()) )
+        {
+            break;
+        }
+        YSMHASH_INIT_LUCK(MH);
+        bRtn = TRUE;
+        break;
+    }
+    if ( !bRtn )
+    {
+        YSMHashFree(MH);
+        MH = NULL;
+    }
+    return MH;
 }
 
 void  YSMHashShow(void *MH,INT32 T,void *Buf)
@@ -364,7 +364,7 @@ BOOL  YSMHashDictToShm(const char *Key,void *Var)
             YSVarBinGetLen(YSMHASH_MEM_CBUF(MH));
         FEEndianToNet(YSMHASHHEAD_MEM_CLEN(Head),INT32_SIZE);
         YSMHASHHEAD_INIT_LUCK(Head);
-        
+
         if ( !YSMHashShmUpdate(Key,MH) )
         {
             break;

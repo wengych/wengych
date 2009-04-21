@@ -5,15 +5,19 @@
  *      Author: wengych
  */
 
-#include <gtkmm/window.h>
+#include <gtkmm/dialog.h>
 #include <gtkmm/label.h>
+#include <gtkmm/frame.h>
+#include <gtkmm/box.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
+
+#include <iostream>
 
 #ifndef MAINWINDOW_H_
 #define MAINWINDOW_H_
 
-class MainWindow : public Gtk::Window
+class MainWindow: public Gtk::Dialog
 {
 public:
     MainWindow();
@@ -31,6 +35,11 @@ protected:
 
     WidgetArray m_inputWidgets;
     WidgetArray m_outputWidgets;
+
+    Gtk::Frame m_inputFrame;
+    Gtk::Frame m_outputFrame;
+
+    Gtk::VBox m_vBox;
 };
 
 #endif /* MAINWINDOW_H_ */
