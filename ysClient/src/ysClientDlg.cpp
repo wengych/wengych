@@ -373,7 +373,7 @@ void CysClientDlg::UpdateViewOut( void* key_array, void* recv_bus)
         {
             void* var_string = YSVarArrayGet(value_array, j);
             arrStringOutput.Add( A2T((char*)YSVarStringGet(var_string)) );
-            arrStringKey.Add( A2T((char*)YSVarStringGet(YSVarArrayGet(key_array, i))) );
+            arrStringKey.Add( Var2Control(YSVarArrayGet(key_array, i)) );
         }
     }
     
