@@ -3,14 +3,15 @@
 
 #pragma once
 
+class CWindow;
 
 // CysClientDlg 对话框
 class CysClientDlg : public CDialog
 {
-    typedef CAutoPtr<CWindow> StaticPtr;
-    typedef CAutoPtr<CWindow> EditPtr;
-    typedef CAutoPtrArray<CWindow> StaticAutoPtrArray;
-    typedef CAutoPtrArray<CWindow> EditAutoPtrArray;
+    typedef CAutoPtr<CStatic> StaticPtr;
+    typedef CAutoPtr<CEdit> EditPtr;
+    typedef CAutoPtrArray<CStatic> StaticAutoPtrArray;
+    typedef CAutoPtrArray<CEdit> EditAutoPtrArray;
 public:
 	CysClientDlg(CWnd* pParent = NULL);	// 标准构造函数
 
