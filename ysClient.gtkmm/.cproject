@@ -27,6 +27,8 @@
 <option id="gnu.cpp.compiler.option.include.paths.2095770485" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 <listOptionValue builtIn="false" value="/usr/include/gtkmm-2.4"/>
 <listOptionValue builtIn="false" value="/usr/include/glibmm-2.4"/>
+<listOptionValue builtIn="false" value="/usr/include/sigc++-2.0/sigc++"/>
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ysClient/include}&quot;"/>
 </option>
 <option id="gnu.cpp.compiler.option.other.other.366366694" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 " valueType="string"/>
 <inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1482205863" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
@@ -38,8 +40,10 @@
 </tool>
 <tool command="g++ `pkg-config gtkmm-2.4 --libs`" id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.2007686912" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug"/>
 <tool command="g++ `pkg-config --libs gtkmm-2.4`" id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.2093840777" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
-<option id="gnu.cpp.link.option.libs.899162694" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs"/>
-<option id="gnu.cpp.link.option.paths.1219389090" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths"/>
+<option id="gnu.cpp.link.option.libs.899162694" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs"/>
+<option id="gnu.cpp.link.option.paths.1219389090" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
+<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ysClient/lib}&quot;"/>
+</option>
 <inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1981508205" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 <additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 <additionalInput kind="additionalinput" paths="$(LIBS)"/>
