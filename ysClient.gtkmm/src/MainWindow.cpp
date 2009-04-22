@@ -17,14 +17,8 @@ MainWindow::MainWindow() :
 
     m_hBox.pack_start(m_inputFrame, Gtk::PACK_SHRINK);
 
-    Gtk::Entry* entry = new Gtk::Entry();
-    entry->set_text("in1");
-    entry->set_editable(false);
-    m_inputFrame.add_item(new Gtk::Label("__DICT_IN"), entry);
-    entry = new Gtk::Entry();
-    entry->set_text("in2");
-    entry->set_editable(false);
-    m_inputFrame.add_item(new Gtk::Label("__DICT_IN2"), entry);
+    m_inputFrame.add_item(new Gtk::Label("__DICT_IN"), new Gtk::Entry());
+    m_inputFrame.add_item(new Gtk::Label("__DICT_IN2"), new Gtk::Entry());
 
     m_hBox.pack_start(m_outputFrame, Gtk::PACK_SHRINK);
 
@@ -32,7 +26,6 @@ MainWindow::MainWindow() :
 
     this->get_vbox()->pack_start(m_vBox);
 
-    // show_all_children();
     show_all();
 }
 
