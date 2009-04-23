@@ -6,11 +6,11 @@
  */
 
 #include "MainWindow.h"
-#include <ysdef.h>
+// #include <ysdef.h>
 
 MainWindow::MainWindow() :
-    m_inputFrame("输入"), m_outputFrame("输出"), m_serviceList(1),
-            m_btnSendRequest("发送请求"), m_vBox(false, 5), m_hBox1(false, 5)
+    m_inputFrame("input"), m_outputFrame("output"), m_serviceList(1),
+            m_btnSendRequest("Send"), m_vBox(false, 5), m_hBox1(false, 5)
 {
     using namespace std;
     this->set_title("ysClient");
