@@ -1,4 +1,4 @@
-// ysClientDlg.cpp : ÊµÏÖÎÄ¼ş
+ï»¿// ysClientDlg.cpp : å®ç°æ–‡ä»¶
 //
 
 #include "stdafx.h"
@@ -19,7 +19,7 @@ const int VIEW_FLAG_IN = 1;
 const int input_test_count = 3;
 char* input_test[input_test_count] = { YSDICT_IN, YSDICT_IN, YSDICT_IN2 };
 
-// CysClientDlg ¶Ô»°¿ò
+// CysClientDlg å¯¹è¯æ¡†
 
 CysClientDlg::CysClientDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CysClientDlg::IDD, pParent), m_hSocket(0)
@@ -42,35 +42,35 @@ BEGIN_MESSAGE_MAP(CysClientDlg, CDialog)
 END_MESSAGE_MAP()
 
 
-// CysClientDlg ÏûÏ¢´¦Àí³ÌĞò
+// CysClientDlg æ¶ˆæ¯å¤„ç†ç¨‹åº
 
 BOOL CysClientDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	// ÉèÖÃ´Ë¶Ô»°¿òµÄÍ¼±ê¡£µ±Ó¦ÓÃ³ÌĞòÖ÷´°¿Ú²»ÊÇ¶Ô»°¿òÊ±£¬¿ò¼Ü½«×Ô¶¯
-	//  Ö´ĞĞ´Ë²Ù×÷
-	SetIcon(m_hIcon, TRUE);			// ÉèÖÃ´óÍ¼±ê
-	SetIcon(m_hIcon, FALSE);		// ÉèÖÃĞ¡Í¼±ê
+	// è®¾ç½®æ­¤å¯¹è¯æ¡†çš„å›¾æ ‡ã€‚å½“åº”ç”¨ç¨‹åºä¸»çª—å£ä¸æ˜¯å¯¹è¯æ¡†æ—¶ï¼Œæ¡†æ¶å°†è‡ªåŠ¨
+	//  æ‰§è¡Œæ­¤æ“ä½œ
+	SetIcon(m_hIcon, TRUE);			// è®¾ç½®å¤§å›¾æ ‡
+	SetIcon(m_hIcon, FALSE);		// è®¾ç½®å°å›¾æ ‡
 
-	// TODO: ÔÚ´ËÌí¼Ó¶îÍâµÄ³õÊ¼»¯´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ é¢å¤–çš„åˆå§‹åŒ–ä»£ç 
 
-	return TRUE;  // ³ı·Ç½«½¹µãÉèÖÃµ½¿Ø¼ş£¬·ñÔò·µ»Ø TRUE
+	return TRUE;  // é™¤éå°†ç„¦ç‚¹è®¾ç½®åˆ°æ§ä»¶ï¼Œå¦åˆ™è¿”å› TRUE
 }
 
-// Èç¹ûÏò¶Ô»°¿òÌí¼Ó×îĞ¡»¯°´Å¥£¬ÔòĞèÒªÏÂÃæµÄ´úÂë
-//  À´»æÖÆ¸ÃÍ¼±ê¡£¶ÔÓÚÊ¹ÓÃÎÄµµ/ÊÓÍ¼Ä£ĞÍµÄ MFC Ó¦ÓÃ³ÌĞò£¬
-//  Õâ½«ÓÉ¿ò¼Ü×Ô¶¯Íê³É¡£
+// å¦‚æœå‘å¯¹è¯æ¡†æ·»åŠ æœ€å°åŒ–æŒ‰é’®ï¼Œåˆ™éœ€è¦ä¸‹é¢çš„ä»£ç 
+//  æ¥ç»˜åˆ¶è¯¥å›¾æ ‡ã€‚å¯¹äºä½¿ç”¨æ–‡æ¡£/è§†å›¾æ¨¡å‹çš„ MFC åº”ç”¨ç¨‹åºï¼Œ
+//  è¿™å°†ç”±æ¡†æ¶è‡ªåŠ¨å®Œæˆã€‚
 
 void CysClientDlg::OnPaint()
 {
 	if (IsIconic())
 	{
-		CPaintDC dc(this); // ÓÃÓÚ»æÖÆµÄÉè±¸ÉÏÏÂÎÄ
+		CPaintDC dc(this); // ç”¨äºç»˜åˆ¶çš„è®¾å¤‡ä¸Šä¸‹æ–‡
 
 		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
 
-		// Ê¹Í¼±êÔÚ¹¤×÷Çø¾ØĞÎÖĞ¾ÓÖĞ
+		// ä½¿å›¾æ ‡åœ¨å·¥ä½œåŒºçŸ©å½¢ä¸­å±…ä¸­
 		int cxIcon = GetSystemMetrics(SM_CXICON);
 		int cyIcon = GetSystemMetrics(SM_CYICON);
 		CRect rect;
@@ -78,7 +78,7 @@ void CysClientDlg::OnPaint()
 		int x = (rect.Width() - cxIcon + 1) / 2;
 		int y = (rect.Height() - cyIcon + 1) / 2;
 
-		// »æÖÆÍ¼±ê
+		// ç»˜åˆ¶å›¾æ ‡
 		dc.DrawIcon(x, y, m_hIcon);
 	}
 	else
@@ -100,8 +100,8 @@ void CysClientDlg::OnExit()
     EndDialog(0);
 }
 
-//µ±ÓÃ»§ÍÏ¶¯×îĞ¡»¯´°¿ÚÊ±ÏµÍ³µ÷ÓÃ´Ëº¯ÊıÈ¡µÃ¹â±ê
-//ÏÔÊ¾¡£
+//å½“ç”¨æˆ·æ‹–åŠ¨æœ€å°åŒ–çª—å£æ—¶ç³»ç»Ÿè°ƒç”¨æ­¤å‡½æ•°å–å¾—å…‰æ ‡
+//æ˜¾ç¤ºã€‚
 HCURSOR CysClientDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
@@ -200,7 +200,7 @@ BOOL CysClientDlg::GenerateHeadStruct( void* hs )
  
 
     if ( 0>(YSVarHashUnPack(&Hash,  SendPkg, 0)) ) {
-        MessageBox(_T("½â°ühash³ö´í"));
+        MessageBox(_T("è§£åŒ…hashå‡ºé”™"));
         return FALSE;
     }
     YSVarHashShow(Hash, 0, Str);
@@ -225,22 +225,22 @@ void CysClientDlg::OldSend(  )
     }
 
     //     if (0 > send(m_hSocket, buff, sizeof(buff), 0)) {
-    //         MessageBox(_T("·¢ËÍÊ§°Ü"));
+    //         MessageBox(_T("å‘é€å¤±è´¥"));
     //         return;
     //     }
     if (FALSE == YSPkgTcpWrite(m_hSocket, time_out, &hs)) {
-        MessageBox(_T("·¢ËÍÊı¾İÊ§°Ü"));
+        MessageBox(_T("å‘é€æ•°æ®å¤±è´¥"));
         return ;
     }
 
-    // ÊÕ°ü
+    // æ”¶åŒ…
     Pkg = YSVarBinNew();
     if (FALSE == YSPkgTcpRead(m_hSocket, time_out, Pkg, &hs)) {
-        MessageBox(_T("½ÓÊÕÊı¾İÊ§°Ü"));
+        MessageBox(_T("æ¥æ”¶æ•°æ®å¤±è´¥"));
         return ;
     }
 
-    // ½â°ü
+    // è§£åŒ…
     if (0 > YSVarHashUnPack(&Hash, Pkg, YSPKG_HEADSTRUCT_MEM_HEADLEN(&hs))) {
         MessageBox(_T("UnPack failed!."));
         return ;
@@ -284,7 +284,7 @@ void CysClientDlg::NewSend()
             char *p = T2A(strUserInput.GetString());
             YSUserBusAddString(SendBus, input_test[i], p, strlen(p));
         }
-		// Êä³öSendBusµ½ÎÄ¼ş
+		// è¾“å‡ºSendBusåˆ°æ–‡ä»¶
 		OutputBusToFile(SendBus);
 
         if (FALSE == YSServiceClientCallSock(ip, 9000, time_out, SendBus, &RecvBus)) {
@@ -292,12 +292,12 @@ void CysClientDlg::NewSend()
             break;
         }
 
-		// Êä³öRecvBusµ½ÎÄ¼ş
+		// è¾“å‡ºRecvBusåˆ°æ–‡ä»¶
 		OutputBusToFile(RecvBus);
 
         if (!RecvBus)
         {
-            MessageBox(_T("½ÓÊÕÊı¾İ³ö´í£¬´´½¨½ÓÊÕbusÊ§°Ü"));
+            MessageBox(_T("æ¥æ”¶æ•°æ®å‡ºé”™ï¼Œåˆ›å»ºæ¥æ”¶buså¤±è´¥"));
             break;
         }
 
@@ -305,7 +305,7 @@ void CysClientDlg::NewSend()
         recv_key_array = YSVarArrayNew(0);
         if (!recv_key_array)
         {
-            MessageBox(_T("´´½¨½ÓÊÕµ½Êı¾İµÄkeyÊı×éÊ§°Ü"));
+            MessageBox(_T("åˆ›å»ºæ¥æ”¶åˆ°æ•°æ®çš„keyæ•°ç»„å¤±è´¥"));
             break;
         }
 
@@ -373,7 +373,7 @@ void CysClientDlg::UpdateViewOut( void* key_array, void* recv_bus)
         {
             void* var_string = YSVarArrayGet(value_array, j);
             arrStringOutput.Add( A2T((char*)YSVarStringGet(var_string)) );
-            arrStringKey.Add( Var2Control(YSVarArrayGet(key_array, i)) );
+            arrStringKey.Add( A2T((char*)YSVarStringGet(YSVarArrayGet(key_array, i))) );
         }
     }
     
@@ -383,7 +383,7 @@ void CysClientDlg::UpdateViewOut( void* key_array, void* recv_bus)
     HWND hGroup = this->GetDlgItem(IDC_GRP_OUT)->m_hWnd;
 
 
-    // Ïú»ÙÖ®Ç°´´½¨µÄ¿Ø¼ş¶ÔÏó
+    // é”€æ¯ä¹‹å‰åˆ›å»ºçš„æ§ä»¶å¯¹è±¡
     if (!arrStatic.IsEmpty()) {
         arrStatic.RemoveAll();
     }
@@ -452,7 +452,7 @@ void CysClientDlg::UpdateViewIn( void* key_array )// , HWND hGroup, StaticAutoPt
     EditAutoPtrArray& arrEdit = m_pEditIn;
     HWND hGroup = this->GetDlgItem(IDC_GRP_IN)->m_hWnd;
 
-    // Ïú»ÙÖ®Ç°´´½¨µÄ¿Ø¼ş¶ÔÏó
+    // é”€æ¯ä¹‹å‰åˆ›å»ºçš„æ§ä»¶å¯¹è±¡
     if (!arrStatic.IsEmpty()) {
         arrStatic.RemoveAll();
     }
