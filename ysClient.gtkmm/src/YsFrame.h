@@ -45,6 +45,7 @@ public:
 
     void Init();
     void add_item(Gtk::Label*, Gtk::Widget*);
+    void clear();
 
 protected:
     LabelPtrArray m_labels;

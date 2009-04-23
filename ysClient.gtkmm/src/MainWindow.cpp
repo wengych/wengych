@@ -25,12 +25,14 @@ MainWindow::MainWindow() :
     m_serviceList.append_text("First column");
     m_serviceList.append_text("Second column");
 
-    m_serviceList.add_events();
-    m_serviceList.signal_columns_changed().connect(sigc::mem_fun(*this,
-            &MainWindow::on_columns_changed));
+    // m_serviceList.add_events(Gdk::EventMask::ALL_EVENTS_MASK);
+    m_serviceList.signal_row_activated().connect(sigc::mem_fun(*this,
+            &MainWindow::on_service_list_raw_activated));
     m_hBox1.pack_start(m_serviceList, Gtk::PACK_SHRINK);
 
     //// ================
+    m_btnSendRequest.signal_clicked().connect(sigc::mem_fun(*this,
+            &MainWindow::on_send_button_clicked));
     m_hBox2.pack_start(m_btnSendRequest);
 
     //// ================
@@ -41,22 +43,47 @@ MainWindow::MainWindow() :
 
     show_all();
     std::cout << "show_all()" << std::endl;
+
+    std::cout << "service list selection: " << get_activated_row_in_service_list() << std::endl;
 }
 
-bool MainWindow::on_service_list_press(GdkEventButton* event)
+void MainWindow::on_service_list_raw_activated(const Gtk::TreeModel::Path&, Gtk::TreeViewColumn*)
 {
-    std::cout << "on_service_list_press" << std::endl;
+    std::cout << "on_service_list_raw_activated()" << std::endl;
+    std::cout << "service list selection: " << get_activated_row_in_service_list() << std::endl;
 
-    return true;
+    switch (get_activated_row_in_service_list()) {
+    case 0:
+        m_inputFrame.clear();
+        m_inputFrame.add_item(new Gtk::Label("__DICT_IN"), new Gtk::Entry());
+        m_inputFrame.add_item(new Gtk::Label("__DICT_IN2"), new Gtk::Entry());
+
+        break;
+    case 1:
+        m_inputFrame.clear();
+        m_inputFrame.add_item(new Gtk::Label("__DICT_IN"), new Gtk::Entry());
+        break;
+    default :
+        break;
+    }
+    m_inputFrame.show_all_children();
 }
 
-void MainWindow::on_columns_changed()
+void MainWindow::on_send_button_clicked()
 {
-    std::cout << "on_columns_changed()" << std::endl;
+    std::cout << "on_send_button_clicked" << std::endl;
+    std::cout << "service list selection: " << get_activated_row_in_service_list() << std::endl;
 
-    m_inputFrame.add_item(new Gtk::Label("__DICT_IN"), new Gtk::Entry());
-    m_inputFrame.add_item(new Gtk::Label("__DICT_IN2"), new Gtk::Entry());
 }
+
+int MainWindow::get_activated_row_in_service_list()
+{
+    if (m_serviceList.get_selected().size() == 1)
+        return m_serviceList.get_selected().at(0);
+    else
+        return -1;
+}
+
 MainWindow::~MainWindow()
 {
 }

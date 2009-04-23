@@ -26,6 +26,7 @@
 <option id="gnu.cpp.compiler.exe.debug.option.debugging.level.621661014" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 <option id="gnu.cpp.compiler.option.include.paths.2095770485" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 <listOptionValue builtIn="false" value="/usr/include/gtkmm-2.4"/>
+<listOptionValue builtIn="false" value="/usr/include/gdkmm-2.4"/>
 <listOptionValue builtIn="false" value="/usr/include/glibmm-2.4"/>
 <listOptionValue builtIn="false" value="/usr/include/sigc++-2.0/sigc++"/>
 <listOptionValue builtIn="false" value="&quot;${workspace_loc:/ysClient/include}&quot;"/>
@@ -40,7 +41,7 @@
 </tool>
 <tool command="g++ `pkg-config gtkmm-2.4 --libs`" id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.2007686912" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug"/>
 <tool command="g++ `pkg-config --libs gtkmm-2.4`" id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.2093840777" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
-<option id="gnu.cpp.link.option.libs.899162694" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs"/>
+<option id="gnu.cpp.link.option.libs.899162694" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs"/>
 <option id="gnu.cpp.link.option.paths.1219389090" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
 <listOptionValue builtIn="false" value="&quot;${workspace_loc:/ysClient/lib}&quot;"/>
 </option>

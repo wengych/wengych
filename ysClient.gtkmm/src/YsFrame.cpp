@@ -34,3 +34,8 @@ void YsFrame::add_item(Gtk::Label *label, Gtk::Widget *widget)
     m_vBox.pack_start(*pHBox, Gtk::PACK_SHRINK, 5);
 }
 
+void YsFrame::clear()
+{
+    m_hBoxArr.clear();
+
+}

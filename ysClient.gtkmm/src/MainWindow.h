@@ -11,6 +11,7 @@
 #include <gtkmm/button.h>
 #include <gtkmm/textview.h>
 #include <gtkmm/listviewtext.h>
+#include <gtkmm/treemodel.h>
 #include <gtkmm/box.h>
 
 #include <iostream>
@@ -26,8 +27,10 @@ public:
     MainWindow();
     virtual ~MainWindow();
 
-    bool on_service_list_press(GdkEventButton*);
-    void on_columns_changed();
+    void on_service_list_raw_activated(const Gtk::TreeModel::Path&, Gtk::TreeViewColumn*);
+    void on_send_button_clicked();
+
+    int get_activated_row_in_service_list();
 
 protected:
     YsFrame m_inputFrame;
