@@ -42,7 +42,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
+				AdditionalIncludeDirectories="..\yscom_win\include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__OS_WIN__"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -62,7 +63,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="yscom_win.lib"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories="lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -185,6 +188,10 @@
 				RelativePath=".\src\YsFrame.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\src\YsVarCpp.cc"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Í·ÎÄ¼þ"
@@ -197,6 +204,10 @@
 			</File>
 			<File
 				RelativePath=".\src\YsFrame.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\YsVarCpp.h"
 				>
 			</File>
 		</Filter>

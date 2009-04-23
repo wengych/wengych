@@ -43,7 +43,7 @@
 				AdditionalOptions="/D &quot;__OS_WIN__&quot;"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;$(ProjectDir)/include&quot;;&quot;$(ProjectDir)/fecom&quot;;&quot;$(ProjectDir)/yscom&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;__OS_WIN__"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
