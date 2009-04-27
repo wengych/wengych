@@ -162,32 +162,75 @@ void *YSHostLoadFromFile2(const char *Key,const char *FileName);
 /****************************************************************************/
 /** Share memory func( Shm/Mem <=> VarHash )                               **/
 /****************************************************************************/
+/* memhead.c */
 void  YSMPHeadShow(void *Head,INT32 T,void *Buf);
+BOOL  YSMPHeadSetHashIdx(void *IBuf,INT32 Max,INT32 Idx,INT32 Len);
+BOOL  YSMPHeadIsInit(void *Head,INT32 Size);
+BOOL  YSMPHeadUpdateTime(void *Head,INT32 Size);
+BOOL  YSMPHeadNeedUpdate(void *Head,INT32 Size,INT32 Time);
+BOOL  YSMPHeadLenPlus(void *Head,INT32 Size,BOOL Flag);
+/* memidx.c */
+INT32 YSMPIdxSize();
+BOOL  YSMPIdxAdd(void *IBuf,INT32 HK,INT32 Pos,INT32 Len);
+BOOL  YSMPIdxSet(void *Buf,INT32 Size,INT32 HK,INT32 Pos,INT32 Len);
+BOOL  YSMPIdxUpdateHK(void *Buf,INT32 Size,INT32 HK);
+BOOL  YSMPIdxUpdateAddr(void *Buf,INT32 Size,INT32 Pos,INT32 Len);
+BOOL  YSMPIdxUnPack(void *MH,INT32 Idx,void **IB,INT32 *PL);
+BOOL  YSMPIdxUnPackByPos(void *MH,INT32 Pos,void **IB,INT32 *PL);
+BOOL  YSMPIdxCmpHashKey(void *IB,INT32 Size,INT32 HK);
+BOOL  YSMPIdxGetAddr(void *IB,INT32 Size,INT32 *PA,INT32 *PL);
+
+/* mempkg.c */
+#ifdef __OS_LINUX__
+BOOL  YSMPShmIsReady(const char *ShmPath);
+#endif
 BOOL  YSMPIsInit(void *MH);
 BOOL  YSMPIsMemInit(void *MH);
+#ifdef __OS_LINUX__
 BOOL  YSMPIsShmInit(void *MH);
+#endif
 BOOL  YSMPIsStructInit(void *MH);
+INT32 YSMPGetHeadSize();
+INT32 YSMPGetHeadSize2(void *MH);
+void *YSMPGetHead(void *MH);
+void *YSMPGetIdx(void *MH);
+void *YSMPGetCtx(void *MH);
 void *YSMPGetIBuf(void *MH);
 void *YSMPGetCBuf(void *MH);
+INT32 YSMPGetSize(void *MH);
+INT32 YSMPGetMax(void *MH);
+INT32 YSMPGetLen(void *MH);
+INT32 YSMPGetIdxSize(void *MH);
+INT32 YSMPGetIdxLen(void *MH);
+INT32 YSMPGetCtxSize(void *MH);
+INT32 YSMPGetCtxLen(void *MH);
+
 void *YSMPNew();
 void  YSMPFree(void *MH);
 void  YSMPShow(void *MH,INT32 T,void *Buf);
+BOOL  YSMPMallocBuf(void *MH,INT32 NewSize,BOOL Flag);
 void *YSMPClone(void *MHS);
 BOOL  YSMPMemFind(void *MH,const char *Key,INT32 Idx \
     ,INT32 *PIdx,void **V,INT32 *PL);
-BOOL  YSMPToMem(void **MHS,void *Var,INT32 Max);
+BOOL  YSMPMemFind2(void *MH,INT32 HashKey,INT32 Idx \
+    ,INT32 *PIdx,void **V,INT32 *PL);
+BOOL  YSMPToMem(void **MHS,void *Var);
 BOOL  YSMPHashToMem(void *Var,void *IBuf,void *CBuf);
 BOOL  YSMPArrayToMem(void *Var,void *IBuf,void *CBuf);
+BOOL  YSMPStructToMem(void *Var,void *IBuf,void *CBuf);
 void *YSMPFromMem(void *MHS);
-void *YSMPHashFromVarBin(void *Bin);
+void *YSMPHashFromVarBin(void *Bin,INT32 Max);
 void *YSMPArrayFromVarBin(void *Bin);
+void *YSMPStructFromMP(void *MHS);
 #ifdef __OS_LINUX__
-BOOL  YSMPToShm(const char *Key,void *Var,INT32 Max);
+BOOL  YSMPToShm(const char *Key,void *Var);
 BOOL  YSMPFromShm(void **Var,const char *Key);
 void *YSMPShmFind(const char *File,const char *Key);
 BOOL  YSMPShmFind2(const char *File,const char *Key,INT32 Idx,void *Buf);
 BOOL  YSMPShmMultiFind(const char *Ver,void *Arr,void *Buf);
 #endif
+void *YSMPStructNew(const char *Key,INT32 Len,INT32 Max \
+    ,INT32 IdxLen,INT32 CtxLen,void *IBuf,void *CBuf);
 
 #ifdef __OS_LINUX__
 void *YSMPCloneFromShm(const char *Key);
@@ -195,8 +238,11 @@ void *YSMPCloneFromShm(const char *Key);
 
 #ifdef __OS_LINUX__
 BOOL  YSDictToShm(const char *Ver);
+BOOL  YSDictToShm2(const char *Ver,const char *FileName);
 BOOL  YSServToShm(const char *Ver);
+BOOL  YSServToShm2(const char *Ver,const char *FileName);
 BOOL  YSHostToShm(const char *File);
+BOOL  YSHostToShm2(const char *File,const char *FileName);
 #endif
 
 /****************************************************************************/
@@ -211,6 +257,8 @@ BOOL  YSHostToShm(const char *File);
 #define YSDICT_OUT2         "__DICT_OUT2"
 #define YSDICT_BIN          "__DICT_BIN"
 #define YSDICT_BIN2         "__DICT_BIN2"
+#define YSDICT_FLAG         "__DICT_FLAG"
+#define YSDICT_FLAG2        "__DICT_FLAG2"
  
 /** Application Information **/
 #define YSDICT_APPNAME      "__DICT_APP_NAME"
@@ -239,6 +287,8 @@ BOOL  YSHostToShm(const char *File);
 /** UserThd install info */
 #define YSDICT_USERTHD_INSTALL "__DICT_USERTHD_INSTALL"
  
+#define YSDICT_USER_RTN     "__DICT_USER_RTN"
+#define YSDICT_USER_RTNMSG  "__DICT_USER_RTNMSG"
 /****************************************************************************/
 /****************************************************************************/
 

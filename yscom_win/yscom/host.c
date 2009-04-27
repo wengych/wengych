@@ -61,8 +61,6 @@ char *YSHostGetFileName(char *Str,INT32 Size,const char *FileName)
 }
 #endif
 
-
-
 INT32 YSHostGetFiledLen()
 {
     return YSHOSTSTRUCT_ST_NUM;

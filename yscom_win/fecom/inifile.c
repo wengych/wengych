@@ -192,7 +192,7 @@ INT32 FEIniAnalyse(void *fp,tFEIniArgs *pt,void **Array)
         memset(Line,0,sizeof(Line));
         if ( NULL==fgets(Line,sizeof(Line)-1,fp) )
         {
-            if ( feof((FILE*)fp) )
+            if ( feof(fp) )
             {
                 iRtn = (0==pt->Flag)?RTNCODE_OK:RTNCODE_OK1;
                 pt->Flag = 0;
@@ -216,7 +216,7 @@ INT32 FEIniAnalyse(void *fp,tFEIniArgs *pt,void **Array)
         if ( ('['==Line[0])&&(']'==Line[LL-1]) )
         {
             pt->Flag ++;
-            if ( 1==pt->Flag )
+            if ( 1==pt->Flag )  
             {
                 if ( !FEVarCpyKey(*Array,Line+1,LL-1-1) )
                 {
@@ -231,7 +231,7 @@ INT32 FEIniAnalyse(void *fp,tFEIniArgs *pt,void **Array)
         }
         if ( 2==pt->Flag )
         {
-
+            
             pt->Flag = 1;
             iRtn = RTNCODE_OK1;
             break;

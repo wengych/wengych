@@ -305,9 +305,15 @@ BOOL  FEVarStringSetLen(void *Var,INT32 Len)
     {
         return FALSE;
     }
-    FEVARSTRING_MEM_L(Var) = FECAL_MAX(Len,0);
-    FEVARSTRING_MEM_L(Var) = \
-        FECAL_MIN(FEVARSTRING_MEM_L(Var),FEVARSTRING_MEM_S(Var)-1);
+    if ( Len>FEVARSTRING_MEM_L(Var) )
+    {
+        if ( !FEVarStringMalloc(Var,Len-FEVARSTRING_MEM_L(Var)+1) )
+        {
+            return FALSE;
+        }
+    }
+    FEVARSTRING_MEM_L(Var) = FECAL_MIN(Len,FEVARSTRING_MEM_S(Var)-1);
+    FEVARSTRING_MEM_L(Var) = FECAL_MAX(FEVARSTRING_MEM_L(Var),0);
     if ( FEVARSTRING_MEM_S(Var)>FEVARSTRING_MEM_L(Var) )
     {
         memset(((BYTE*)FEVARSTRING_MEM_V(Var))+FEVARSTRING_MEM_L(Var) \
@@ -435,7 +441,7 @@ BOOL  FEVarStringCat(void *Var,void *V,INT32 L)
     {
         return TRUE;
     }
-    if ( !FEVarStringRealloc(Var,L) )
+    if ( !FEVarStringMalloc(Var,L) )
     {
         return FALSE;
     }

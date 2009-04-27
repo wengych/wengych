@@ -61,7 +61,7 @@ BOOL  YSMPShmUpdate(const char *Key,void *MH)
             {
                 YSTracesInfo(YSAppArgsGetLogArgs() \
                     ,YSSETTRACE(Tmp,sizeof(Tmp)) \
-                    ,"Info : Recreate share memory(%d<%s)." \
+                    ,"Info : Recreate share memory(%d<%d)." \
                     ,ds.shm_segsz,YSMP_MEM_SIZE(MH));
                 FEShmDestroyById(Id);
                 Flag = TRUE;
@@ -130,7 +130,7 @@ void *YSMPCloneFromShm(const char *Key)
     if ( 0>(Id=FEShmGetId(Key)) )
     {
         YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
-            ,"Error : Failed at FEShmGetId.");
+            ,"Error : Failed at FEShmGetId(%s).",Key);
         return FALSE;
     }
 
@@ -141,10 +141,10 @@ void *YSMPCloneFromShm(const char *Key)
             ,"Error : Failed at FEShmGetStatById(%d).\n",Id);
         return FALSE;
     }
-    if ( NULL==(Shm=FEShmReadGetById(Id)) )
+    if ( NULL==(Shm=FEShmWriteGetById(Id)) )
     {
         YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
-            ,"Error : Failed at FEShmReadGetByKey(%d).",Id);
+            ,"Error : Failed at FEShmWriteGetByKey(%d).",Id);
         return FALSE;
     }
     MHS = NULL;
@@ -171,6 +171,7 @@ void *YSMPCloneFromShm(const char *Key)
     }
     return MHS;
 }
+
 #endif
 
 #ifdef __cplusplus

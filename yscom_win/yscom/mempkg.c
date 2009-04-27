@@ -10,81 +10,34 @@
 /**[Memo         ]define func for share memory ( hash )                   **/
 /**[Modify       ]                                                        **/
 /***************************************************************************/
-#ifdef __OS_WIN__
-#include <winsock2.h>
-#ifdef _WINDEF_
-#ifndef __OS_WIN_WINDEF__
-#define __OS_WIN_WINDEF__ 1
-#endif
-#endif
-#endif
 #include <mempkg.h>
 
 #ifdef __cplusplus
 extern "C"{
 #endif
  
-void  YSMPHeadShow(void *Head,INT32 T,void *Buf)
+#ifdef __OS_LINUX__
+BOOL  YSMPShmIsReady(const char *ShmPath)
 {
-    char Log[YSAPP_TMP_LEN];
-    char Tab[BUFSIZE_64];
-    INT32 i;
-    INT32 L;
+    void *MHS;
+    BOOL bRtn;
  
-    if ( !YSMPIsInit(Head)||!YSVarIsInit2(Buf,VARTYPE_MEM_VT_STRING) )
+    bRtn = FALSE;
+    MHS = NULL;
+    while( 1 )
     {
-        return ;
-    }
-    memset(Tab,0,sizeof(Tab));
-    YSVarToolsInitBufSpace(Tab,sizeof(Tab),T+1);
-
-    memset(Log,0,sizeof(Log));
-    snprintf(Log,sizeof(Log),"%s<Size>%d / %08X</Size>\n"
-         "%s<Status>%s</Status>\n"
-         "%s<Type>%d</Type>\n"
-         "%s<Ver>%s</Ver>\n"
-         "%s<Max>%d / %08X</Max>\n"
-         "%s<Len>%d / %08X</Len>\n"
-         "%s<ILen>%d / %08X</ILen>\n"
-         "%s<CLen>%d / %08X</CLen>\n"
-        ,Tab,ntohl(*(INT32*)(YSMPHEAD_MEM_SIZE(Head))) \
-            ,*(INT32*)(YSMPHEAD_MEM_SIZE(Head)) \
-        ,Tab,YSAPP_STATUS_STR(YSMPHEAD_MEM_STA(Head)) \
-        ,Tab,YSMPHEAD_MEM_TYPE(Head) \
-        ,Tab,YSMPHEAD_MEM_VER(Head) \
-        ,Tab,ntohl(*((INT32*)(YSMPHEAD_MEM_MAX(Head)))) \
-            ,*(INT32*)(YSMPHEAD_MEM_MAX(Head)) \
-        ,Tab,ntohl(*((INT32*)(YSMPHEAD_MEM_LEN(Head)))) \
-            ,*(INT32*)(YSMPHEAD_MEM_LEN(Head)) \
-        ,Tab,ntohl(*(INT32*)(YSMPHEAD_MEM_ILEN(Head))) \
-            ,*(INT32*)(YSMPHEAD_MEM_ILEN(Head)) \
-        ,Tab,ntohl(*(INT32*)(YSMPHEAD_MEM_CLEN(Head))) \
-            ,*(INT32*)(YSMPHEAD_MEM_CLEN(Head)));
-    YSVarStringCat(Buf,Log,strlen(Log));
-    memset(Log,0,sizeof(Log));
-    L = 0;
-    for ( i=0;i<YSMP_HEAD_BASE;i++ )
-    {
-        if ( L > sizeof(Log)/2 )
+        if ( NULL==(MHS=YSMPCloneFromShm(ShmPath)) )
         {
-            YSVarStringCat(Buf,Log,L);
-            memset(Log,0,sizeof(Log));
-            L = 0;
+            break;
         }
-        snprintf(Log+L,sizeof(Log)-L,"%s<Idx>\n"
-             "%s <Addr>%d / %08X</Addr>\n"
-             "%s <Len>%d / %08X</Len>\n"
-             "%s</Idx>\n"
-            ,Tab \
-            ,Tab,ntohl(*(INT32*)(YSMPHEAD_MEM_IDX_ADDR(Head,i))) \
-                ,*(INT32*)(YSMPHEAD_MEM_IDX_ADDR(Head,i)) \
-            ,Tab,ntohl(*(INT32*)(YSMPHEAD_MEM_IDX_LEN(Head,i))) \
-                ,*(INT32*)(YSMPHEAD_MEM_IDX_LEN(Head,i)) \
-            ,Tab);
-        L += strlen(Log+L);
+        bRtn = YSMPIsInit(MHS);
+        break;
     }
-    YSVarStringCat(Buf,Log,L);
+    YSMPFree(MHS);
+    MHS = NULL;
+    return bRtn;
 }
+#endif
 
 BOOL  YSMPIsInit(void *MH)
 {
@@ -122,11 +75,55 @@ BOOL  YSMPIsStructInit(void *MH)
     return RTNCODE_CMPBOOL(YSMP_ST_STRUCT==YSMP_MEM_ST(MH));
 }
 
+INT32 YSMPGetHeadSize()
+{
+    return YSMPHEAD_ST_SIZE;
+}
+
+INT32 YSMPGetHeadSize2(void *MH)
+{
+    if ( !YSMPIsInit(MH) )
+    {
+        return RTNCODE_ER;
+    }
+fprintf(stderr,"---YSMPGetHeadSize2,Size=%d,Max=%d.\n",YSMPHEAD_ST_SIZE_CAL(YSMP_MEM_MAX(MH)),YSMP_MEM_MAX(MH));
+    return YSMP_CT_ISHASH(YSMP_MEM_CT(MH)) \
+        ?YSMPHEAD_ST_SIZE_CAL(YSMP_MEM_MAX(MH)) \
+        :YSMPHEAD_ST_SIZE;
+}
+ 
+void *YSMPGetHead(void *MH)
+{
+    if ( !YSMPIsInit(MH) )
+    {
+        return NULL;
+    }
+    return YSMP_MEM_HEAD(MH);
+}
+
+void *YSMPGetIdx(void *MH)
+{
+    if ( !YSMPIsInit(MH) )
+    {
+        return NULL;
+    }
+    return YSMP_MEM_IDX(MH);
+}
+
+void *YSMPGetCtx(void *MH)
+{
+    if ( !YSMPIsInit(MH) )
+    {
+        return NULL;
+    }
+    return YSMP_MEM_CTX(MH);
+}
+
 void *YSMPGetIBuf(void *MH)
 {
     if ( !YSMPIsMemInit(MH) )
     {
-        return FALSE;
+        return NULL;
     }
     return YSMP_MEM_IBUF(MH);
 }
@@ -135,149 +132,72 @@ void *YSMPGetCBuf(void *MH)
 {
     if ( !YSMPIsMemInit(MH) )
     {
-        return FALSE;
+        return NULL;
     }
     return YSMP_MEM_CBUF(MH);
 }
 
-BOOL  YSMPPackBase(void *IBuf,INT32 Idx,INT32 Len)
+INT32 YSMPGetSize(void *MH)
 {
-    void *V;
-    INT32 L;
-    if ( !YSVarIsInit2(IBuf,VARTYPE_MEM_VT_BIN) \
-        || ( (0>Idx)||(YSMP_HEAD_BASE<=Idx) ) \
-        || (0>Len) )
+    if ( !YSMPIsInit(MH) )
     {
-        return FALSE;
+        return RTNCODE_ER;
     }
-    if ( NULL==(V=YSVarBinGet(IBuf)) )
-    {
-        return FALSE;
-    }
-    L = YSVarBinGetLen(IBuf);
-    if ( YSMPHEAD_ST_SIZE>L )
-    {
-        return FALSE;
-    }
-    
-    *(INT32 *)(YSMPHEAD_MEM_IDX_ADDR(V,Idx)) = L-YSMPHEAD_ST_SIZE;
-    *(INT32 *)(YSMPHEAD_MEM_IDX_LEN(V,Idx)) = Len;
-    FEEndianToNet(YSMPHEAD_MEM_IDX_ADDR(V,Idx),INT32_SIZE);
-    FEEndianToNet(YSMPHEAD_MEM_IDX_LEN(V,Idx),INT32_SIZE);
-    return TRUE;
+    return YSMP_MEM_SIZE(MH);
 }
 
-BOOL  YSMPPackIdx(void *IBuf,INT32 HK,INT32 Pos,INT32 Len)
+INT32 YSMPGetMax(void *MH)
 {
-    tYSMPIdx IB;
-    if ( !YSMPPackIdx2(&IB,sizeof(IB),HK,Pos,Len) )
+    if ( !YSMPIsInit(MH) )
     {
-        return FALSE;
+        return RTNCODE_ER;
     }
-    return YSVarBinCat(IBuf,&IB,sizeof(IB));
+    return YSMP_MEM_MAX(MH);
 }
 
-BOOL  YSMPPackIdx2(void *Buf,INT32 Size,INT32 HK,INT32 Pos,INT32 Len)
+INT32 YSMPGetLen(void *MH)
 {
-    INT32 P;
-    P = 0;
-    if ( !YSMPUpdateIdxHK(((BYTE*)Buf)+P,Size-P,HK) )
+    if ( !YSMPIsInit(MH) )
     {
-        return FALSE;
+        return RTNCODE_ER;
     }
-    P += INT32_SIZE;
-    return YSMPUpdateIdxAddr(((BYTE*)Buf)+P,Size-P,Pos,Len);
+    return YSMP_MEM_LEN(MH);
 }
 
-BOOL  YSMPUpdateIdxHK(void *Buf,INT32 Size,INT32 HK)
+INT32 YSMPGetIdxSize(void *MH)
 {
-    if ( (NULL==Buf)||(INT32_SIZE>Size)||(0==HK) )
+    if ( !YSMPIsInit(MH) )
     {
-        return FALSE;
+        return RTNCODE_ER;
     }
-    *(INT32 *)(YSMPIDX_MEM_HK(Buf)) = YSCAL_MAX(0,HK);
-    FEEndianToNet(YSMPIDX_MEM_HK(Buf),INT32_SIZE);
-    return TRUE;
+    return YSMP_MEM_IDXSIZE(MH);
 }
 
-BOOL  YSMPUpdateIdxAddr(void *Buf,INT32 Size,INT32 Pos,INT32 Len)
+INT32 YSMPGetIdxLen(void *MH)
 {
-    if ( (NULL==Buf)||(INT32_SIZE+INT32_SIZE>Size) )
+    if ( !YSMPIsInit(MH) )
     {
-        return FALSE;
+        return RTNCODE_ER;
     }
-    *(INT32 *)(YSMPIDX_MEM_A(Buf)) = YSCAL_MAX(0,Pos);
-    FEEndianToNet(YSMPIDX_MEM_A(Buf),INT32_SIZE);
-    *(INT32 *)(YSMPIDX_MEM_L(Buf)) = YSCAL_MAX(0,Len);
-    FEEndianToNet(YSMPIDX_MEM_L(Buf),INT32_SIZE);
-    return TRUE;
+    return YSMP_MEM_ILEN(MH);
 }
 
-BOOL  YSMPUnPackIdx(void *MH,INT32 Idx,tYSMPIdx *IB)
+INT32 YSMPGetCtxSize(void *MH)
 {
-    if ( !YSMPIsInit(MH)||(0>Idx)||(NULL==IB) )
+    if ( !YSMPIsInit(MH) )
     {
-        return FALSE;
+        return RTNCODE_ER;
     }
-    if ( YSMP_MEM_LEN(MH)<=Idx )
-    {
-        return FALSE;
-    }
-    memset(IB,0,sizeof(tYSMPIdx));
-    memcpy(IB,((BYTE*)YSMP_MEM_IDX(MH))+Idx*YSMPIDX_ST_SIZE \
-        ,YSMPIDX_ST_SIZE);
-    FEEndianToHost(YSMPIDX_MEM_HK(IB),INT32_SIZE);
-    FEEndianToHost(YSMPIDX_MEM_A(IB),INT32_SIZE);
-    FEEndianToHost(YSMPIDX_MEM_L(IB),INT32_SIZE);
-    return TRUE;
+    return YSMP_MEM_CTXSIZE(MH);
 }
 
-BOOL  YSMPUnPackIdx2(void *MH,INT32 Idx,void **IB,INT32 *PL)
+INT32 YSMPGetCtxLen(void *MH)
 {
-    if ( !YSMPIsInit(MH)||(0>Idx)||(NULL==IB)||(NULL==PL) )
+    if ( !YSMPIsInit(MH) )
     {
-        return FALSE;
+        return RTNCODE_ER;
     }
-    if ( YSMP_MEM_LEN(MH)<=Idx )
-    {
-        return FALSE;
-    }
-    *IB = ((BYTE*)YSMP_MEM_IDX(MH))+Idx*YSMPIDX_ST_SIZE;
-    *PL = YSMPIDX_ST_SIZE;
-    return TRUE;
-}
-
-BOOL  YSMPUnPackIdxByPos(void *MH,INT32 Pos,tYSMPIdx *IB)
-{
-    if ( !YSMPIsInit(MH)||(0>Pos)||(NULL==IB) )
-    {
-        return FALSE;
-    }
-    if ( (YSMP_MEM_ILEN(MH)<=Pos)||(0!=(Pos%YSMPIDX_ST_SIZE)) )
-    {
-        return FALSE;
-    }
-    memset(IB,0,sizeof(tYSMPIdx));
-    memcpy(IB,((BYTE*)YSMP_MEM_IDX(MH))+Pos,YSMPIDX_ST_SIZE);
-    FEEndianToHost(YSMPIDX_MEM_HK(IB),INT32_SIZE);
-    FEEndianToHost(YSMPIDX_MEM_A(IB),INT32_SIZE);
-    FEEndianToHost(YSMPIDX_MEM_L(IB),INT32_SIZE);
-    return TRUE;
-}
-
-BOOL  YSMPUnPackIdxByPos2(void *MH,INT32 Pos,void **IB,INT32 *PL)
-{
-    if ( !YSMPIsInit(MH)||(0>Pos)||(NULL==IB)||(NULL==PL) )
-    {
-        return FALSE;
-    }
-    if ( (YSMP_MEM_ILEN(MH)<=Pos)||(0!=(Pos%YSMPIDX_ST_SIZE)) )
-    {
-        return FALSE;
-    }
-    *IB = ((BYTE*)YSMP_MEM_IDX(MH))+Pos;
-    *PL = YSMPIDX_ST_SIZE;
-    return TRUE;
+    return YSMP_MEM_CLEN(MH);
 }
 
 void *YSMPNew()
@@ -369,9 +289,10 @@ void  YSMPFree(void *MH)
 
     YSMP_MEM_MAX(MH) = 0;
     YSMP_MEM_LEN(MH) = 0;
+    YSMP_MEM_IDXSIZE(MH) = 0;
     YSMP_MEM_ILEN(MH) = 0;
+    YSMP_MEM_CTXSIZE(MH) = 0;
     YSMP_MEM_CLEN(MH) = 0;
-    memset(YSMP_MEM_IIDX(MH),0,sizeof(YSMP_MEM_IIDX(MH)));
     free(MH);
 }
 
@@ -379,8 +300,14 @@ void  YSMPShow(void *MH,INT32 T,void *Buf)
 {
     char Log[YSAPP_TMP_LEN];
     char Tab[BUFSIZE_64];
+    char TimeStr[BUFSIZE_64];
     INT32 i;
     INT32 L;
+    INT32 Addr;
+    INT32 Len;
+#ifdef __OS_WIN__
+    struct tm systm;
+#endif
 
     if ( !YSMPIsInit(MH)||!YSVarIsInit2(Buf,VARTYPE_MEM_VT_STRING) )
     {
@@ -388,35 +315,65 @@ void  YSMPShow(void *MH,INT32 T,void *Buf)
     }
     memset(Tab,0,sizeof(Tab));
     YSVarToolsInitBufSpace(Tab,sizeof(Tab),T+1);
+    memset(TimeStr,0,sizeof(TimeStr));
+#ifdef __OS_LINUX__
+    FETimeToString2(TimeStr,sizeof(TimeStr),(time_t)YSMP_MEM_TIME(MH));
+#elif __OS_WIN__
+    _localtime32_s(&systm,(const __time32_t*)(&YSMP_MEM_TIME(MH)));
+    sprintf(TimeStr,"%04d-%02d-%02d %02d:%02d:%02d" \
+        ,1900+systm.tm_year,systm.tm_mon+1,systm.tm_mday \
+        ,systm.tm_hour,systm.tm_min,systm.tm_sec);
+#else
+    sprintf(TimeStr,"%d",YSMP_MEM_TIME(MH));
+#endif
 
-    snprintf(Log,sizeof(Log),"%s<ShmSize>%d</ShmSize>\n"
-         "%s<StructType>%s</StructType>\n"
-         "%s<CtxType>%s</CtxType>\n"
-         "%s<Max>%d</Max>\n"
-         "%s<Len>%d</Len>\n"
-         "%s<IdxLen>%d</IdxLen>\n"
-         "%s<CtxLen>%d</CtxLen>\n"
-         "%s<Idx>\n"
+    snprintf(Log,sizeof(Log),"%s<ShmHead>\n"
+         "%s <ShmSize>%d</ShmSize>\n"
+         "%s <StructType>%s</StructType>\n"
+         "%s <CtxType>%s</CtxType>\n"
+         "%s <Ver>%s</Ver>\n"
+         "%s <Time>%s</Time>\n"
+         "%s <Max>%d</Max>\n"
+         "%s <Len>%d</Len>\n"
+         "%s <IdxSize>%d</IdxSize>\n"
+         "%s <ILen>%d</ILen>\n"
+         "%s <CtxSize>%d</CtxSize>\n"
+         "%s <CLen>%d</CLen>\n"
+        ,Tab \
         ,Tab,YSMP_MEM_SIZE(MH) \
         ,Tab,YSMP_ST_STR(MH) \
         ,Tab,YSMP_CT_STR(YSMP_MEM_CT(MH)) \
+        ,Tab,YSMP_MEM_VER(MH) \
+        ,Tab,TimeStr \
         ,Tab,YSMP_MEM_MAX(MH) \
         ,Tab,YSMP_MEM_LEN(MH) \
+        ,Tab,YSMP_MEM_IDXSIZE(MH) \
         ,Tab,YSMP_MEM_ILEN(MH) \
-        ,Tab,YSMP_MEM_CLEN(MH) \
-        ,Tab);
+        ,Tab,YSMP_MEM_CTXSIZE(MH) \
+        ,Tab,YSMP_MEM_CLEN(MH));
     YSVarStringCat(Buf,Log,strlen(Log));
     memset(Log,0,sizeof(Log));
     L = 0;
-    for ( i=0;i<YSMP_HEAD_BASE;i++ )
+    if ( YSMP_CT_ISHASH(YSMP_MEM_CT(MH)) )
     {
-        snprintf(Log+L,sizeof(Log)-L,"%s <Addr>%d</Addr>\n"
-             "%s <Len>%d</Len>\n" \
-            ,Tab,YSMP_MEM_IIDX_ADDR(MH,i) \
-            ,Tab,YSMP_MEM_IIDX_LEN(MH,i));
+        snprintf(Log+L,sizeof(Log)-L,"%s <Idx>\n",Tab);
+        L += strlen(Log+L);
+        for ( i=0;i<YSMP_MEM_MAX(MH);i++ )
+        {
+			Addr = YSMP_MEM_IIDX_ADDR_INT(MH,i);
+			FEEndianToHost_Int32(&Addr);
+			Len = YSMP_MEM_IIDX_LEN_INT(MH,i);
+			FEEndianToHost_Int32(&Len);
+            snprintf(Log+L,sizeof(Log)-L,"%s <Addr>%d</Addr>\n"
+                 "%s <Len>%d</Len>\n" \
+                ,Tab,Addr \
+                ,Tab,Len);
+            L += strlen(Log+L);
+        }
+        snprintf(Log+L,sizeof(Log)-L,"%s </Idx>\n",Tab);
         L += strlen(Log+L);
     }
-    snprintf(Log+L,sizeof(Log)-L,"%s</Idx>\n",Tab);
+    snprintf(Log+L,sizeof(Log)-L,"%s</ShmHead>\n",Tab);
     L += strlen(Log+L);
     YSVarStringCat(Buf,Log,strlen(Log));
 }
@@ -424,6 +381,7 @@ void  YSMPShow(void *MH,INT32 T,void *Buf)
 BOOL  YSMPMallocBuf(void *MH,INT32 NewSize,BOOL Flag)
 {
     BOOL bRtn;
+    INT32 Pos;
     if ( !YSMPIsInit(MH) )
     {
         return FALSE;
@@ -434,8 +392,21 @@ BOOL  YSMPMallocBuf(void *MH,INT32 NewSize,BOOL Flag)
         if ( bRtn )
         {
             YSMP_MEM_HEAD(MH) = YSVarBinGet(YSMP_MEM_IBUF(MH));
+            if ( 0>(Pos=YSMPGetHeadSize2(MH)) )
+            {
+                return FALSE;
+            }
+fprintf(stderr,"===Pos=%d.\n",Pos);
+/*
+            if ( YSMP_CT_ISHASH(YSMPHEAD_MEM_TYPE(YSMP_MEM_HEAD(MH))) )
+            {
+                Size = YSMPHEAD_MEM_MAX_INT(YSMP_MEM_HEAD(MH));
+                FEEndianToHost_Int32(&Size);
+                Pos += YSMP_HEAD_IDX_CALLEN(Size);
+            }
+*/
             YSMP_MEM_IDX(MH) = ((BYTE*)YSMP_MEM_HEAD(MH)) \
-                +YSMPHEAD_ST_SIZE;
+                +YSMPHEAD_ST_SIZE+Pos;
         }
     }
     else
@@ -452,6 +423,7 @@ BOOL  YSMPMallocBuf(void *MH,INT32 NewSize,BOOL Flag)
 void *YSMPClone(void *MHS)
 {
     void *MH;
+    INT32 Len;
     BOOL bRtn;
     if ( !YSMPIsInit(MHS) )
     {
@@ -465,7 +437,11 @@ void *YSMPClone(void *MHS)
         {
             break;
         }
-        YSMPMallocBuf(MH,YSMPHEAD_ST_SIZE+YSMP_MEM_ILEN(MHS),TRUE);
+        if ( 0>(Len=YSMPGetHeadSize2(MHS)) )
+        {
+            break;
+        }
+        YSMPMallocBuf(MH,Len,TRUE);
         YSMPMallocBuf(MH,YSMP_MEM_CLEN(MHS),FALSE);
         YSMP_MEM_SIZE(MH) = YSMP_MEM_SIZE(MHS);
         YSMP_MEM_ST(MH) = YSMP_ST_STRUCT;
@@ -491,10 +467,10 @@ void *YSMPClone(void *MHS)
 #endif
         YSMP_MEM_MAX(MH) = YSMP_MEM_MAX(MHS);
         YSMP_MEM_LEN(MH) = YSMP_MEM_LEN(MHS);
+        YSMP_MEM_IDXSIZE(MH) = YSMP_MEM_IDXSIZE(MHS);
         YSMP_MEM_ILEN(MH) = YSMP_MEM_ILEN(MHS);
+        YSMP_MEM_CTXSIZE(MH) = YSMP_MEM_CTXSIZE(MHS);
         YSMP_MEM_CLEN(MH) = YSMP_MEM_CLEN(MHS);
-        memcpy(YSMP_MEM_IIDX(MH) \
-            ,YSMP_MEM_IIDX(MHS),sizeof(YSMP_MEM_IIDX(MHS)));
         YSMP_INIT_LUCK(MH);
         bRtn = TRUE;
         break;
@@ -511,18 +487,7 @@ BOOL  YSMPMemFind(void *MH,const char *Key,INT32 Idx \
 {
     INT32 Cnt;
     INT32 HK;
-    INT32 IPos;
-    INT32 ILen;
-    void *IB;
-    INT32 IBL;
-    INT32 CPos;
-    BOOL bRtn;
-
-    if ( !YSMPIsInit(MH)||(NULL==Key) )
-    {
-        return FALSE;
-    }
-    if ( (NULL==PIdx)&&((NULL==V)||(NULL==PL)) )
+    if ( NULL==Key )
     {
         return FALSE;
     }
@@ -534,42 +499,76 @@ BOOL  YSMPMemFind(void *MH,const char *Key,INT32 Idx \
     {
         return FALSE;
     }
-    Cnt = FEHashGetIdx(HK,YSMP_HEAD_BASE);
-    if ( (0>Cnt)||(YSMP_HEAD_BASE<=Cnt) )
+    return YSMPMemFind2(MH,HK,Idx,PIdx,V,PL);
+}
+
+BOOL  YSMPMemFind2(void *MH,INT32 HashKey,INT32 Idx \
+    ,INT32 *PIdx,void **V,INT32 *PL)
+{
+    INT32 HK;
+    INT32 Cnt;
+    INT32 IPos;
+    INT32 ILen;
+    void *IB;
+    INT32 IBL;
+    INT32 CPos;
+    BOOL bRtn;
+
+    if ( !YSMPIsInit(MH) )
     {
         return FALSE;
     }
+    if ( (NULL==PIdx)&&((NULL==V)||(NULL==PL)) )
+    {
+        return FALSE;
+    }
+    HK = HashKey;
     IPos = YSCAL_MAX(0,Idx);
     IPos = IPos * YSMPIDX_ST_SIZE;
-    IPos += YSMP_MEM_IIDX_ADDR(MH,Cnt);
-    ILen = YSMP_MEM_IIDX_LEN(MH,Cnt);
+    if ( YSMP_CT_ISHASH(YSMP_MEM_CT(MH)) )
+    {
+        Cnt = FEHashGetIdx(HK,YSMP_MEM_MAX(MH));
+        if ( (0>Cnt)||(YSMP_MEM_MAX(MH)<=Cnt) )
+        {
+            return FALSE;
+        }
+        ILen = YSMPHEAD_MEM_IIDX_ADDR_INT(YSMP_MEM_HEAD(MH),Cnt);
+        FEEndianToHost_Int32(&ILen);
+        IPos += ILen;
+        ILen = YSMPHEAD_MEM_IIDX_LEN_INT(YSMP_MEM_HEAD(MH),Cnt);
+        FEEndianToHost_Int32(&ILen);
+    }
+    else
+    {
+        ILen = YSMP_MEM_MAX(MH);
+    }
     FEEndianToNet(&HK,INT32_SIZE);
-    Cnt = 0;
+    Cnt = Idx;
     bRtn = FALSE;
     *V = NULL;
     *PL = 0;
     while( Cnt<ILen )
     {
-        if ( !YSMPUnPackIdxByPos2(MH,IPos,&IB,&IBL) )
+        if ( !YSMPIdxUnPackByPos(MH,IPos,&IB,&IBL) )
         {
             break;
         }
         Cnt ++;
         IPos += IBL;
-        if ( *(INT32*)(YSMPIDX_MEM_HK(IB))!=HK )
+        if ( YSMPIDX_MEM_HK_INT(IB)!=HK )
         {
             continue;
         }
-        CPos = *(INT32*)(YSMPIDX_MEM_A(IB));
+        CPos = YSMPIDX_MEM_A_INT(IB);
         FEEndianToHost(&CPos,INT32_SIZE);
         if ( NULL!=PIdx )
         {
             *PIdx = Cnt-1;
         }
-        if ( (NULL!=V)||(NULL!=PL) )
+        if ( (NULL!=V)&&(NULL!=PL) )
         {
             *V = ((BYTE*)YSMP_MEM_CTX(MH))+CPos;
-            *PL = *(INT32*)(YSMPIDX_MEM_L(IB));
+            *PL = YSMPIDX_MEM_L_INT(IB);
         }
         FEEndianToHost(PL,INT32_SIZE);
         bRtn = TRUE;
@@ -578,9 +577,16 @@ BOOL  YSMPMemFind(void *MH,const char *Key,INT32 Idx \
     return bRtn;
 }
 
-BOOL  YSMPToMem(void **MHS,void *Var,INT32 Max)
+BOOL  YSMPToMem(void **MHS,void *Var)
 {
-    INT32 M;
+    INT32 Base;
+    INT32 MM;
+    INT32 IdxSize;
+    INT32 ILen;
+    INT32 CtxSize;
+    INT32 CLen;
+    INT32 Len;
+    void *V;
     void *Head;
     void *MH;
     BOOL bRtn;
@@ -592,7 +598,10 @@ BOOL  YSMPToMem(void **MHS,void *Var,INT32 Max)
     {
         return FALSE;
     }
-    M = 0;
+    Base = 0;
+    IdxSize = YSMPIDX_ST_SIZE;
+    CtxSize = 0;
+    Len = 0;
     MH = NULL;
     bRtn = FALSE;
     while( 1 )
@@ -604,28 +613,68 @@ BOOL  YSMPToMem(void **MHS,void *Var,INT32 Max)
         YSMP_MEM_CT(MH) = YSVarGetType(Var);
         if ( YSMP_CT_ISHASH(YSMP_MEM_CT(MH)) )
         {
-            M = YSVarHashGetLen(Var);
-            bRtn = YSMPHashToMem(Var \
-                ,YSMP_MEM_IBUF(MH),YSMP_MEM_CBUF(MH));
+            Len = YSVarHashGetLen(Var);
+            MM = YSVarHashGetBase(Var);
+            Base = MM;
+            bRtn = YSMPHashToMem(Var,YSMP_MEM_IBUF(MH),YSMP_MEM_CBUF(MH));
         }
         else if ( YSMP_CT_ISARRAY(YSMP_MEM_CT(MH)) )
         {
-            M = YSVarArrayGetLen(Var);
-            bRtn = YSMPArrayToMem(Var \
-                ,YSMP_MEM_IBUF(MH),YSMP_MEM_CBUF(MH));
+            Len = YSVarArrayGetLen(Var);
+            MM = Len;
+            bRtn = YSMPArrayToMem(Var,YSMP_MEM_IBUF(MH),YSMP_MEM_CBUF(MH));
         }
-        if ( !bRtn||(M>Max) )
+        else if ( YSMP_CT_ISSTRUCT(YSMP_MEM_CT(MH)) )
+        {
+            bRtn = FALSE;
+            if ( NULL==(V=YSVarStructGet(Var,YSMP_CT_STRUCT_LEN_IDX)) )
+            {
+                break;
+            }
+            if ( !YSVarInt32Get(V,&Len) )
+            {
+                break;
+            }
+            if ( NULL==(V=YSVarStructGet(Var,YSMP_CT_STRUCT_MAX_IDX)) )
+            {
+                break;
+            }
+            if ( !YSVarInt32Get(V,&MM) )
+            {
+                break;
+            }
+            if ( Len>MM )
+            {
+                break;
+            }
+            if ( NULL==(V=YSVarStructGet(Var,YSMP_CT_STRUCT_IDXSIZE_IDX)) )
+            {
+                break;
+            }
+            if ( !YSVarInt32Get(V,&IdxSize) )
+            {
+                break;
+            }
+            if ( NULL==(V=YSVarStructGet(Var,YSMP_CT_STRUCT_CTXSIZE_IDX)) )
+            {
+                break;
+            }
+            if ( !YSVarInt32Get(V,&CtxSize) )
+            {
+                break;
+            }
+            bRtn = YSMPStructToMem(Var,YSMP_MEM_IBUF(MH),YSMP_MEM_CBUF(MH));
+        }
+        if ( !bRtn )
         {
             break;
         }
-        YSMPMallocBuf(MH,0,TRUE);
-        YSMPMallocBuf(MH,0,FALSE);
-        YSMP_MEM_SIZE(MH) = YSVarBinGetLen(YSMP_MEM_IBUF(MH)) \
-            + YSVarBinGetLen(YSMP_MEM_CBUF(MH));
+        ILen = YSVarBinGetLen(YSMP_MEM_IBUF(MH))-YSMPHEAD_ST_SIZE_CAL(Base);
+        CLen = YSVarBinGetLen(YSMP_MEM_CBUF(MH));
+        YSMP_MEM_SIZE(MH) = YSVarBinGetLen(YSMP_MEM_IBUF(MH)) + CLen;
+        Head = YSVarBinGet(YSMP_MEM_IBUF(MH));
 
-        Head = YSMP_MEM_HEAD(MH);
-
-        *(INT32*)YSMPHEAD_MEM_SIZE(Head) = YSMP_MEM_SIZE(MH);
+        YSMPHEAD_MEM_SIZE_INT(Head) = YSMP_MEM_SIZE(MH);
         FEEndianToNet(YSMPHEAD_MEM_SIZE(Head),INT32_SIZE);
 
         YSMPHEAD_MEM_STA(Head) = YSAPP_STATUS_RUNNING;
@@ -639,21 +688,29 @@ BOOL  YSMPToMem(void **MHS,void *Var,INT32 Max)
                 ,sizeof(YSMPHEAD_MEM_VER(Head)),YSVarGetKeyLen(Var));
         }
 
-        *(INT32*)YSMPHEAD_MEM_MAX(Head) = Max;
+        YSMPHEAD_MEM_MAX_INT(Head) = MM;
         FEEndianToNet(YSMPHEAD_MEM_MAX(Head),INT32_SIZE);
 
-        *(INT32*)YSMPHEAD_MEM_LEN(Head) = M;
+        YSMPHEAD_MEM_LEN_INT(Head) = Len;
         FEEndianToNet(YSMPHEAD_MEM_LEN(Head),INT32_SIZE);
 
-        *(INT32*)YSMPHEAD_MEM_ILEN(Head) = \
-            YSVarBinGetLen(YSMP_MEM_IBUF(MH)) - YSMPHEAD_ST_SIZE;
+        YSMPHEAD_MEM_IDXSIZE_INT(Head) = IdxSize;
+        FEEndianToNet(YSMPHEAD_MEM_IDXSIZE(Head),INT32_SIZE);
+
+        YSMPHEAD_MEM_ILEN_INT(Head) = ILen;
         FEEndianToNet(YSMPHEAD_MEM_ILEN(Head),INT32_SIZE);
 
-        *(INT32*)YSMPHEAD_MEM_CLEN(Head) = \
-            YSVarBinGetLen(YSMP_MEM_CBUF(MH));
+        YSMPHEAD_MEM_CTXSIZE_INT(Head) = CtxSize;
+        FEEndianToNet(YSMPHEAD_MEM_CTXSIZE(Head),INT32_SIZE);
+
+        YSMPHEAD_MEM_CLEN_INT(Head) = CLen;
         FEEndianToNet(YSMPHEAD_MEM_CLEN(Head),INT32_SIZE);
 
         YSMPHEAD_INIT_LUCK(Head);
+        YSMPHeadUpdateTime(Head,YSMP_MEM_SIZE(MH));
+
+        YSMPMallocBuf(MH,0,TRUE);
+        YSMPMallocBuf(MH,0,FALSE);
         *MHS = MH;
         MH = NULL;
         bRtn = TRUE;
@@ -687,7 +744,22 @@ BOOL  YSMPHashToMem(void *Var,void *IBuf,void *CBuf)
     {
         return FALSE;
     }
-    Size = YSVarHashGetBase(Var);
+    if ( 0>=(Size=YSVarHashGetBase(Var)) )
+    {
+        return FALSE;
+    }
+    if ( 0>(LLen=YSVarHashGetLen(Var)) )
+    {
+        return FALSE;
+    }
+    if ( !FEVarBinMalloc(IBuf,YSMP_HEAD_IDX_CALLEN(Size)+LLen*YSMPIDX_ST_SIZE) )
+    {
+        return FALSE;
+    }
+    if ( !FEVarBinSetLen(IBuf,YSMPHEAD_ST_SIZE_CAL(Size)) )
+    {
+        return FALSE;
+    }
     IL = YSVarBinGetLen(IBuf);
     CL = YSVarBinGetLen(CBuf);
     bRtn = TRUE;
@@ -700,7 +772,7 @@ BOOL  YSMPHashToMem(void *Var,void *IBuf,void *CBuf)
             break;
         }
         LLen = YSVarLinkGetLen(Link);
-        if ( !YSMPPackBase(IBuf,i,LLen) )
+        if ( !YSMPHeadSetHashIdx(IBuf,Size,i,LLen) )
         {
             bRtn = FALSE;
             break;
@@ -728,7 +800,7 @@ BOOL  YSMPHashToMem(void *Var,void *IBuf,void *CBuf)
                 bRtn = FALSE;
                 break;
             }
-            if ( !YSMPPackIdx(IBuf,YSVarGetKeyHash(V),CPos,CLen-CPos) )
+            if ( !YSMPIdxAdd(IBuf,YSVarGetKeyHash(V),CPos,CLen-CPos) )
             {
                 bRtn = FALSE;
                 break;
@@ -763,7 +835,14 @@ BOOL  YSMPArrayToMem(void *Var,void *IBuf,void *CBuf)
     {
         return FALSE;
     }
-    Len = YSVarArrayGetLen(Var);
+    if ( 0>(Len=YSVarArrayGetLen(Var)) )
+    {
+        return FALSE;
+    }
+    if ( !FEVarBinMalloc(IBuf,Len*YSMPIDX_ST_SIZE) )
+    {
+        return FALSE;
+    }
     IL = YSVarBinGetLen(IBuf);
     CL = YSVarBinGetLen(CBuf);
     bRtn = TRUE;
@@ -791,12 +870,63 @@ BOOL  YSMPArrayToMem(void *Var,void *IBuf,void *CBuf)
             bRtn = FALSE;
             break;
         }
-        if ( !YSMPPackIdx(IBuf,YSVarGetKeyHash(V),CPos,CLen-CPos) )
+        if ( !YSMPIdxAdd(IBuf,YSVarGetKeyHash(V),CPos,CLen-CPos) )
         {
             bRtn = FALSE;
             break;
         }
     }/* for ( i=0;i<Len;i++ ) */
+    if ( !bRtn )
+    {
+        YSVarBinSetLen(IBuf,IL);
+        YSVarBinSetLen(CBuf,CL);
+    }
+    return bRtn;
+}
+
+BOOL  YSMPStructToMem(void *Var,void *IBuf,void *CBuf)
+{
+    void *V;
+
+    INT32 IL;
+    INT32 CL;
+
+    BOOL bRtn;
+
+    if ( !YSVarIsInit2(Var,VARTYPE_MEM_VT_STRUCT) \
+        || !YSVarIsInit2(IBuf,VARTYPE_MEM_VT_BIN) \
+        || !YSVarIsInit2(CBuf,VARTYPE_MEM_VT_BIN) )
+    {
+        return FALSE;
+    }
+    IL = YSVarBinGetLen(IBuf);
+    CL = YSVarBinGetLen(CBuf);
+    bRtn = TRUE;
+
+    while( 1 )
+    {
+        if ( NULL==(V=YSVarStructGet(Var,YSMP_CT_STRUCT_IDX_IDX)) )
+        {
+            bRtn = FALSE;
+            break;
+        }
+        if ( !YSVarBinCat(IBuf,YSVarBinGet(V),YSVarBinGetLen(V)) )
+        {
+            bRtn = FALSE;
+            break;
+        }
+        if ( NULL==(V=YSVarStructGet(Var,YSMP_CT_STRUCT_CTX_IDX)) )
+        {
+            bRtn = FALSE;
+            break;
+        }
+        if ( !YSVarBinCat(CBuf,YSVarBinGet(V),YSVarBinGetLen(V)) )
+        {
+            bRtn = FALSE;
+            break;
+        }
+        break;
+    }
     if ( !bRtn )
     {
         YSVarBinSetLen(IBuf,IL);
@@ -818,14 +948,18 @@ void *YSMPFromMem(void *MHS)
         {
             break;
         }
-        if ( NULL==(Bin=YSVarBinSetValue(YSMP_MEM_CTX(MHS) \
+        if ( YSMP_CT_ISSTRUCT(YSMP_MEM_CT(MHS)) )
+        {
+            Var = YSMPStructFromMP(MHS);
+        }
+        else if ( NULL==(Bin=YSVarBinSetValue(YSMP_MEM_CTX(MHS) \
             ,YSMP_MEM_CLEN(MHS),YSMP_MEM_CLEN(MHS))) )
         {
             break;
         }
-        if ( YSMP_CT_ISHASH(YSMP_MEM_CT(MHS)) )
+        else if ( YSMP_CT_ISHASH(YSMP_MEM_CT(MHS)) )
         {
-            Var = YSMPHashFromVarBin(Bin);
+            Var = YSMPHashFromVarBin(Bin,YSMP_MEM_MAX(MHS));
         }
         else if ( YSMP_CT_ISARRAY(YSMP_MEM_CT(MHS)) )
         {
@@ -853,7 +987,7 @@ void *YSMPFromMem(void *MHS)
     return vRtn;
 }
 
-void *YSMPHashFromVarBin(void *Bin)
+void *YSMPHashFromVarBin(void *Bin,INT32 Max)
 {
     INT32 Pos;
     INT32 Pos2;
@@ -870,7 +1004,7 @@ void *YSMPHashFromVarBin(void *Bin)
         {
             break;
         }
-        if ( NULL==(Var=YSVarHashNew(YSMP_HEAD_BASE)) )
+        if ( NULL==(Var=YSVarHashNew(Max)) )
         {
             break;
         }
@@ -953,9 +1087,48 @@ void *YSMPArrayFromVarBin(void *Bin)
     return vRtn;
 }
 
+void *YSMPStructFromMP(void *MHS)
+{
+    void *vRtn;
+    void *V1;
+    void *V2;
+    void *Var;
+
+    V1 = NULL;
+    V2 = NULL;
+    Var = NULL;
+    vRtn = NULL;
+    while( 1 )
+    {
+        if ( !YSMPIsInit(MHS) )
+        {
+            break;
+        }
+        if ( NULL==(Var=YSMPStructNew(YSMP_MEM_VER(MHS),YSMP_MEM_LEN(MHS) \
+            ,YSMP_MEM_MAX(MHS),YSMP_MEM_IDXSIZE(MHS),YSMP_MEM_CTXSIZE(MHS) \
+            ,(V1=YSVarBinSave(YSMP_MEM_IDX(MHS),YSMP_MEM_ILEN(MHS))) \
+            ,(V2=YSVarBinSave(YSMP_MEM_CTX(MHS),YSMP_MEM_CLEN(MHS))))) )
+        {
+            break;
+        }
+        V1 = NULL;
+        V2 = NULL;
+        vRtn = Var;
+        Var = NULL;
+        break;
+    }
+    YSVarFree(V1);
+    V1 = NULL;
+    YSVarFree(V2);
+    V2 = NULL;
+    YSVarFree(Var);
+    Var = NULL;
+    return vRtn;
+}
+
 #ifdef __OS_LINUX__
 
-BOOL  YSMPToShm(const char *Key,void *Var,INT32 Max)
+BOOL  YSMPToShm(const char *Key,void *Var)
 {
     BOOL bRtn;
     void *MH;
@@ -972,7 +1145,7 @@ BOOL  YSMPToShm(const char *Key,void *Var,INT32 Max)
     bRtn = FALSE;
     while( 1 )
     {
-        if ( !YSMPToMem(&MH,Var,Max) )
+        if ( !YSMPToMem(&MH,Var) )
         {
             break;
         }
@@ -1050,7 +1223,9 @@ BOOL  YSMPShmFind2(const char *File,const char *Key,INT32 Idx,void *Buf)
     
     MHS = NULL;
     bRtn = FALSE;
-    Len = YSCAL_MAX(1,Idx);
+    Len = YSCAL_MAX(0,Idx);
+    V = NULL;
+    PL = 0;
     while( 1 )
     {
         if ( (NULL==File)||(NULL==Key)||!YSVarIsInit2(Buf,VARTYPE_MEM_VT_BIN) )
@@ -1065,14 +1240,14 @@ BOOL  YSMPShmFind2(const char *File,const char *Key,INT32 Idx,void *Buf)
         {
             break;
         }
-        for ( IIdx=0;IIdx<Len;IIdx++ )
+        for ( IIdx=0;IIdx<=Len;IIdx++ )
         {
             if ( !(bRtn=YSMPMemFind(MHS,Key,IIdx,NULL,&V,&PL)) )
             {
                 break;
             }
         }
-        if ( (IIdx<Len)||!bRtn )
+        if ( (IIdx==Len)||!bRtn )
         {
             break;
         }
@@ -1163,6 +1338,82 @@ BOOL  YSMPShmMultiFind(const char *Ver,void *Arr,void *Buf)
 }
 
 #endif
+
+void *YSMPStructNew(const char *Key,INT32 Len,INT32 Max \
+    ,INT32 IdxSize,INT32 CtxSize,void *IBuf,void *CBuf)
+{
+    void *vRtn;
+    void *V;
+    void *Var;
+
+    vRtn = NULL;
+    V = NULL;
+    Var = NULL;
+    while( 1 )
+    {
+        if ( NULL!=Key )
+        {
+            if ( NULL==(Var=YSVarStructNew_Key(YSMP_CT_STRUCT_SIZE,Key)) )
+            {
+                break;
+            }
+        }
+        else if ( NULL==(Var=YSVarStructNew(YSMP_CT_STRUCT_SIZE)) )
+        {
+            break;
+        }
+        if ( NULL==(V=YSVarInt32Save2("LEN",Len)) )
+        {
+            break;
+        }
+        if ( !YSVarStructSet(Var,YSMP_CT_STRUCT_LEN_IDX,V) )
+        {
+            break;
+        }
+        V = NULL;
+        if ( NULL==(V=YSVarInt32Save2("MAX",Max)) )
+        {
+            break;
+        }
+        if ( !YSVarStructSet(Var,YSMP_CT_STRUCT_MAX_IDX,V) )
+        {
+            break;
+        }
+        V = NULL;
+        if ( !YSVarStructSet(Var,YSMP_CT_STRUCT_IDXSIZE_IDX
+            ,(V=YSVarInt32Save2("IdxSize",IdxSize))) )
+        {
+            break;
+        }
+        V = NULL;
+        if ( !YSVarStructSet(Var,YSMP_CT_STRUCT_CTXSIZE_IDX \
+            ,(V=YSVarInt32Save2("CtxSize",CtxSize))) )
+        {
+            break;
+        }
+        V = NULL;
+        if ( !YSVarStructSet(Var,YSMP_CT_STRUCT_IDX_IDX \
+            ,(V=YSVarBinClone(IBuf))) )
+        {
+            break;
+        }
+        V = NULL;
+        if ( !YSVarStructSet(Var,YSMP_CT_STRUCT_CTX_IDX \
+            ,(V=YSVarBinClone(CBuf))) )
+        {
+            break;
+        }
+        V = NULL;
+        vRtn = Var;
+        Var = NULL;
+        break;
+    }
+    YSVarFree(V);
+    V = NULL;
+    YSVarFree(Var);
+    Var = NULL;
+    return vRtn;
+}
 
 #ifdef __cplusplus
 }

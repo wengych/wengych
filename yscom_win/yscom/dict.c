@@ -40,6 +40,13 @@ tYSVSFieldInfo lcYSDictInt[] =
     ,{VARTYPE_MEM_VT_INT32      ,1  ,YSDICT_FIELD_INT_MIN           }
 };
 #define YSDICTINT_NUM          (sizeof(lcYSDictInt)/YSVSFIELDINFO_ST_SIZE)
+tYSVSFieldInfo lcYSDictBool[] =
+{
+     {VARTYPE_MEM_VT_STRING     ,1  ,YSDICT_FIELD_TYPE              }
+    ,{VARTYPE_MEM_VT_STRING     ,1  ,YSDICT_FIELD_NAME              }
+    ,{VARTYPE_MEM_VT_BOOL       ,1  ,YSDICT_FIELD_DEFAULT           }
+};
+#define YSDICTBOOL_NUM         (sizeof(lcYSDictBool)/YSVSFIELDINFO_ST_SIZE)
 tYSVSFieldInfo lcYSDictString[] =
 {
      {VARTYPE_MEM_VT_STRING     ,1  ,YSDICT_FIELD_TYPE              }
@@ -65,6 +72,7 @@ tYSDictFieldSets lcYSDictFieldSets[] =
     ,{VARTYPE_MEM_VT_INT16      ,YSDICTINT_NUM      ,(void*)lcYSDictInt     }
     ,{VARTYPE_MEM_VT_INT32      ,YSDICTINT_NUM      ,(void*)lcYSDictInt     }
     ,{VARTYPE_MEM_VT_INT64      ,YSDICTINT_NUM      ,(void*)lcYSDictInt     }
+    ,{VARTYPE_MEM_VT_BOOL       ,YSDICTBOOL_NUM     ,(void*)lcYSDictBool    }
     ,{VARTYPE_MEM_VT_BIN        ,YSDICTSTRING_NUM   ,(void*)lcYSDictString  }
     ,{VARTYPE_MEM_VT_STRING     ,YSDICTSTRING_NUM   ,(void*)lcYSDictString  }
 };

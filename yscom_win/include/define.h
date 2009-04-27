@@ -309,6 +309,8 @@ typedef void* (*funcarg3vp)(void *,void *,void *);
 #define VARTYPE_MEM_VT_LINK       106
 #define VARTYPE_MEM_VT_TREE       107
 #define VARTYPE_MEM_VT_XML        108
+
+#define VARTYPE_MEM_VT_CUSTOM     200
 /***************************************************************************/
 /***************************************************************************/
 

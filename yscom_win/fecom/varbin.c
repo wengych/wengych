@@ -381,8 +381,15 @@ BOOL  FEVarBinSetLen(void *Var,INT32 Len)
     {
         return FALSE;
     }
-    FEVARBIN_MEM_L(Var) = FECAL_MAX(Len,0);
-    FEVARBIN_MEM_L(Var) = FECAL_MIN(FEVARBIN_MEM_L(Var),FEVARBIN_MEM_S(Var)-1);
+    if ( Len>FEVARBIN_MEM_L(Var) )
+    {
+        if ( !FEVarBinMalloc(Var,Len-FEVARBIN_MEM_L(Var)+1) )
+        {
+            return FALSE;
+        }
+    }
+    FEVARBIN_MEM_L(Var) = FECAL_MIN(Len,FEVARBIN_MEM_S(Var)-1);
+    FEVARBIN_MEM_L(Var) = FECAL_MAX(FEVARBIN_MEM_L(Var),0);
     if ( FEVARBIN_MEM_S(Var)>FEVARBIN_MEM_L(Var) )
     {
         memset(((BYTE*)FEVARBIN_MEM_V(Var))+FEVARBIN_MEM_L(Var) \
@@ -511,7 +518,7 @@ BOOL  FEVarBinCat(void *Var,void *V,INT32 L)
     {
         return TRUE;
     }
-    if ( !FEVarBinRealloc(Var,L) )
+    if ( !FEVarBinMalloc(Var,L) )
     {
         return FALSE;
     }

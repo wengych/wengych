@@ -26,23 +26,21 @@ extern "C" {
 #define YSAPP_STATUS_PROC       2
 #define YSAPP_STATUS_STOP       3
 #define YSAPP_STATUS_SHUT       4
+#define YSAPP_STATUS_DEFAULT    5
 #define YSAPP_STATUS_ISCMD(std) \
     ( (YSAPP_STATUS_NOT==(std))||(YSAPP_STATUS_RUNNING==(std)) \
     ||(YSAPP_STATUS_PROC==(std))||(YSAPP_STATUS_STOP==(std)) \
-    ||(YSAPP_STATUS_SHUT==(std)))
+    ||(YSAPP_STATUS_SHUT==(std))||(YSAPP_STATUS_DEFAULT==(std)))
 #define YSAPP_STATUS_STR(sta) \
     ((YSAPP_STATUS_NOT==(sta))?"Not Running" \
-    :( \
-        ((YSAPP_STATUS_RUNNING==(sta))?"Running" \
-        :( \
-            ((YSAPP_STATUS_PROC==(sta))?"Proc" \
-            :( \
-                ((YSAPP_STATUS_STOP==(sta))?"Stop" \
-                :( \
-                    ((YSAPP_STATUS_SHUT==(sta))?"Shutdown":"Not") \
-                )) \
-            )) \
-        )) \
+    :((YSAPP_STATUS_RUNNING==(sta))?"Running" \
+        :((YSAPP_STATUS_PROC==(sta))?"Proc" \
+            :((YSAPP_STATUS_STOP==(sta))?"Stop" \
+                :((YSAPP_STATUS_SHUT==(sta))?"Shutdown" \
+                    :((YSAPP_STATUS_DEFAULT==(sta))?"Default":"Not") \
+                ) \
+            ) \
+        ) \
     ))
 
 /****************************************************************************/
@@ -105,6 +103,9 @@ extern "C" {
 #define YSAPP_LOAD_TERM                 "APP_TERM"
 #define YSAPP_LOAD_SIDFILE              "SIDFILE"
 #define YSAPP_LOAD_SIDFILE_DEFAULT      "sid.cnt"
+#define YSAPP_LOAD_MGRPATH              "YSAPP_MGR_PATH"
+#define YSAPP_LOAD_MGRPATH_DEFAULT      "system.cfg"
+#define YSAPP_LOAD_HOST_DEFAULT         "host"
 
 /** Install default thread flow **/
 /**
@@ -172,6 +173,14 @@ APP_TCPSRV_<Name>_[000,999]   = <Port>\t<FifoName>
     YSAPP_LOADCFG_FILE_CAL4((b),(s),YSAPP_LOAD_TCPSRV,(v1),(v2))
 #define YSAPP_TCPSRV                    "__YSAPP_TCPSRV_%s"
 #define YSAPP_TCPSRV_THD_DEFAULT        YSAPP_USERTHD_THD_DEFAULT
+
+/****************************************************************************/
+/** define Manager shared memory                                           **/
+/****************************************************************************/
+#define YSAPP_MGR_INFOIDX           "__YSAPP_MGR_INFOIDX"
+#define YSAPP_LOAD_MGR_INFO_NUM     "YSAPP_MGR_INFO_NUM"
+/****************************************************************************/
+/****************************************************************************/
 
 /****************************************************************************/
 /** define DICT                                                            **/
@@ -441,7 +450,6 @@ typedef struct tagYSPkgHeadStruct
 /****************************************************************************/
 /** YsPay Application manager                                              **/
 /****************************************************************************/
-
 #define YSMGR_TYPE_NOT              0
 #define YSMGR_TYPE_FILE             1
 #define YSMGR_TYPE_DICT             11
@@ -454,6 +462,18 @@ typedef struct tagYSPkgHeadStruct
     ||(YSMGR_TYPE_DICT==(v))||(YSMGR_TYPE_SERV==(v)) \
     ||(YSMGR_TYPE_HOST==(v))||(YSMGR_TYPE_APP==(v)) \
     ||(YSMGR_TYPE_MGRAPP==(v)) )
+
+#define YSMGR_TYPE_MGRAPP_STR       "Manager of Application"
+
+#define YSMGR_TYPE_STR(sta) \
+    ((YSMGR_TYPE_DICT==(sta))?"Dict" \
+    :((YSMGR_TYPE_SERV==(sta))?"Service" \
+        :((YSMGR_TYPE_HOST==(sta))?"Host" \
+            :((YSMGR_TYPE_APP==(sta))?"Application" \
+                :((YSMGR_TYPE_MGRAPP==(sta))?YSMGR_TYPE_MGRAPP_STR:"Not") \
+            ) \
+        ) \
+    ))
 /****************************************************************************/
 /****************************************************************************/
 

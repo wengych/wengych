@@ -114,6 +114,16 @@ INT32 FEStrFindLastSign(char *str,char ch);
 void  FEEndianConversion(void *E,INT32 Size);
 void  FEEndianToHost(void *E,INT32 Size);
 void  FEEndianToNet(void *E,INT32 Size);
+
+#define FEEndianToHost_Int16(E)     FEEndianToHost((E),INT16_SIZE)
+#define FEEndianToHost_Int32(E)     FEEndianToHost((E),INT32_SIZE)
+#define FEEndianToHost_Int64(E)     FEEndianToHost((E),INT64_SIZE)
+#define FEEndianToHost_Double(E)    FEEndianToHost((E),DOUBLE_SIZE)
+#define FEEndianToNet_Int16(E)      FEEndianToNet((E),INT16_SIZE)
+#define FEEndianToNet_Int32(E)      FEEndianToNet((E),INT32_SIZE)
+#define FEEndianToNet_Int64(E)      FEEndianToNet((E),INT64_SIZE)
+#define FEEndianToNet_Double(E)     FEEndianToNet((E),DOUBLE_SIZE)
+
 #define FEEndianLittle2Big(E,Size) FEEndianConversion((E),(Size))
 #define FEEndianBig2Little(E,Size) FEEndianConversion((E),(Size))
 

@@ -11,8 +11,7 @@
 /**[Modify       ]                                                        **/
 /***************************************************************************/
 #ifdef __OS_WIN__
-#include <windows.h>
-// #include <winsock2.h>
+#include <winsock2.h>
 #ifdef _WINDEF_
 #ifndef __OS_WIN_WINDEF__
 #define __OS_WIN_WINDEF__ 1
@@ -602,12 +601,11 @@ int SocketOpen(const char *Ip,int port)
 {
     SOCKADDR_IN sockAddr; 
     SOCKET      sockfd;
-
     sockAddr.sin_family = AF_INET;
     sockAddr.sin_port   = htons(port);
     sockAddr.sin_addr.s_addr = inet_addr( Ip );
 
-    if ( INVALID_SOCKET==(sockfd=socket(AF_INET,SOCK_STREAM,0)) )
+    if ( INVALID_SOCKET==(sockfd=socket(PF_INET,SOCK_STREAM,0)) )
     {
         return -1;
     }

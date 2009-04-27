@@ -20,12 +20,8 @@ extern "C"{
 
 BOOL  YSDictToShm(const char *Ver)
 {
-    void *Dict;
     char FileName[MAXPATH];
     char Tmp[YSAPP_TMP_LEN];
-    void *Buf;
-    BOOL bRtn;
-
     if ( !YSAppArgsIsInit()||(NULL==Ver) )
     {
         YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
@@ -38,17 +34,40 @@ BOOL  YSDictToShm(const char *Ver)
             ,"Error : Ver is null .");
         return FALSE;
     }
+    memset(FileName,0,sizeof(FileName));
+    if ( NULL==YSDictGetFileName(FileName,sizeof(FileName),Ver) )
+    {
+        YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
+            ,"Error : Failed at YSDictGetFileName(%s).",Ver);
+        return FALSE;
+    }
+    return YSDictToShm2(Ver,FileName);
+}
+
+BOOL  YSDictToShm2(const char *Ver,const char *FileName)
+{
+    void *Dict;
+    char Tmp[YSAPP_TMP_LEN];
+    void *Buf;
+    BOOL bRtn;
+
+    if ( !YSAppArgsIsInit()||(NULL==Ver) \
+        ||(RTNCODE_OK!=FEFileTest(FileName)) )
+    {
+        YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
+            ,"Error : YSAppArgs or FileName is not ready.");
+        return FALSE;
+    }
+    if ( 0==strlen(Ver) )
+    {
+        YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
+            ,"Error : Ver is null .");
+        return FALSE;
+    }
     bRtn = FALSE;
     Dict = NULL;
     while( 1 )
     {
-        memset(FileName,0,sizeof(FileName));
-        if ( NULL==YSDictGetFileName(FileName,sizeof(FileName),Ver) )
-        {
-            YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
-                ,"Error : Failed at YSDictGetFileName(%s).",Ver);
-            break;
-        }
         if ( NULL==(Dict=YSDictLoadFromFile2(Ver,FileName)) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
@@ -62,7 +81,7 @@ BOOL  YSDictToShm(const char *Ver)
                 ,YSVarStringGet(Buf),YSVarStringGetLen(Buf));
             YSVarStringFree(Buf);
         }
-        if ( !YSMPToShm(FileName,Dict,YSVarHashGetLen(Dict)) )
+        if ( !YSMPToShm(FileName,Dict) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSMPToShm.");

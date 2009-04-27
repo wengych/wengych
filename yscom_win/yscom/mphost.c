@@ -21,12 +21,37 @@ extern "C"{
 BOOL  YSHostToShm(const char *File)
 {
     char FileName[MAXPATH];
+    char Tmp[YSAPP_TMP_LEN];
+    if ( !YSAppArgsIsInit()||(NULL==File) )
+    {
+        YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
+            ,"Error : YSAppArgs or FileName is not ready.");
+        return FALSE;
+    }
+    if ( 0==strlen(File) )
+    {
+        YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
+            ,"Error : FileName is null .");
+    }
+    memset(FileName,0,sizeof(FileName));
+    if ( NULL==YSHostGetFileName(FileName,sizeof(FileName),File) )
+    {
+        YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
+            ,"Error : Failed at YSHostGetFileName(%s).",File);
+        return FALSE;
+    }
+    return YSHostToShm2(File,FileName);
+}
+
+BOOL  YSHostToShm2(const char *File,const char *FileName)
+{
     void *Host;
     void *Buf;
     char Tmp[YSAPP_TMP_LEN];
     BOOL bRtn;
 
-    if ( !YSAppArgsIsInit()||(NULL==File) )
+    if ( !YSAppArgsIsInit()||(NULL==File) \
+        ||(RTNCODE_OK!=FEFileTest(FileName)) )
     {
         YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
             ,"Error : YSAppArgs or FileName is not ready.");
@@ -42,13 +67,6 @@ BOOL  YSHostToShm(const char *File)
     Host = NULL;
     while( 1 )
     {
-        memset(FileName,0,sizeof(FileName));
-        if ( NULL==YSHostGetFileName(FileName,sizeof(FileName),File) )
-        {
-            YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
-                ,"Error : Failed at YSHostGetFileName(%s).",File);
-            break;
-        }
         if ( NULL==(Host=YSHostLoadFromFile2(File,FileName)) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
@@ -63,7 +81,7 @@ BOOL  YSHostToShm(const char *File)
                 ,YSVarStringGet(Buf),YSVarStringGetLen(Buf));
             YSVarStringFree(Buf);
         }
-        if ( !YSMPToShm(FileName,Host,YSVarHashGetLen(Host)) )
+        if ( !YSMPToShm(FileName,Host) )
         {
             YSTracesError(YSAppArgsGetLogArgs(),YSSETTRACE(Tmp,sizeof(Tmp)) \
                 ,"Error : Failed at YSMPToShm.");
