@@ -6,6 +6,7 @@
  */
 
 #include <gtkmm.h>
+#include <glibmm/ustring.h>
 #include <windows.h>
 #include <iostream>
 #include "MainWindow.h"
@@ -27,13 +28,22 @@ bool init_socket()
 int main(int argc, char* argv[])
 {
 #ifdef __OS_WIN__
-    if (init_socket())
+    if (!init_socket()) {
         std::cout << "Win Sock init failed!" << std::endl;
+        int err = GetLastError();
+        std::cout << "Error num." << err << std::endl;
+        return 0;
+    }
 #endif
 
-    Gtk::Main kit(argc, argv);
-    MainWindow window;
-    Gtk::Main::run(window);
+    try {
+	    Gtk::Main kit(argc, argv);
+	    MainWindow window;
+	    Gtk::Main::run(window);
+    } catch (Glib::ustring& msg) {
+        std::cout << msg << std::endl;
+    }
+
 
     return 0;
 }

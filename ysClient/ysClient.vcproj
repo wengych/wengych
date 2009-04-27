@@ -22,7 +22,7 @@
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="..\..\..\Develop\gtkmm\MSVC\gtkmm-vc90-d-2_4.vsprops"
-			CharacterSet="1"
+			CharacterSet="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -43,7 +43,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\yscom_win\include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__OS_WIN__"
+				PreprocessorDefinitions="WIN32;_DEBUG;__OS_WIN__;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -177,11 +177,19 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\src\AppConfig.cc"
+				>
+			</File>
+			<File
 				RelativePath=".\src\main.cc"
 				>
 			</File>
 			<File
-				RelativePath=".\src\MainWindow.cpp"
+				RelativePath=".\src\MainWindow.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Session.cc"
 				>
 			</File>
 			<File
@@ -199,7 +207,15 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\src\AppConfig.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\MainWindow.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\Session.h"
 				>
 			</File>
 			<File
