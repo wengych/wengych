@@ -1,8 +1,23 @@
 #ifndef YS_APP_CONFIG_H_
 #define YS_APP_CONFIG_H_
 
-#include <glibmm.h>
+#include "common.h"
 #include <libxml++/libxml++.h>
+
+struct CfgServerInfo : public string
+{
+	CfgServerInfo(const string& cfg_name);
+};
+
+struct CfgMainWindow : public string
+{
+	CfgMainWindow(const string& cfg_name);
+};
+
+struct CfgServiceList : public string
+{
+	CfgServiceList(const string& cfg_name);
+};
 
 class AppConfig
 {
@@ -10,7 +25,7 @@ public:
     AppConfig();
     ~AppConfig();
     void Init();
-    Glib::ustring ReadOne(const Glib::ustring& config_name);
+    string ReadOne(const string& config_name);
 protected:
     xmlpp::Node* m_configRoot;
     xmlpp::DomParser xml_parser;

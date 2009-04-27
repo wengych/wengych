@@ -9,6 +9,7 @@
 
 #include <ysdef.h>
 #include <boost/lexical_cast.hpp>
+#include <memory>
 
 #ifdef __OS_WIN__
 #pragma comment(lib,"wsock32.lib")
@@ -17,16 +18,18 @@
 
 MainWindow::MainWindow() :
     m_inputFrame(), m_outputFrame(), m_serviceList(1),
-    m_btnSendRequest("Send"), m_vBox(false, 5), m_hBox1(false, 5),
-    m_sessionPtr(new Session())
+    m_btnSendRequest("Send"), m_vBox(false, 5), m_hBox1(false, 5)
 {
     InitServerInfo();
+	m_sessionPtr.reset(new Session(m_appConfig, sigc::mem_fun(this, &MainWindow::ServiceCallSock)));
+	if (!m_sessionPtr)
+		throw string("Init session failed!");
 
-    this->set_title(m_appConfig.ReadOne("/config/MainWindow/title"));
+    this->set_title(m_appConfig.ReadOne(CfgMainWindow("title")));
     this->set_border_width(30);
 
-    m_inputFrame.set_label(m_appConfig.ReadOne("/config/MainWindow/InputFrame/label"));
-    m_outputFrame.set_label(m_appConfig.ReadOne("/config/MainWindow/OutputFrame/label"));
+    m_inputFrame.set_label(m_appConfig.ReadOne(CfgMainWindow("InputFrame/label")));
+    m_outputFrame.set_label(m_appConfig.ReadOne(CfgMainWindow("OutputFrame/label")));
     m_hBox1.pack_start(m_inputFrame, Gtk::PACK_SHRINK);
     m_hBox1.pack_start(m_outputFrame, Gtk::PACK_SHRINK);
 
@@ -48,26 +51,31 @@ MainWindow::MainWindow() :
     std::cout << "show_all()" << std::endl;
 }
 
-void MainWindow::on_service_list_raw_activated(const Gtk::TreeModel::Path&, Gtk::TreeViewColumn*)
+void MainWindow::on_service_list_select_change()
 {
-    std::cout << "on_service_list_raw_activated()" << std::endl;
-    std::cout << "service list selection: " << get_activated_row_in_service_list() << std::endl;
+    std::cout << "on_service_list_select_change()" << std::endl;
+    std::cout << "service list selection: " << get_selected_row_in_service_list() << std::endl;
 
-    switch (get_activated_row_in_service_list()) {
-    case 0:
-        m_inputFrame.clear();
-        m_inputFrame.add_item(new Gtk::Label("__DICT_IN"), new Gtk::Entry());
-        m_inputFrame.add_item(new Gtk::Label("__DICT_IN2"), new Gtk::Entry());
+	try {
+		m_inputFrame.clear();
+		m_outputFrame.clear();
+		int idx = get_selected_row_in_service_list();
+		if (idx < 0) {
+			m_btnSendRequest.set_sensitive(false);
+			return ;
+		}
 
-        break;
-    case 1:
-        m_inputFrame.clear();
-        m_inputFrame.add_item(new Gtk::Label("__DICT_IN"), new Gtk::Entry());
-        break;
-    default :
-        break;
-    }
-    m_inputFrame.show_all_children();
+		string service_name = m_serviceList.get_text(idx);
+		StringArray input_args = m_sessionPtr->get_input_args(service_name);
+		for (StringArray::iterator it = input_args.begin(); it != input_args.end(); ++it)
+			m_inputFrame.add_item(new Gtk::Label(*it), new Gtk::Entry());
+
+		m_inputFrame.show_all_children();
+		m_btnSendRequest.set_sensitive();
+	} catch (string& msg) {
+		Gtk::MessageDialog infoDlg(msg, false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK, true);
+		infoDlg.run();
+	}
 }
 
 void MainWindow::output_var_to_xml_file( void* bus )
@@ -97,48 +105,53 @@ void MainWindow::on_send_button_clicked()
         if ( NULL==(send_bus = YSUserBusNew(0)) )
             throw string("SendBus is NULL.");
 
-        char strServName[] = "MyDemoDateTime1";
-        char strDictIn[] = "dict_in1";
-        YSUserBusAddString(send_bus, YSDICT_SERVNAME, strServName, strlen(strServName));
-        YSUserBusAddString(send_bus, YSDICT_IN, strDictIn, strlen(strDictIn));
+		int idx = get_selected_row_in_service_list();
+		if (idx < 0)
+			throw string("illegal index of service list");
+		string service_name = m_serviceList.get_text(idx);
 
-        /* ========================
-         * TODO: loop read all input from widgets in input frame.
-        for (size_t i = 0; i < m_pEditIn.GetCount(); ++i) {
-            CString strUserInput;
-            m_pEditIn[i]->GetWindowText(strUserInput);
-            char *p = T2A(strUserInput.GetString());
-            YSUserBusAddString(SendBus, input_test[i], p, strlen(p));
-        }
-        */
+        char strDictIn[] = "dict_in1";
+        YSUserBusAddString(send_bus, YSDICT_SERVNAME, service_name.c_str(), service_name.length());
+		int count = m_inputFrame.get_item_count();
+		for (int i = 0; i < count; ++i)
+		{
+			string label = m_inputFrame.get_item_label_text(i);
+			string widget = m_inputFrame.get_item_widget_data(i);
+			YSUserBusAddString(send_bus, label.c_str(), widget.c_str(), widget.length());
+		}
+
         // 输出SendBus到文件
         this->output_var_to_xml_file(send_bus);
-
-        if (FALSE == YSServiceClientCallSock(m_ip, m_port, m_time_out, send_bus, &recv_bus)) {
-#ifdef __OS_WIN__
-            int err = GetLastError();
-            throw string(boost::lexical_cast<string>(err));
-#elif
-            throw string("ServiceClientCall failed!");
-#endif // __OS_WIN__
-        }
-
+		ServiceCallSock(send_bus, &recv_bus);
         // 输出RecvBus到文件
         this->output_var_to_xml_file(recv_bus);
 
         if (!recv_bus)
             throw string("Error occurred when recv data, create recvBus failed!");
 
-        recv_key_array = YSVarArrayNew(0);
-
-        void* strDictOut = YSVarStringSave(YSDICT_OUT, strlen(YSDICT_OUT));
-        void* strDictOut2 = YSVarStringSave(YSDICT_OUT2, strlen(YSDICT_OUT2));
-
-        YSVarArrayAdd(recv_key_array, strDictOut);
-        YSVarArrayAdd(recv_key_array, strDictOut2);
-
         // TODO: re-write update method
         // UpdateView(recv_key_array, VIEW_FLAG_OUT, RecvBus);
+		StringArray output_args = m_sessionPtr->get_output_args(service_name);
+		for (StringArray::iterator it = output_args.begin(); it != output_args.end(); ++it)
+		{
+			void* arr = YSUserBusGetArray(recv_bus, it->c_str());
+			if (!arr)
+				throw string("Get Array from recv_bus failed! Array key: ") + *it;
+
+			int arr_len = YSVarArrayGetLen(arr);
+			for (int j = 0; j < arr_len; ++j) {
+				void* var = YSVarArrayGet(arr, j);
+				if (!var)
+					throw string("Get var from Array failed! Array key: ") + *it + string(" Index of array: ") + boost::lexical_cast<string>(j);
+				string text((char*)YSVarStringGet(var));
+				Gtk::Entry* entry = new Gtk::Entry();
+				entry->set_text(text);
+				entry->set_editable(false);
+				m_outputFrame.add_item(new Gtk::Label(*it), entry);
+			}
+		}
+
+		m_outputFrame.show_all_children();
     } catch (string& msg) {
         Gtk::MessageDialog infoDlg(msg, false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK, true);
         infoDlg.run();
@@ -149,7 +162,7 @@ void MainWindow::on_send_button_clicked()
     YSVarArrayFree(recv_key_array);
 }
 
-int MainWindow::get_activated_row_in_service_list()
+int MainWindow::get_selected_row_in_service_list()
 {
     if (m_serviceList.get_selected().size() == 1)
         return m_serviceList.get_selected().at(0);
@@ -163,74 +176,17 @@ MainWindow::~MainWindow()
 
 void MainWindow::InitServiceList()
 {
-    try {
-        void* out_bus = NULL;
-        void* in_bus = YSUserBusNew(0);
-        if (NULL == in_bus)
-            throw string("YSUserBusNew() failed while InitServiceList()");
-        string strService = m_appConfig.ReadOne("/config/ServiceList/GetServiceListAppName");
-        m_sessionPtr->in_bus_add(in_bus);
-        YSUserBusAddString(in_bus, YSDICT_SERVNAME, strService.c_str(), strService.length());
+	try {
+		m_serviceList.set_size_request(100, 100);
+		m_serviceList.set_column_title(0, m_appConfig.ReadOne(CfgMainWindow("ServiceListColumnName")));
+		std::list<string> service_list = m_sessionPtr->get_service_list();
+		for (std::list<string>::iterator it = service_list.begin(); it != service_list.end(); ++it)
+			m_serviceList.append_text(*it);
 
-        this->output_var_to_xml_file(in_bus);
-
-        if (FALSE == YSServiceClientCallSock(m_ip, m_port, m_time_out, in_bus, &out_bus)) {
-#ifdef __OS_WIN__
-            int err = GetLastError();
-            throw string(boost::lexical_cast<string>(err));
-#elif
-            throw string("ServiceClientCall failed!");
-#endif // __OS_WIN__
-        }
-
-        // 输出RecvBus到文件
-        this->output_var_to_xml_file(out_bus);
-        void* appBin = YSUserBusGet(out_bus, m_appConfig.ReadOne("/config/ServiceList/Output").c_str());
-        if (!appBin)
-            throw string("YSUserBusGet() failed while retrieve appVarBin");
-        void* appHash= YSMPHashFromVarBin(appBin);
-        if (!appHash)
-            throw string("HashFromVarBin() failed while retrieve appHash");
-
-        output_var_to_xml_file(appHash);
-
-        int hash_base = YSVarHashGetBase(appHash);
-        for (int i = 0; i < hash_base; ++i) {
-            void* hash_link = YSVarHashGetLinkByIdx(appHash, i);
-            int link_len = YSVarLinkGetLen(hash_link);
-            for (int j = 0; j < link_len; ++j) {
-                void* link_obj = YSVarLinkGet(hash_link, j);
-                string str = m_appConfig.ReadOne("/config/ServiceList/ServiceInfo/name");
-                void* var_name = YSVarStructGetByKey(link_obj, str.c_str(), str.length());
-                str = m_appConfig.ReadOne("/config/ServiceList/ServiceInfo/input");
-                void* var_input_array = YSVarStructGetByKey(link_obj, str.c_str(), str.length());
-                str = m_appConfig.ReadOne("/config/ServiceList/ServiceInfo/output");
-                void* var_output_array = YSVarStructGetByKey(link_obj, str.c_str(), str.length());
-
-                // m_serviceList.append_text((char*)YSVarStringGet(var_name));
-                string name = (char*)YSVarStringGet(var_name);
-                StringArray inputArr;//  = (char*)YSVarStringGet(var_input);
-                StringArray outputArr;//  = (char*)YSVarStringGet(var_output);
-
-                YsArrayToStringArray(var_input_array, inputArr);
-                YsArrayToStringArray(var_output_array, outputArr);
-
-
-                m_serviceMap.insert(std::make_pair(name, ServiceInfo(name, inputArr, outputArr)));
-            }
-        }
-
-        // TODO: dynamic generate items in service list.
-        m_serviceList.set_size_request(100, 100);
-        m_serviceList.set_column_title(0, m_appConfig.ReadOne("/config/MainWindow/ServiceListColumnName"));
-
-        for (ServiceMap::iterator it = m_serviceMap.begin(); it != m_serviceMap.end(); ++it) {
-            m_serviceList.append_text(it->first);
-        }
-
-        // m_serviceList.add_events(Gdk::EventMask::ALL_EVENTS_MASK);
-        m_serviceList.signal_row_activated().connect(sigc::mem_fun(*this,
-            &MainWindow::on_service_list_raw_activated));
+		m_refTreeSelection = m_serviceList.get_selection();
+		m_refTreeSelection->set_mode(Gtk::SELECTION_SINGLE);
+		m_refTreeSelection->signal_changed().connect(
+			sigc::mem_fun(*this, &MainWindow::on_service_list_select_change));
     } catch (string& msg) {
         Gtk::MessageDialog infoDlg(msg, false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK, true);
         infoDlg.run();
@@ -240,9 +196,9 @@ void MainWindow::InitServiceList()
 
 void MainWindow::InitServerInfo()
 {
-    string ip = m_appConfig.ReadOne("/config/ServerInfo/ip");
-    string port = m_appConfig.ReadOne("/config/ServerInfo/port");
-    string time_out = m_appConfig.ReadOne("/config/ServerInfo/time_out");
+    string ip = m_appConfig.ReadOne(CfgServerInfo("ip"));
+    string port = m_appConfig.ReadOne(CfgServerInfo("port"));
+    string time_out = m_appConfig.ReadOne(CfgServerInfo("time_out"));
 
     memset(m_ip, 0, sizeof(ip));
     strcpy(m_ip, ip.c_str());
@@ -257,4 +213,17 @@ void MainWindow::YsArrayToStringArray( void* var_arr, StringArray& str_arr)
         str_arr.push_back((char*)YSVarStringGet(
             YSVarArrayGet(var_arr, i)));
     }
+}
+
+void MainWindow::ServiceCallSock( void* p_in_bus, void** pp_out_bus)
+{
+	if (FALSE == YSServiceClientCallSock(m_ip, m_port, m_time_out, p_in_bus, pp_out_bus)) {
+#ifdef __OS_WIN__
+		int err = GetLastError();
+		throw string(boost::lexical_cast<string>(err));
+#elif
+		throw string("ServiceClientCall failed!");
+#endif // __OS_WIN__
+	}
+
 }

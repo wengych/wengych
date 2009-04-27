@@ -39,3 +39,22 @@ void YsFrame::clear()
     m_hBoxArr.clear();
 
 }
+
+string YsFrame::get_item_label_text( int idx )
+{
+	return m_labels.at(idx)->get_text();
+}
+
+string YsFrame::get_item_widget_data( int idx )
+{
+	Gtk::Entry *entry = dynamic_cast<Gtk::Entry *>(m_widgets.at(idx).get());
+	if (NULL != entry)
+		return entry->get_text();
+	return "";
+}
+
+int YsFrame::get_item_count()
+{
+	assert( m_labels.size() == m_widgets.size() );
+	return m_labels.size();
+}

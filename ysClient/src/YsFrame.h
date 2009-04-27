@@ -12,7 +12,7 @@
 #include <gtkmm/widget.h>
 #include <glibmm/refptr.h>
 
-#include <vector>
+#include "common.h"
 
 #ifndef YSFRAME_H_
 #define YSFRAME_H_
@@ -45,6 +45,9 @@ public:
 
     void Init();
     void add_item(Gtk::Label*, Gtk::Widget*);
+	int get_item_count();
+	string get_item_label_text(int idx);
+	string get_item_widget_data(int idx);
     void clear();
 
 protected:

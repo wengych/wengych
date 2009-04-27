@@ -1,22 +1,47 @@
 #ifndef YS_SESSION_H_
 #define YS_SESSION_H_
 
-#include <vector>
+#include "common.h"
+#include "AppConfig.h"
 
-typedef std::vector<void*> BusVector;
-typedef BusVector::iterator BusIterator;
 
 class Session
 {
+protected:
+	struct ServiceInfo {
+		ServiceInfo(const string& _name, const StringArray& _input, const StringArray& _output)
+			: name(_name), input(_input), output(_output)
+		{}
+		ServiceInfo(const ServiceInfo& rhs)
+			: name(rhs.name), input(rhs.input), output(rhs.output)
+		{}
+		string name;
+		StringArray input;
+		StringArray output;
+	};
+	typedef std::map<string, ServiceInfo> ServiceMap;
+
 public:
-    Session();
+    Session(AppConfig& , SessionSockCallBackType);
     ~Session();
 
-    void in_bus_add(void*);
+    void add_in_bus(void*);
+	void add_out_bus(void*);
+	StringList get_service_list();
+	StringArray get_input_args(string service_name);
+	StringArray get_output_args(string service_name);
+	bool valid_input_args(string arg_name, string arg_value);
+	void YsArrayToStringArray( void* var_arr, StringArray& str_arr);
 
 protected:
+	void Init();
+
     BusVector vec_in_bus;
+	BusVector vec_out_bus;
     void* main_bus;
+	AppConfig& m_appConfig;
+	SessionSockCallBackType m_func;
+	ServiceMap m_serviceMap;
 };
 
 #endif // YS_SESSION_H_

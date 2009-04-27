@@ -193,7 +193,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\YsFrame.cpp"
+				RelativePath=".\src\YsFrame.cc"
 				>
 			</File>
 			<File
@@ -208,6 +208,10 @@
 			>
 			<File
 				RelativePath=".\src\AppConfig.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\common.h"
 				>
 			</File>
 			<File
