@@ -2,9 +2,10 @@
 
 #include "Session.h"
 #include "ysdef.h"
+#include "AppConfig.h"
 
-Session::Session(AppConfig& app_cfg, SessionSockCallBackType _call_back)
-: m_appConfig(app_cfg), m_func(_call_back)
+Session::Session(const AppConfigPtr& app_cfg_ptr, const SessionSockCallBackType& _call_back)
+: m_appConfigPtr(app_cfg_ptr), m_func(_call_back)
 {
 	try {
 		Init();
@@ -52,13 +53,13 @@ void Session::Init()
 	void* in_bus = YSUserBusNew(0);
 	if (NULL == in_bus)
 		throw string("YSUserBusNew() failed while InitServiceList()");
-	string strService = m_appConfig.ReadOne(CfgServiceList("GetServiceListAppName"));
+	string strService = m_appConfigPtr->ReadOne(CfgServiceList("GetServiceListAppName"));
 	add_in_bus(in_bus);
 	YSUserBusAddString(in_bus, YSDICT_SERVNAME, strService.c_str(), strService.length());
 
 	m_func(in_bus, &out_bus);
 
-	void* appBin = YSUserBusGet(out_bus, m_appConfig.ReadOne(CfgServiceList("Output")).c_str());
+	void* appBin = YSUserBusGet(out_bus, m_appConfigPtr->ReadOne(CfgServiceList("Output")).c_str());
 	if (!appBin)
 		throw string("YSUserBusGet() failed while retrieve appVarBin");
 	void* appHash= YSMPHashFromVarBin(appBin, 0);
@@ -71,11 +72,11 @@ void Session::Init()
 		int link_len = YSVarLinkGetLen(hash_link);
 		for (int j = 0; j < link_len; ++j) {
 			void* link_obj = YSVarLinkGet(hash_link, j);
-			string str = m_appConfig.ReadOne(CfgServiceList("ServiceInfo/name"));
+			string str = m_appConfigPtr->ReadOne(CfgServiceList("ServiceInfo/name"));
 			void* var_name = YSVarStructGetByKey(link_obj, str.c_str(), str.length());
-			str = m_appConfig.ReadOne(CfgServiceList("ServiceInfo/input"));
+			str = m_appConfigPtr->ReadOne(CfgServiceList("ServiceInfo/input"));
 			void* var_input_array = YSVarStructGetByKey(link_obj, str.c_str(), str.length());
-			str = m_appConfig.ReadOne(CfgServiceList("ServiceInfo/output"));
+			str = m_appConfigPtr->ReadOne(CfgServiceList("ServiceInfo/output"));
 			void* var_output_array = YSVarStructGetByKey(link_obj, str.c_str(), str.length());
 
 			StringArray inputArr;

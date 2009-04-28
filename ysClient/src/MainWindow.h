@@ -9,15 +9,18 @@
 #define MAINWINDOW_H_
 
 #include "common.h"
-#include "YsFrame.h"
-#include "AppConfig.h"
-#include "Session.h"
+
+class Session;
+class AppConfig;
+class YsFrame;
 
 class MainWindow: public Gtk::Dialog
 {
 protected:
 	typedef Glib::ustring string;
 	typedef boost::shared_ptr<Session> SessionPtr;
+	typedef boost::shared_ptr<AppConfig> AppConfigPtr;
+	typedef boost::shared_ptr<YsFrame> YsFramePtr;
 	typedef std::vector<string> StringArray;
 public:
     MainWindow();
@@ -29,13 +32,13 @@ public:
     void output_var_to_xml_file( void* bus );
     void InitServiceList();
     void InitServerInfo();
-    void YsArrayToStringArray(void* , StringArray& );
+    void YsArrayToStringArray(void* , /*out*/ StringArray& );
 	void ServiceCallSock(void*, void**);
 
 protected:
-    YsFrame m_inputFrame;
-    YsFrame m_outputFrame;
-    Gtk::ListViewText m_serviceList;
+    YsFramePtr m_inputFramePtr;
+    YsFramePtr m_outputFramePtr;
+	Gtk::TreeView m_serviceList;
 
     Gtk::Button m_btnSendRequest;
 
@@ -43,7 +46,7 @@ protected:
     Gtk::HBox m_hBox1;
     Gtk::HButtonBox m_hBox2;
 
-	AppConfig m_appConfig;
+	AppConfigPtr m_appConfigPtr;
     SessionPtr m_sessionPtr;
 
     char m_ip[16];
@@ -51,6 +54,17 @@ protected:
     int m_time_out;
 
 	Glib::RefPtr<Gtk::TreeSelection> m_refTreeSelection;
+	Glib::RefPtr<Gtk::TreeStore> m_refTreeStore;
+
+	struct ModelColumns : public Gtk::TreeModelColumnRecord
+	{
+		Gtk::TreeModelColumn<string> item;
+		ModelColumns() {
+			add(item);
+		}
+	};
+
+	const ModelColumns m_columns;
 };
 
 #endif /* MAINWINDOW_H_ */

@@ -5,26 +5,10 @@
  *      Author: wengych
  */
 
-#include <boost/shared_ptr.hpp>
-#include <gtkmm/frame.h>
-#include <gtkmm/box.h>
-#include <gtkmm/label.h>
-#include <gtkmm/widget.h>
-#include <glibmm/refptr.h>
-
 #include "common.h"
 
 #ifndef YSFRAME_H_
 #define YSFRAME_H_
-
-typedef boost::shared_ptr<Gtk::Label> LabelPtr;
-typedef std::vector<LabelPtr> LabelPtrArray;
-
-typedef boost::shared_ptr<Gtk::Widget> WidgetPtr;
-typedef std::vector<WidgetPtr> WidgetPtrArray;
-
-typedef boost::shared_ptr<Gtk::HBox> HBoxPtr;
-typedef std::vector<HBoxPtr> HBoxPtrArray;
 
 class YsFrame: public Gtk::Frame
 {

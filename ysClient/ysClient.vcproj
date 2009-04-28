@@ -21,7 +21,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="..\..\..\Develop\gtkmm\MSVC\gtkmm-vc90-d-2_4.vsprops"
+			InheritedPropertySheets="..\..\..\Develop\gtkmm\MSVC\gtkmm-vc90-d-2_4.vsprops;.\boost.vsprops"
 			CharacterSet="2"
 			>
 			<Tool
@@ -97,8 +97,8 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="..\..\..\Develop\gtkmm\MSVC\gtkmm-vc90-2_4.vsprops"
-			CharacterSet="1"
+			InheritedPropertySheets="..\..\..\Develop\gtkmm\MSVC\gtkmm-vc90-2_4.vsprops;.\boost.vsprops"
+			CharacterSet="2"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -120,12 +120,14 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
+				AdditionalIncludeDirectories="..\yscom_win\include"
+				PreprocessorDefinitions="WIN32;NDEBUG;__OS_WIN__"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4250;4819;4520"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -196,10 +198,6 @@
 				RelativePath=".\src\YsFrame.cc"
 				>
 			</File>
-			<File
-				RelativePath=".\src\YsVarCpp.cc"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Í·ÎÄ¼þ"
@@ -224,10 +222,6 @@
 			</File>
 			<File
 				RelativePath=".\src\YsFrame.h"
-				>
-			</File>
-			<File
-				RelativePath=".\src\YsVarCpp.h"
 				>
 			</File>
 		</Filter>

@@ -2,8 +2,8 @@
 #define YS_SESSION_H_
 
 #include "common.h"
-#include "AppConfig.h"
 
+class AppConfig;
 
 class Session
 {
@@ -20,9 +20,10 @@ protected:
 		StringArray output;
 	};
 	typedef std::map<string, ServiceInfo> ServiceMap;
+	typedef boost::shared_ptr<AppConfig> AppConfigPtr;
 
 public:
-    Session(AppConfig& , SessionSockCallBackType);
+    Session(const AppConfigPtr& , const SessionSockCallBackType&);
     ~Session();
 
     void add_in_bus(void*);
@@ -39,7 +40,7 @@ protected:
     BusVector vec_in_bus;
 	BusVector vec_out_bus;
     void* main_bus;
-	AppConfig& m_appConfig;
+	AppConfigPtr m_appConfigPtr;
 	SessionSockCallBackType m_func;
 	ServiceMap m_serviceMap;
 };

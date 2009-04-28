@@ -25,18 +25,30 @@ bool init_socket()
     return true;
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
 #ifdef __OS_WIN__
+// int WinMain(HINSTANCE hInstance,
+// 			HINSTANCE hPrevInstance,
+// 			LPSTR lpCmdLine,
+// 			int nCmdShow
+// 			)
+// {
     if (!init_socket()) {
         std::cout << "Win Sock init failed!" << std::endl;
         int err = GetLastError();
-        std::cout << "Error num." << err << std::endl;
+        std::cout << "Error number." << err << std::endl;
         return 0;
     }
+	/*
+	int argc = 1;
+	char* commandLine = {"gtkApplication"};
+	char** argv = &commandLine;
+	*/
+// int main(int argc, char* argv[])
+// {
 #endif
-
-    try {
+	try {
 	    Gtk::Main kit(argc, argv);
 	    MainWindow window;
 	    Gtk::Main::run(window);
