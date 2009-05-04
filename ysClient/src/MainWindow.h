@@ -38,6 +38,8 @@ public:
 protected:
     YsFramePtr m_inputFramePtr;
     YsFramePtr m_outputFramePtr;
+
+	Gtk::ScrolledWindow m_treeScrollWnd;
 	Gtk::TreeView m_serviceList;
 
     Gtk::Button m_btnSendRequest;

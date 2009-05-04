@@ -72,21 +72,27 @@ void Session::Init()
 		int link_len = YSVarLinkGetLen(hash_link);
 		for (int j = 0; j < link_len; ++j) {
 			void* link_obj = YSVarLinkGet(hash_link, j);
-			string str = m_appConfigPtr->ReadOne(CfgServiceList("ServiceInfo/name"));
-			void* var_name = YSVarStructGetByKey(link_obj, str.c_str(), str.length());
+
+            string str;
 			str = m_appConfigPtr->ReadOne(CfgServiceList("ServiceInfo/input"));
 			void* var_input_array = YSVarStructGetByKey(link_obj, str.c_str(), str.length());
 			str = m_appConfigPtr->ReadOne(CfgServiceList("ServiceInfo/output"));
 			void* var_output_array = YSVarStructGetByKey(link_obj, str.c_str(), str.length());
 
+            string ver = GetStringFromStruct(link_obj, m_appConfigPtr->ReadOne(CfgServiceList("ServiceInfo/version")));
+			string app = GetStringFromStruct(link_obj, m_appConfigPtr->ReadOne(CfgServiceList("ServiceInfo/application")));
+			string fun = GetStringFromStruct(link_obj, m_appConfigPtr->ReadOne(CfgServiceList("ServiceInfo/function")));
+			string lib = GetStringFromStruct(link_obj, m_appConfigPtr->ReadOne(CfgServiceList("ServiceInfo/library")));
+			string dic_ver = GetStringFromStruct(link_obj, m_appConfigPtr->ReadOne(CfgServiceList("ServiceInfo/dictory_ver")));
+
 			StringArray inputArr;
 			StringArray outputArr;
 
-			string name = (char*)YSVarStringGet(var_name);
+			string name = GetStringFromStruct(link_obj, m_appConfigPtr->ReadOne(CfgServiceList("ServiceInfo/name")));
 			YsArrayToStringArray(var_input_array, inputArr);
 			YsArrayToStringArray(var_output_array, outputArr);
 
-			m_serviceMap.insert(std::make_pair(name, ServiceInfo(name, inputArr, outputArr)));
+			m_serviceMap.insert(std::make_pair(name, ServiceInfo(name, inputArr, outputArr, ver, app, fun, lib, dic_ver)));
 		}
 	}
 }
@@ -101,7 +107,7 @@ void Session::YsArrayToStringArray( void* var_arr, StringArray& str_arr )
 	}
 }
 
-StringArray Session::get_input_args( string service_name )
+StringArray Session::get_input_args( const string& service_name )
 {
 	StringList input_args;
 	ServiceMap::iterator it = m_serviceMap.find(service_name);
@@ -112,7 +118,7 @@ StringArray Session::get_input_args( string service_name )
 	return it->second.input;
 }
 
-StringArray Session::get_output_args( string service_name )
+StringArray Session::get_output_args( const string& service_name )
 {
 	StringList output_args;
 	ServiceMap::iterator it = m_serviceMap.find(service_name);
@@ -121,4 +127,23 @@ StringArray Session::get_output_args( string service_name )
 			service_name;
 
 	return it->second.output;
+}
+
+string Session::GetStringFromStruct( void* var, const string& key)
+{
+	void* str = YSVarStructGetByKey(var, key.c_str(), key.length());
+	if (!str)
+		throw string("Get string from struct failed! Key in struct is ") + key;
+
+	return string((char*)YSVarStringGet(str));
+}
+
+Session::ServiceInfo& Session::get_service_info(const string& service_name)
+{
+    ServiceMap::iterator it = m_serviceMap.find(service_name);
+    if (it == m_serviceMap.end())
+        throw string("Service not found while get_service_info()! Service name: ") +
+            service_name;
+
+    return it->second;
 }

@@ -7,17 +7,27 @@ class AppConfig;
 
 class Session
 {
-protected:
+public:
 	struct ServiceInfo {
-		ServiceInfo(const string& _name, const StringArray& _input, const StringArray& _output)
-			: name(_name), input(_input), output(_output)
+		ServiceInfo(const string& _name, const StringArray& _input, const StringArray& _output,
+                const string& ver, const string& app, const string& fun, const string& lib, const string& dic_ver)
+			: name(_name), input(_input), output(_output),
+            version(ver), application_name(app), function_name(fun), library_name(lib), dictory_ver(dic_ver)
 		{}
 		ServiceInfo(const ServiceInfo& rhs)
-			: name(rhs.name), input(rhs.input), output(rhs.output)
+			: name(rhs.name), input(rhs.input), output(rhs.output),
+			version(rhs.version), application_name(rhs.application_name), function_name(rhs.function_name),
+			library_name(rhs.library_name), dictory_ver(rhs.dictory_ver)
 		{}
 		string name;
 		StringArray input;
 		StringArray output;
+
+		string version;
+		string application_name;
+		string function_name;
+		string library_name;
+		string dictory_ver;
 	};
 	typedef std::map<string, ServiceInfo> ServiceMap;
 	typedef boost::shared_ptr<AppConfig> AppConfigPtr;
@@ -29,13 +39,15 @@ public:
     void add_in_bus(void*);
 	void add_out_bus(void*);
 	StringList get_service_list();
-	StringArray get_input_args(string service_name);
-	StringArray get_output_args(string service_name);
+    ServiceInfo& get_service_info(const string&);
+	StringArray get_input_args(const string& service_name);
+	StringArray get_output_args(const string& service_name);
 	bool valid_input_args(string arg_name, string arg_value);
 	void YsArrayToStringArray( void* var_arr, StringArray& str_arr);
 
 protected:
 	void Init();
+	string GetStringFromStruct(void*, const string&);
 
     BusVector vec_in_bus;
 	BusVector vec_out_bus;

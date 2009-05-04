@@ -44,7 +44,7 @@ MainWindow::MainWindow() :
     m_hBox1.pack_start(*m_outputFramePtr, Gtk::PACK_SHRINK);
 
     InitServiceList();
-    m_hBox1.pack_start(m_serviceList, Gtk::PACK_SHRINK);
+    m_hBox1.pack_start(m_treeScrollWnd, Gtk::PACK_SHRINK);
 
     //// ================
     m_btnSendRequest.signal_clicked().connect(sigc::mem_fun(*this,
@@ -64,22 +64,19 @@ MainWindow::MainWindow() :
 void MainWindow::on_service_list_select_change()
 {
     std::cout << "on_service_list_select_change()" << std::endl;
-    // std::cout << "service list selection: " << get_selected_row_in_service_list() << std::endl;
-
 	try {
 		m_inputFramePtr->clear();
 		m_outputFramePtr->clear();
-// 		int idx = get_selected_row_in_service_list();
-// 		if (idx < 0) {
-// 			m_btnSendRequest.set_sensitive(false);
-// 			return ;
-// 		}
 
 		Gtk::TreeIter treeIt = m_refTreeSelection->get_selected();
 		if ( 0 == m_refTreeSelection->count_selected_rows() )
 			return ;
-		string service_name = m_refTreeStore->get_string(treeIt);// m_refTreeSelection->get_selected();
-		// string service_name = m_serviceList.get_text(idx);
+		Gtk::TreeNodeChildren treeNodeChild = m_refTreeStore->children();
+		Gtk::TreeModel::Path path = m_refTreeStore->get_path(treeIt);
+		// string index = m_refTreeStore->get_string(treeIt);
+		// Gtk::TreeRow row = treeNodeChild[boost::lexical_cast<int>(index)];
+		Gtk::TreeRow row = treeNodeChild[*(path.begin())];
+		string service_name = row[m_columns.item];
 		StringArray input_args = m_sessionPtr->get_input_args(service_name);
 		for (StringArray::iterator it = input_args.begin(); it != input_args.end(); ++it)
 			m_inputFramePtr->add_item(new Gtk::Label(*it), new Gtk::Entry());
@@ -119,12 +116,12 @@ void MainWindow::on_send_button_clicked()
         if ( NULL==(send_bus = YSUserBusNew(0)) )
             throw string("SendBus is NULL.");
 
-// 		int idx = get_selected_row_in_service_list();
-// 		if (idx < 0)
-// 			throw string("illegal index of service list");
-		string service_name = m_refTreeStore->get_string(m_refTreeSelection->get_selected());
+		Gtk::TreeIter treeIt = m_refTreeSelection->get_selected();
+		Gtk::TreeModel::Path path = m_refTreeStore->get_path(treeIt);
+		Gtk::TreeNodeChildren treeNodeChild = m_refTreeStore->children();
+		Gtk::TreeRow row = treeNodeChild[*(path.begin())];
+		string service_name = row[m_columns.item];
 
-        char strDictIn[] = "dict_in1";
         YSUserBusAddString(send_bus, YSDICT_SERVNAME, service_name.c_str(), service_name.length());
 		int count = m_inputFramePtr->get_item_count();
 		for (int i = 0; i < count; ++i)
@@ -175,15 +172,7 @@ void MainWindow::on_send_button_clicked()
     YSUserBusFree(recv_bus);
     YSVarArrayFree(recv_key_array);
 }
-/*
-int MainWindow::get_selected_row_in_service_list()
-{
-    if (m_serviceList.get_selected().size() == 1)
-        return m_serviceList.get_selected().at(0);
-    else
-        return -1;
-}
-*/
+
 MainWindow::~MainWindow()
 {
 }
@@ -191,7 +180,7 @@ MainWindow::~MainWindow()
 void MainWindow::InitServiceList()
 {
 	try {
-		m_serviceList.set_size_request(100, 100);
+		m_serviceList.set_size_request(150, 100);
 
 		// TreeStore
 		m_refTreeStore = Gtk::TreeStore::create(m_columns);
@@ -199,23 +188,48 @@ void MainWindow::InitServiceList()
 		m_serviceList.set_model(m_refTreeStore);
 		m_serviceList.set_rules_hint();
 
+		int cols_count = m_serviceList.append_column(
+			m_appConfigPtr->ReadOne(CfgMainWindow("ServiceListColumnName")),
+			m_columns.item);
+		Gtk::TreeViewColumn* pCol = m_serviceList.get_column(cols_count - 1);
+		if (pCol) {
+			Gtk::CellRenderer* pRenderer = pCol->get_first_cell_renderer();
+#ifdef GLIBMM_PROPERTIES_ENABLED
+			pRenderer->property_xalign().set_value(0.0);
+#else
+			pRenderer->set_property("xalign", 0.0);
+#endif
+			pCol->set_clickable();
+		}
+
 		// TreeSelection
 		m_refTreeSelection = m_serviceList.get_selection();
 		m_refTreeSelection->set_mode(Gtk::SELECTION_SINGLE);
 		m_refTreeSelection->signal_changed().connect(
 			sigc::mem_fun(*this, &MainWindow::on_service_list_select_change));
-		// m_serviceList.set_column_title(0, m_appConfigPtr->ReadOne(CfgMainWindow("ServiceListColumnName")));
-		// m_serviceList.set_model(m_refTreeStore);
 		
 		std::list<string> service_list = m_sessionPtr->get_service_list();
 		for (std::list<string>::iterator it = service_list.begin(); it != service_list.end(); ++it) {
-			// m_serviceList.append_text(*it);
 			Gtk::TreeRow row = *(m_refTreeStore->append());
-			// row[m_columns.item] = *it;
 			string tmp = *it;
 			row.set_value(m_columns.item, tmp);
+            Session::ServiceInfo& serviceInfo = m_sessionPtr->get_service_info(*it);
+			Gtk::TreeRow childRow = *(m_refTreeStore->append(row.children()));
+            childRow.set_value(m_columns.item, serviceInfo.version);
+			childRow = *(m_refTreeStore->append(row.children()));
+			childRow.set_value(m_columns.item, serviceInfo.application_name);
+			childRow = *(m_refTreeStore->append(row.children()));
+			childRow.set_value(m_columns.item, serviceInfo.function_name);
+			childRow = *(m_refTreeStore->append(row.children()));
+			childRow.set_value(m_columns.item, serviceInfo.library_name);
+			childRow = *(m_refTreeStore->append(row.children()));
+			childRow.set_value(m_columns.item, serviceInfo.dictory_ver);
 		}
+		m_serviceList.expand_all();
 
+		m_treeScrollWnd.set_shadow_type(Gtk::SHADOW_ETCHED_IN);
+		m_treeScrollWnd.set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
+		m_treeScrollWnd.add(m_serviceList);
     } catch (string& msg) {
         Gtk::MessageDialog infoDlg(msg, false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK, true);
         infoDlg.run();
@@ -254,5 +268,4 @@ void MainWindow::ServiceCallSock( void* p_in_bus, void** pp_out_bus)
 		throw string("ServiceClientCall failed!");
 #endif // __OS_WIN__
 	}
-
 }
