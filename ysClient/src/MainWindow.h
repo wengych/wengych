@@ -27,9 +27,12 @@ public:
     virtual ~MainWindow();
 
     void on_service_list_select_change();
-    void on_send_button_clicked();
-    int get_selected_row_in_service_list();
-    void output_var_to_xml_file( void* bus );
+
+	void on_send_button_clicked();
+	void UpdateInputFrame( StringArray & );
+	void UpdateOutputFrame( StringArray &, void* );
+	int get_selected_row_in_service_list();
+    void output_var_to_xml_file( void* bus, const string& );
     void InitServiceList();
     void InitServerInfo();
     void YsArrayToStringArray(void* , /*out*/ StringArray& );

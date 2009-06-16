@@ -77,11 +77,8 @@ void MainWindow::on_service_list_select_change()
 		// Gtk::TreeRow row = treeNodeChild[boost::lexical_cast<int>(index)];
 		Gtk::TreeRow row = treeNodeChild[*(path.begin())];
 		string service_name = row[m_columns.item];
-		StringArray input_args = m_sessionPtr->get_input_args(service_name);
-		for (StringArray::iterator it = input_args.begin(); it != input_args.end(); ++it)
-			m_inputFramePtr->add_item(new Gtk::Label(*it), new Gtk::Entry());
+		UpdateInputFrame(m_sessionPtr->get_input_args(service_name));
 
-		m_inputFramePtr->show_all_children();
 		m_btnSendRequest.set_sensitive();
 	} catch (string& msg) {
 		Gtk::MessageDialog infoDlg(msg, false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK, true);
@@ -89,16 +86,17 @@ void MainWindow::on_service_list_select_change()
 	}
 }
 
-void MainWindow::output_var_to_xml_file( void* bus )
+void MainWindow::output_var_to_xml_file( void* var, const string& sep = "========" )
 {
     void* str = NULL;
     while (1)
     {
         str = YSVarStringNew2(10240);
-        YSVarShow(bus, 0, str);
+        YSVarShow(var, 0, str);
         std::ofstream ofile("test.xml", std::ios_base::app);
-        ofile << "\n<================ />\n";
+        ofile << "\n<" << sep << "/>\n";
         ofile.write((char*)YSVarStringGet(str), YSVarStringGetLen(str));
+		ofile.close();
 
         break;
     }
@@ -128,41 +126,20 @@ void MainWindow::on_send_button_clicked()
 		{
 			string label = m_inputFramePtr->get_item_label_text(i);
 			string widget = m_inputFramePtr->get_item_widget_data(i);
-			YSUserBusAddString(send_bus, label.c_str(), widget.c_str(), widget.length());
+			if (widget.length() > 0)
+				YSUserBusAddString(send_bus, label.c_str(), widget.c_str(), widget.length());
 		}
 
         // 输出SendBus到文件
-        this->output_var_to_xml_file(send_bus);
+        this->output_var_to_xml_file(send_bus, "Send bus");
 		ServiceCallSock(send_bus, &recv_bus);
         // 输出RecvBus到文件
-        this->output_var_to_xml_file(recv_bus);
+        this->output_var_to_xml_file(recv_bus, "Recv bus");
 
         if (!recv_bus)
             throw string("Error occurred when recv data, create recvBus failed!");
 
-        // TODO: re-write update method
-        // UpdateView(recv_key_array, VIEW_FLAG_OUT, RecvBus);
-		StringArray output_args = m_sessionPtr->get_output_args(service_name);
-		for (StringArray::iterator it = output_args.begin(); it != output_args.end(); ++it)
-		{
-			void* arr = YSUserBusGetArray(recv_bus, it->c_str());
-			if (!arr)
-				throw string("Get Array from recv_bus failed! Array key: ") + *it;
-
-			int arr_len = YSVarArrayGetLen(arr);
-			for (int j = 0; j < arr_len; ++j) {
-				void* var = YSVarArrayGet(arr, j);
-				if (!var)
-					throw string("Get var from Array failed! Array key: ") + *it + string(" Index of array: ") + boost::lexical_cast<string>(j);
-				string text((char*)YSVarStringGet(var));
-				Gtk::Entry* entry = new Gtk::Entry();
-				entry->set_text(text);
-				entry->set_editable(false);
-				m_outputFramePtr->add_item(new Gtk::Label(*it), entry);
-			}
-		}
-
-		m_outputFramePtr->show_all_children();
+        UpdateOutputFrame(m_sessionPtr->get_output_args(service_name), recv_bus);
     } catch (string& msg) {
         Gtk::MessageDialog infoDlg(msg, false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK, true);
         infoDlg.run();
@@ -268,4 +245,67 @@ void MainWindow::ServiceCallSock( void* p_in_bus, void** pp_out_bus)
 		throw string("ServiceClientCall failed!");
 #endif // __OS_WIN__
 	}
+}
+
+void MainWindow::UpdateOutputFrame( StringArray &output_args, void* recv_bus )
+{
+	for (StringArray::iterator it = output_args.begin(); it != output_args.end(); ++it)
+	{
+		void* arr = YSUserBusGetArray(recv_bus, it->c_str());
+		if (!arr)
+			throw string("Get Array from recv_bus failed! Array key: ") + *it;
+
+		int arr_len = YSVarArrayGetLen(arr);
+		for (int j = 0; j < arr_len; ++j) {
+			Gtk::Widget* widget = NULL;
+			void* var = YSVarArrayGet(arr, j);
+			if (!var)
+				throw string("Get var from Array failed! Array key: ") + *it + string(" Index of array: ") + boost::lexical_cast<string>(j);
+			string text; // ((char*)YSVarStringGet(var));
+			switch (YSVarGetType(var)) {
+				case VARTYPE_MEM_VT_STRING:
+					{
+						text = (char*)YSVarStringGet(var);
+						Gtk::Entry* entry = new Gtk::Entry();
+						entry->set_text(text);
+						entry->set_editable(false);
+						widget = entry;
+						break;
+					}
+				case VARTYPE_MEM_VT_BIN:
+					{
+						void* tmp_hash = YSMPHashFromVarBin(var, 0);
+						void* tmp_str = YSVarStringNew();
+
+						output_var_to_xml_file(var, "bin");
+						output_var_to_xml_file(tmp_hash, "hash");
+
+						YSVarHashShow(tmp_hash, 0, tmp_str);
+						char* tmp = (char*)YSVarStringGet(tmp_str);
+						if (tmp != NULL)
+							text = tmp;
+
+						Gtk::Entry* entry = new Gtk::Entry();
+						Gtk::TreeView* tree = new Gtk::TreeView;
+						entry->set_text(text);
+						entry->set_editable(false);
+						widget = entry;
+						break;
+					}
+				default:
+					break;
+			}
+			m_outputFramePtr->add_item(new Gtk::Label(*it), widget);
+		}
+	}
+
+	m_outputFramePtr->show_all_children();
+}
+
+void MainWindow::UpdateInputFrame( StringArray &input_args )
+{
+	for (StringArray::iterator it = input_args.begin(); it != input_args.end(); ++it)
+		m_inputFramePtr->add_item(new Gtk::Label(*it), new Gtk::Entry());
+
+	m_inputFramePtr->show_all_children();
 }
