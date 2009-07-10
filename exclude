@@ -23,3 +23,5 @@
 *.lib
 *.exe
 *.log
+Debug
+Release
