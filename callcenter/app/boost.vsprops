@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="boost"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalOptions="/vd2"
+		AdditionalIncludeDirectories="$(BOOST_HOME)"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalLibraryDirectories="$(BOOST_HOME)\stage\lib"
+	/>
+</VisualStudioPropertySheet>
