@@ -29,6 +29,8 @@ public:
     void on_service_list_select_change();
 
 	void on_send_button_clicked();
+	void on_add_argument_clicked();
+	void add_argument(string&);
 	void UpdateInputFrame( StringArray & );
 	void UpdateOutputFrame( StringArray &, void* );
 	int get_selected_row_in_service_list();
@@ -46,6 +48,7 @@ protected:
 	Gtk::TreeView m_serviceList;
 
     Gtk::Button m_btnSendRequest;
+	Gtk::Button m_btnAddArgument;
 
     Gtk::VBox m_vBox;
     Gtk::HBox m_hBox1;

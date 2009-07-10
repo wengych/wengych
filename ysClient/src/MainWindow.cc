@@ -9,6 +9,7 @@
 
 #include <ysdef.h>
 #include <boost/lexical_cast.hpp>
+#include <boost/bind.hpp>
 #include <memory>
 
 #ifdef __OS_WIN__
@@ -19,24 +20,26 @@
 #include "AppConfig.h"
 #include "Session.h"
 #include "YsFrame.h"
+#include "SetArgumentDlg.h"
 
 MainWindow::MainWindow() :
     m_inputFramePtr(), m_outputFramePtr(), m_serviceList(),
-    m_btnSendRequest(), m_vBox(false, 5), m_hBox1(false, 5)
+    m_btnSendRequest(), m_vBox(false, 5), m_hBox1()
 {
 	m_appConfigPtr.reset(new AppConfig());
 	m_inputFramePtr.reset(new YsFrame());
 	m_outputFramePtr.reset(new YsFrame);
 
     InitServerInfo();
-	m_sessionPtr.reset(new Session(m_appConfigPtr, sigc::mem_fun(this, &MainWindow::ServiceCallSock)));
+	m_sessionPtr.reset(new Session(m_appConfigPtr, sigc::mem_fun(*this, &MainWindow::ServiceCallSock)));
 	if (!m_sessionPtr)
 		throw string("Init session failed!");
 
     this->set_title(m_appConfigPtr->ReadOne(CfgMainWindow("title")));
-    this->set_border_width(30);
+    this->set_border_width(50);
 
 	m_btnSendRequest.set_label(m_appConfigPtr->ReadOne(CfgMainWindow("SendRequest")));
+	m_btnAddArgument.set_label(m_appConfigPtr->ReadOne(CfgMainWindow("AddArgument")));
 
     m_inputFramePtr->set_label(m_appConfigPtr->ReadOne(CfgMainWindow("InputFrame/label")));
     m_outputFramePtr->set_label(m_appConfigPtr->ReadOne(CfgMainWindow("OutputFrame/label")));
@@ -47,8 +50,11 @@ MainWindow::MainWindow() :
     m_hBox1.pack_start(m_treeScrollWnd, Gtk::PACK_SHRINK);
 
     //// ================
+	m_btnAddArgument.signal_clicked().connect(sigc::mem_fun(*this,
+		&MainWindow::on_add_argument_clicked));
     m_btnSendRequest.signal_clicked().connect(sigc::mem_fun(*this,
             &MainWindow::on_send_button_clicked));
+	m_hBox2.pack_start(m_btnAddArgument);
     m_hBox2.pack_start(m_btnSendRequest);
 
     //// ================
@@ -77,7 +83,7 @@ void MainWindow::on_service_list_select_change()
 		// Gtk::TreeRow row = treeNodeChild[boost::lexical_cast<int>(index)];
 		Gtk::TreeRow row = treeNodeChild[*(path.begin())];
 		string service_name = row[m_columns.item];
-		UpdateInputFrame(m_sessionPtr->get_input_args(service_name));
+		// UpdateInputFrame(m_sessionPtr->get_input_args(service_name));
 
 		m_btnSendRequest.set_sensitive();
 	} catch (string& msg) {
@@ -102,6 +108,30 @@ void MainWindow::output_var_to_xml_file( void* var, const string& sep = "=======
     }
 
     YSVarFree(str);
+}
+void MainWindow::on_add_argument_clicked()
+{
+
+	Gtk::TreeIter treeIt = m_refTreeSelection->get_selected();
+	if ( 0 == m_refTreeSelection->count_selected_rows() )
+		return ;
+	Gtk::TreeNodeChildren treeNodeChild = m_refTreeStore->children();
+	Gtk::TreeModel::Path path = m_refTreeStore->get_path(treeIt);
+	// string index = m_refTreeStore->get_string(treeIt);
+	// Gtk::TreeRow row = treeNodeChild[boost::lexical_cast<int>(index)];
+	Gtk::TreeRow row = treeNodeChild[*(path.begin())];
+	string service_name = row[m_columns.item];
+
+	SetArgumentDlg dlg(*this, boost::bind(&MainWindow::add_argument, this, _1),
+		m_sessionPtr->get_input_args(service_name));
+	dlg.run();
+	return ;
+}
+
+void MainWindow::add_argument(string& arg)
+{
+	m_inputFramePtr->add_item(new Gtk::Label(arg), new Gtk::Entry());
+	m_inputFramePtr->show_all_children();
 }
 
 void MainWindow::on_send_button_clicked()
@@ -201,8 +231,12 @@ void MainWindow::InitServiceList()
 			childRow.set_value(m_columns.item, serviceInfo.library_name);
 			childRow = *(m_refTreeStore->append(row.children()));
 			childRow.set_value(m_columns.item, serviceInfo.dictory_ver);
+			childRow = *(m_refTreeStore->append(row.children()));
+			childRow.set_value(m_columns.item, serviceInfo.desc_info);
+
+			// row.set_value(m_columns.item, desc_info);
 		}
-		m_serviceList.expand_all();
+		// m_serviceList.expand_all();
 
 		m_treeScrollWnd.set_shadow_type(Gtk::SHADOW_ETCHED_IN);
 		m_treeScrollWnd.set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
@@ -251,18 +285,28 @@ void MainWindow::UpdateOutputFrame( StringArray &output_args, void* recv_bus )
 {
 	for (StringArray::iterator it = output_args.begin(); it != output_args.end(); ++it)
 	{
-		void* arr = YSUserBusGetArray(recv_bus, it->c_str());
-		if (!arr)
-			throw string("Get Array from recv_bus failed! Array key: ") + *it;
+		// void* arr = YSUserBusGetArray(recv_bus, it->c_str());
+		// if (!arr)
+		// 	throw string("Get Array from recv_bus failed! Array key: ") + *it;
 
-		int arr_len = YSVarArrayGetLen(arr);
-		for (int j = 0; j < arr_len; ++j) {
+		// int arr_len = YSVarArrayGetLen(arr);
+		void* var = YSUserBusGet(recv_bus, it->c_str());
+		int j = 0;
+		while (NULL != (var = YSUserBusArrayGet(recv_bus, it->c_str(), j)))
+		{
 			Gtk::Widget* widget = NULL;
-			void* var = YSVarArrayGet(arr, j);
-			if (!var)
-				throw string("Get var from Array failed! Array key: ") + *it + string(" Index of array: ") + boost::lexical_cast<string>(j);
+
 			string text; // ((char*)YSVarStringGet(var));
 			switch (YSVarGetType(var)) {
+				case VARTYPE_MEM_VT_STRUCT:
+					{
+						text = "struct";
+						Gtk::Entry* entry = new Gtk::Entry();
+						entry->set_text(text);
+						entry->set_editable(false);
+						widget = entry;
+						break;
+					}
 				case VARTYPE_MEM_VT_STRING:
 					{
 						text = (char*)YSVarStringGet(var);
@@ -296,6 +340,7 @@ void MainWindow::UpdateOutputFrame( StringArray &output_args, void* recv_bus )
 					break;
 			}
 			m_outputFramePtr->add_item(new Gtk::Label(*it), widget);
+			++j;
 		}
 	}
 

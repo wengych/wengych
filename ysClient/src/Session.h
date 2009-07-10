@@ -10,14 +10,14 @@ class Session
 public:
 	struct ServiceInfo {
 		ServiceInfo(const string& _name, const StringArray& _input, const StringArray& _output,
-                const string& ver, const string& app, const string& fun, const string& lib, const string& dic_ver)
+                const string& ver, const string& app, const string& fun, const string& lib, const string& dic_ver, const string& desc)
 			: name(_name), input(_input), output(_output),
-            version(ver), application_name(app), function_name(fun), library_name(lib), dictory_ver(dic_ver)
+            version(ver), application_name(app), function_name(fun), library_name(lib), dictory_ver(dic_ver), desc_info(desc)
 		{}
 		ServiceInfo(const ServiceInfo& rhs)
 			: name(rhs.name), input(rhs.input), output(rhs.output),
 			version(rhs.version), application_name(rhs.application_name), function_name(rhs.function_name),
-			library_name(rhs.library_name), dictory_ver(rhs.dictory_ver)
+			library_name(rhs.library_name), dictory_ver(rhs.dictory_ver), desc_info(rhs.desc_info)
 		{}
 		string name;
 		StringArray input;
@@ -28,6 +28,7 @@ public:
 		string function_name;
 		string library_name;
 		string dictory_ver;
+		string desc_info;
 	};
 	typedef std::map<string, ServiceInfo> ServiceMap;
 	typedef boost::shared_ptr<AppConfig> AppConfigPtr;

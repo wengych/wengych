@@ -84,6 +84,8 @@ void Session::Init()
 			string fun = GetStringFromStruct(link_obj, m_appConfigPtr->ReadOne(CfgServiceList("ServiceInfo/function")));
 			string lib = GetStringFromStruct(link_obj, m_appConfigPtr->ReadOne(CfgServiceList("ServiceInfo/library")));
 			string dic_ver = GetStringFromStruct(link_obj, m_appConfigPtr->ReadOne(CfgServiceList("ServiceInfo/dictory_ver")));
+			string desc_info = Glib::convert(GetStringFromStruct(link_obj, m_appConfigPtr->ReadOne(CfgServiceList("ServiceInfo/descript"))),
+				"utf-8", "gb2312");
 
 			StringArray inputArr;
 			StringArray outputArr;
@@ -92,7 +94,7 @@ void Session::Init()
 			YsArrayToStringArray(var_input_array, inputArr);
 			YsArrayToStringArray(var_output_array, outputArr);
 
-			m_serviceMap.insert(std::make_pair(name, ServiceInfo(name, inputArr, outputArr, ver, app, fun, lib, dic_ver)));
+			m_serviceMap.insert(std::make_pair(desc_info, ServiceInfo(name, inputArr, outputArr, ver, app, fun, lib, dic_ver, desc_info)));
 		}
 	}
 }
