@@ -148,7 +148,8 @@ void MainWindow::on_send_button_clicked()
 		Gtk::TreeModel::Path path = m_refTreeStore->get_path(treeIt);
 		Gtk::TreeNodeChildren treeNodeChild = m_refTreeStore->children();
 		Gtk::TreeRow row = treeNodeChild[*(path.begin())];
-		string service_name = row[m_columns.item];
+		string service_desc_info = row[m_columns.item];
+        string service_name = m_sessionPtr->get_service_info(service_desc_info).name;
 
         YSUserBusAddString(send_bus, YSDICT_SERVNAME, service_name.c_str(), service_name.length());
 		int count = m_inputFramePtr->get_item_count();
@@ -162,14 +163,16 @@ void MainWindow::on_send_button_clicked()
 
         // 输出SendBus到文件
         this->output_var_to_xml_file(send_bus, "Send bus");
-		ServiceCallSock(send_bus, &recv_bus);
+		ServiceCallSock(send_bus, &recv_bus,
+            m_sessionPtr->get_service_info(service_desc_info).application_name == "YSAPP");
         // 输出RecvBus到文件
         this->output_var_to_xml_file(recv_bus, "Recv bus");
 
         if (!recv_bus)
             throw string("Error occurred when recv data, create recvBus failed!");
 
-        UpdateOutputFrame(m_sessionPtr->get_output_args(service_name), recv_bus);
+        m_outputFramePtr->clear();
+        UpdateOutputFrame(m_sessionPtr->get_output_args(service_desc_info), recv_bus);
     } catch (string& msg) {
         Gtk::MessageDialog infoDlg(msg, false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK, true);
         infoDlg.run();
@@ -187,7 +190,7 @@ MainWindow::~MainWindow()
 void MainWindow::InitServiceList()
 {
 	try {
-		m_serviceList.set_size_request(150, 100);
+		m_serviceList.set_size_request(240, 100);
 
 		// TreeStore
 		m_refTreeStore = Gtk::TreeStore::create(m_columns);
@@ -251,12 +254,19 @@ void MainWindow::InitServiceList()
 void MainWindow::InitServerInfo()
 {
     string ip = m_appConfigPtr->ReadOne(CfgServerInfo("ip"));
+    string app_ip = m_appConfigPtr->ReadOne(CfgServerInfo("app_ip"));
     string port = m_appConfigPtr->ReadOne(CfgServerInfo("port"));
+    string app_port = m_appConfigPtr->ReadOne(CfgServerInfo("app_port"));
     string time_out = m_appConfigPtr->ReadOne(CfgServerInfo("time_out"));
 
-    memset(m_ip, 0, sizeof(ip));
+    memset(m_ip, 0, ip.length());
     strcpy(m_ip, ip.c_str());
+
+    memset(m_app_ip, 0, sizeof(app_ip.length()));
+    strcpy(m_app_ip, app_ip.c_str());
+
     m_port = boost::lexical_cast<short>(port);
+    m_app_port = boost::lexical_cast<short>(app_port);
     m_time_out = boost::lexical_cast<int>(time_out);
 }
 
@@ -269,9 +279,19 @@ void MainWindow::YsArrayToStringArray( void* var_arr, StringArray& str_arr)
     }
 }
 
-void MainWindow::ServiceCallSock( void* p_in_bus, void** pp_out_bus)
+void MainWindow::ServiceCallSock( void* p_in_bus, void** pp_out_bus, bool isCallApp)
 {
-	if (FALSE == YSServiceClientCallSock(m_ip, m_port, m_time_out, p_in_bus, pp_out_bus)) {
+    char* ip = NULL;
+    short port = 0;
+    if (isCallApp) {
+        ip = m_app_ip;
+        port = m_app_port;
+    } else {
+        ip = m_ip;
+        port = m_port;
+    }
+
+	if (FALSE == YSServiceClientCallSock(ip, port, m_time_out, p_in_bus, pp_out_bus)) {
 #ifdef __OS_WIN__
 		int err = GetLastError();
 		throw string(boost::lexical_cast<string>(err));

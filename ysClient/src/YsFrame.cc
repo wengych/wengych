@@ -19,7 +19,7 @@ void YsFrame::Init()
     */
 
     add(m_vBox);
-    m_vBox.set_size_request(300,300);
+    m_vBox.set_size_request(500,500);
 }
 
 void YsFrame::add_item(Gtk::Label *label, Gtk::Widget *widget)

@@ -15,7 +15,7 @@
 typedef Glib::ustring string;
 typedef std::vector<void*> BusVector;
 typedef BusVector::iterator BusIterator;
-typedef boost::function<void(void* /*bus_in*/, void** /*bus_out*/)> SessionSockCallBackType;
+typedef boost::function<void(void* /*bus_in*/, void** /*bus_out*/, bool)> SessionSockCallBackType;
 typedef boost::function<void(string)> ParentDlgCallBackType;
 typedef std::vector<string> StringArray;
 typedef std::list<string> StringList;

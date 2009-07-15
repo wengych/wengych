@@ -57,7 +57,7 @@ void Session::Init()
 	add_in_bus(in_bus);
 	YSUserBusAddString(in_bus, YSDICT_SERVNAME, strService.c_str(), strService.length());
 
-	m_func(in_bus, &out_bus);
+	m_func(in_bus, &out_bus, false);
 
 	void* appBin = YSUserBusGet(out_bus, m_appConfigPtr->ReadOne(CfgServiceList("Output")).c_str());
 	if (!appBin)

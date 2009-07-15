@@ -38,7 +38,7 @@ public:
     void InitServiceList();
     void InitServerInfo();
     void YsArrayToStringArray(void* , /*out*/ StringArray& );
-	void ServiceCallSock(void*, void**);
+	void ServiceCallSock(void*, void**, bool isCallApp = false);
 
 protected:
     YsFramePtr m_inputFramePtr;
@@ -58,7 +58,9 @@ protected:
     SessionPtr m_sessionPtr;
 
     char m_ip[16];
+    char m_app_ip[16];
     short m_port;
+    short m_app_port;
     int m_time_out;
 
 	Glib::RefPtr<Gtk::TreeSelection> m_refTreeSelection;
