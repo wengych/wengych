@@ -1,10 +1,25 @@
 #include "Session.h"
 #include <ysdef.h>
 #include <boost/lexical_cast.hpp>
+#include <boost/tokenizer.hpp>
 #include <ostream>
 
 static unsigned long trace_no = 0;
 extern std::ostream& logger;
+
+StringArray GetFileNameListByToken(std::string str)
+{
+    StringArray ret ;
+    typedef boost::tokenizer< boost::char_separator<char> > tokenizer;
+    typedef tokenizer::iterator token_iter;
+    boost::char_separator<char> sep(",");
+
+    tokenizer token(str, sep);
+    for (token_iter it = token.begin(); it != token.end(); ++it)
+        ret.push_back(*it);
+
+    return ret;
+}
 
 Session::Session(const SessionSockCallBackType& call_back) : m_func(call_back)
 {
@@ -65,7 +80,10 @@ StringArray Session::GetMenu()
 	{
 		void* varStr = YSVarArrayGet(arr, i);
 		char* str = (char*)YSVarStringGet(varStr);
-		strArr.push_back(std::string(str));
+        if (strncmp(str, "FILE:", strlen("FILE:")))
+            strArr.push_back(std::string(str+strlen("FILE:")));
+        else
+		    strArr.push_back(std::string(str));
 	}
 
 	return strArr;
@@ -86,22 +104,18 @@ int Session::GetFlag()
 	return ret;
 }
 
-int Session::GetInputRange()
+InputRangeSet Session::GetInputRange()
 {
-	int ret = 0, menu_range = 0, string_range = 0;
+    input_range_set.clear();
 	void* obj = NULL;
 	int idx = 0;
-	while (NULL != (obj = YSUserBusArrayGet(*(out_bus_arr.begin()), YSPAY_TBS_INPUT_RANGE, idx))) {
+	while (NULL != (obj = YSUserBusArrayGet(*(out_bus_arr.begin()), YSPAY_TBS_INPUT_RANGE, idx)))
+    {
 		int cur = 0;
 		YSVarInt32Get(obj, &cur);
-		if (cur == 1)
-			menu_range = 1;
-		else if (cur == 2)
-			string_range = 2;
-		++idx;
+		
+        input_range_set.insert(cur);
 	}
 
-	ret = menu_range + string_range;
-
-	return ret;
+	return input_range_set;
 }

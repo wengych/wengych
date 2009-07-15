@@ -115,7 +115,7 @@ bool Channel::PlayFile()
 		resp->argument_map["is_start"] = req->argument_map["is_start"];
 		resp->argument_map["is_end"] = req->argument_map["is_end"];
 		resp->argument_map["dtmf_hit"] = "true";
-		resp->argument_map["user_input"] = string_cast(ConvertDtmf(::GetDtmfCode(channel_id)));
+		// resp->argument_map["user_input"] = string_cast(ConvertDtmf(::GetDtmfCode(channel_id)));
 
 		logger << "dtmf hit while play file.\n";
 

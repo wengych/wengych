@@ -1,4 +1,5 @@
 #include <boost/lexical_cast.hpp>
+#include <boost/bind.hpp>
 #include <ostream>
 
 #include "App.h"
@@ -10,10 +11,12 @@ extern std::ostream& logger;
 
 App::App(char* channel_id) :
 request_queue(boost::interprocess::open_only, (request_queue_name + channel_id).c_str()),
-response_queue(boost::interprocess::open_only, (response_queue_name + channel_id).c_str())
+response_queue(boost::interprocess::open_only, (response_queue_name + channel_id).c_str()),
+ring_in(false)
 {
 	logger << "request queue: " << request_queue_name << channel_id << std::endl;
 	logger << "response queue: " << response_queue_name << channel_id << std::endl;
+
 }
 
 bool App::InitChannel()
@@ -36,6 +39,7 @@ bool App::RingIn()
 		resp.argument_map["ring_in"] == "true")
 	{
 		logger << "ring in" << std::endl;
+        ring_in = true;
 		return true;
 	}
 	return false;
@@ -46,8 +50,10 @@ void App::OffHook()
 	SendRequest(Request("OFF_HOOK"));
 
 	Response resp = RecvResponse();
-	if (resp.state == "USER_HANG_UP")
+    if (resp.state == "USER_HANG_UP") {
+        ring_in = false;
 		HangUp();
+    }
 	else if (resp.state != "OFF_HOOK")
 		throw std::string ("OffHook failed.");
 }
@@ -57,14 +63,19 @@ void App::HangUp()
 	SendRequest(Request("USER_HANG_UP"));
 
 	Response resp = RecvResponse();
-	if (resp.state == "USER_HANG_UP")
+    if (resp.state == "USER_HANG_UP") {
+        ring_in = false;
 		return ;
+    }
 	else
 		throw std::string ("Hang Up.");
 }
 
-std::string App::PlayFile( const std::string& file_names, bool block )
+void App::PlayFile( const std::string& file_names, bool block )
 {
+    if (!ring_in)
+        return ;
+
 	Request req("PLAY_FILE");
 	req.argument_map["file_list"] = file_names;
 	req.argument_map["is_start"] = "false";
@@ -72,18 +83,16 @@ std::string App::PlayFile( const std::string& file_names, bool block )
 	SendRequest(req);
 
 	Response resp = RecvResponse();
-	if (resp.state == "USER_HANG_UP")
-		return resp.state;
+    if (resp.state == "USER_HANG_UP") {
+		ring_in = false;
+        return ;
+    }
+
 	Response::ArgMap::iterator it = resp.argument_map.find("dtmf_hit");
 	if (it != resp.argument_map.end() &&
 		it->second ==  "true") {
 		StopPlay();
-		return resp.argument_map["user_input"];
 	}
-	else if (resp.argument_map["is_end"] == "true")
-		return "";
-	else
-		throw std::string ("PlayFile Exception.");
 }
 
 void App::StopPlay()
@@ -94,85 +103,60 @@ void App::StopPlay()
 	return ;
 }
 
-std::string App::WaitUserInput( int input_type )
+std::string App::WaitUserInput( std::set<int> input_type )
 {
-	switch(input_type)
-	{
-	case _InputTypeNone:
-		return "";
-	case _InputTypeMenu:
-		{
-			SendRequest(Request("WAIT_DTMF"));
-			Response resp = RecvResponse();
-			if (resp.state == "USER_HANG_UP")
-				return resp.state;
-			Request::ArgMap::iterator it = resp.argument_map.find("user_input");
-			if (it == resp.argument_map.end())
-				throw std::string("WaitUserInput: no user_input.");
-			return it->second;
-		}
-	case _InputTypeString:
-		{
-			Request::ArgMap::iterator it;
-			std::string ret;
-			for (;;) {
-				SendRequest(Request("WAIT_DTMF"));
-				Response resp = RecvResponse();
-				if (resp.state == "USER_HANG_UP")
-					return resp.state;
-				it = resp.argument_map.find("user_input");
-				if (it == resp.argument_map.end())
-					throw std::string("WaitUserInput: no user_input.");
-				if (it->second == "#")
-					break;
+    std::string menu_string = "*";
 
-				if (it->second == "*")
-					ret += '.';
-				else
-					ret += it->second;
-			}
+    if (input_type.size() == 0)
+        return "";
+    else if (input_type.size() == 1)
+    {
+        int _type = *input_type.begin();
+        switch(_type)
+        {
+        case _InputTypeNone:
+            return WaitNone();
+        case _InputTypeString:
+            return WaitString();
+        case _InputTypeMenu:
+            return WaitMenu();
+        default:
+            if (_type > 1)
+                return WaitStringWithLen(_type);
+        }
+    }
+    else if (input_type.size() == 2)
+    {
+        if (input_type.find(_InputTypeNone) != input_type.end())
+            return WaitNone();
+        if (input_type.find(_InputTypeMenu) != input_type.end() &&
+            input_type.find(_InputTypeString) != input_type.end())
+            return WaitMenuString(menu_string);
+        else if (input_type.find(_InputTypeMenu) != input_type.end()) {
+            std::set<int>::iterator it = input_type.begin();
+            while (it != input_type.end() && *it <= 1)
+                ++it;
+            return WaitMenuStringWithLen(menu_string, *it);
+        }
+        else if (input_type.find(_InputTypeString) != input_type.end()) {
+            std::set<int>::iterator it = input_type.begin();
+            while (it != input_type.end() && *it <= 1)
+                ++it;
+            return WaitStringStringWithLen(*it);
+        }
+    }
+    else if (input_type.size() == 3)
+    {
+        if (input_type.find(_InputTypeNone) != input_type.end())
+            return WaitNone();
 
-			return ret;
-		}
-	case _InputTypeString + _InputTypeMenu :
-		{
-			Request::ArgMap::iterator it;
-			std::string ret;
+        std::set<int>::iterator it = input_type.begin();
+        while (it != input_type.end() && *it <= 1)
+            ++it;
+        return WaitMenuStringStringWithLen(menu_string, *it);
+    }
 
-			SendRequest(Request("WAIT_DTMF"));
-			Response resp = RecvResponse();
-			if (resp.state == "USER_HANG_UP")
-				return resp.state;
-			it = resp.argument_map.find("user_input");
-			if (it == resp.argument_map.end())
-				throw std::string("WaitUserInput: no user_input.");
-			if (it->second == "*")
-				return "*";
-			else 
-				ret += it->second;
-
-			for (;;) {
-				SendRequest(Request("WAIT_DTMF"));
-				Response resp = RecvResponse();
-				if (resp.state == "USER_HANG_UP")
-					return resp.state;
-				it = resp.argument_map.find("user_input");
-				if (it == resp.argument_map.end())
-					throw std::string("WaitUserInput: no user_input.");
-				if (it->second == "#")
-					break;
-
-				if (it->second == "*")
-					ret += '.';
-				else
-					ret += it->second;
-			}
-
-			return ret;
-		}
-		default :
-			throw std::string ("no such input type");
-	}
+    return "";
 }
 
 std::string App::GetHostId()
@@ -238,4 +222,146 @@ bool App::CheckCmd(const std::string& cmd)
 		return false;
 
 	return true;
+}
+
+bool App::IsRingIn()
+{
+    return ring_in;
+}
+
+std::string App::WaitNone()
+{
+    return "";
+}
+
+std::string App::WaitMenu()
+{
+    SendRequest(Request("WAIT_DTMF"));
+    Response resp = RecvResponse();
+    if (resp.state == "USER_OFF_HOOK") {
+        ring_in = false;
+        return "";
+    }
+
+    Request::ArgMap::iterator it = resp.argument_map.find("user_input");
+    if (it == resp.argument_map.end())
+        throw std::string ("WaitUserInput: no user_input.");
+    return it->second;
+}
+
+std::string App::WaitString()
+{
+    std::string ret;
+    for (;;)
+    {
+        SendRequest(Request("WAIT_DTMF"));
+        Response resp = RecvResponse();
+        if (resp.state == "USER_OFF_HOOK") {
+            ring_in = false;
+            return "";
+        }
+
+        Request::ArgMap::iterator it = resp.argument_map.find("user_input");
+        if (it == resp.argument_map.end())
+            throw std::string ("WaitUserInput: no user_input.");
+
+        if (it->second == "#")
+            break;
+
+        if (it->second == "*")
+            ret += ".";
+        else
+            ret += it->second;
+    }
+
+    return ret;
+}
+
+std::string App::WaitStringWithLen(int len)
+{
+    std::string ret;
+    for (int i = 0; i < len; ++i)
+    {
+
+        SendRequest(Request("WAIT_DTMF"));
+        Response resp = RecvResponse();
+        if (resp.state == "USER_OFF_HOOK") {
+            ring_in = false;
+            return "";
+        }
+
+        Request::ArgMap::iterator it = resp.argument_map.find("user_input");
+        if (it == resp.argument_map.end())
+            throw std::string ("WaitUserInput: no user_input.");
+
+        if (it->second == "*")
+            ret += ".";
+        else
+            ret += it->second;
+    }
+    return ret;
+}
+
+std::string App::WaitMenuString( std::string menu_string )
+{
+    std::string ret = WaitMenu();
+    std::string::iterator it = std::find(menu_string.begin(), menu_string.end(), *ret.begin());
+    if (it != menu_string.end())
+        return ret;
+
+    ret += WaitString();
+
+    return ret;
+}
+
+std::string App::WaitMenuStringWithLen( std::string menu_string, int len )
+{
+    std::string ret = WaitMenu();
+    std::string::iterator it = std::find(menu_string.begin(), menu_string.end(), *ret.begin());
+    if (it != menu_string.end())
+        return ret;
+
+    ret += WaitStringWithLen(len);
+
+    return ret;
+}
+
+std::string App::WaitStringStringWithLen( int len )
+{
+    std::string ret;
+    for (int i = 0; i < len; ++i)
+    {
+
+        SendRequest(Request("WAIT_DTMF"));
+        Response resp = RecvResponse();
+        if (resp.state == "USER_OFF_HOOK") {
+            ring_in = false;
+            return "";
+        }
+
+        Request::ArgMap::iterator it = resp.argument_map.find("user_input");
+        if (it == resp.argument_map.end())
+            throw std::string ("WaitUserInput: no user_input.");
+
+        if (it->second == "#")
+            break;
+
+        if (it->second == "*")
+            ret += ".";
+        else
+            ret += it->second;
+    }
+    return ret;
+}
+
+std::string App::WaitMenuStringStringWithLen( std::string menu_string, int len )
+{
+    std::string ret = WaitMenu();
+    std::string::iterator it = std::find(menu_string.begin(), menu_string.end(), *ret.begin());
+    if (it != menu_string.end())
+        return ret;
+
+    ret += WaitStringStringWithLen(len);
+
+    return ret;
 }

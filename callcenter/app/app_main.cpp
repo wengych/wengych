@@ -68,16 +68,15 @@ int main(int argc, char** argv)
 				logger << "Command: " << last_command << '\n';
 				sess.DoCommand(last_command, argv[1], caller_id, host_id, user_input);
 				last_command = sess.GetLastCommand();
-				if (!app.CheckCmd(last_command)) {
+				if (!app.CheckCmd(last_command))
+                {
 					// need input args.
 					StringArray menu = sess.GetMenu();
 					int flag = sess.GetFlag();
-					int input_type = sess.GetInputRange();
 
 					logger << "menu: ";
 					for (StringArray::iterator it = menu.begin(); it != menu.end(); ++it)
-						logger << *it << ' ';
-					logger << "\tinput_type: " << input_type << std::endl;
+						logger << *it << std::endl;
 					if (menu.empty())
 						continue;
 
@@ -90,13 +89,12 @@ int main(int argc, char** argv)
 						++it;
 					}
 
-					user_input = app.PlayFile(file_names.str(), (bool)flag);
-					if (!user_input.empty() && input_type == _InputTypeMenu)
-						continue;
-					std::string str = app.WaitUserInput(input_type);
-					if (str != "USER_HANG_UP")
-						user_input += str;
-					else {
+                    app.PlayFile(file_names.str(), (bool)flag);
+                    InputRangeSet input_range_set = sess.GetInputRange();
+
+					user_input = app.WaitUserInput(input_range_set);
+					if (!app.IsRingIn())
+                    {
 						last_command = "END";
 						user_input = "";
 						sess.DoCommand(last_command, argv[1], caller_id, host_id, user_input);

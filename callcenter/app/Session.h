@@ -5,6 +5,7 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <set>
 
 #define YSPAY_TBS_COMMAND "__YSPAY_TBS_COMMAND__"
 #define YSPAY_TBS_MENU "__YSPAY_TBS_MENU__"
@@ -13,6 +14,7 @@
 typedef boost::function<void(void* /*bus_in*/, void** /*bus_out*/)> SessionSockCallBackType;
 typedef std::list<void*> BusArray;
 typedef std::vector<std::string> StringArray;
+typedef std::set<int> InputRangeSet;
 
 class Session {
 public:
@@ -21,12 +23,13 @@ public:
 	const std::string GetLastCommand();
 	StringArray GetMenu();
 	int GetFlag();
-	int GetInputRange();
+	InputRangeSet GetInputRange();
 
 private:
 	SessionSockCallBackType m_func;
 	BusArray in_bus_arr;
 	BusArray out_bus_arr;
+    InputRangeSet input_range_set;
 };
 
 #endif

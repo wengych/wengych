@@ -23,17 +23,18 @@ struct Request {
 		boost::char_separator<char> sep(": =\n");
 		tokenizer token(str, sep);
 		for (token_iter it = token.begin();
-			it != token.end(); ++it) {
-				if (*it == "Request") {
-					++it;
-					state = *it;
-				} else if (*it != "") {
-					token_iter it_next = it;
-					if (++it_next == token.end())
-						break;
-					argument_map[*it] = *it_next;
-					it = it_next;
-				}
+			it != token.end(); ++it)
+        {
+			if (*it == "Request") {
+				++it;
+				state = *it;
+			} else if (*it != "") {
+				token_iter it_next = it;
+				if (++it_next == token.end())
+					break;
+				argument_map[*it] = *it_next;
+				it = it_next;
+			}
 		}
 	}
 	const std::string str()
