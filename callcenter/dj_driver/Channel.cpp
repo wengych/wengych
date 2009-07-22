@@ -73,6 +73,9 @@ bool Channel::PlayFile()
 
 		resp->state = "USER_HANG_UP";
 
+		play_list.clear();
+		::StopPlay(channel_id);
+
 		return true;
 	}
 
@@ -86,13 +89,28 @@ bool Channel::PlayFile()
 		strcpy_s(file_name, play_list.begin()->c_str());
 		::StartPlayFile(channel_id, file_name, 0);
 		play_list.pop_front();
-		if (req->argument_map["detect_dtmf"] == "true")
-			::InitDtmfBuf(channel_id);
 
 		req->argument_map["is_start"] = "true";
 		req->argument_map["is_end"] = "false";
 
 		logger << "start play file.\n";
+	} else if (::DtmfHit(channel_id)) {
+		if (req->argument_map["block"] == "true") {
+			::InitDtmfBuf(channel_id);
+			return false;
+		}
+		resp.reset(new Response(current_state));
+		resp->argument_map["is_start"] = req->argument_map["is_start"];
+		resp->argument_map["is_end"] = req->argument_map["is_end"];
+		resp->argument_map["dtmf_hit"] = "true";
+		// resp->argument_map["user_input"] = string_cast(ConvertDtmf(::GetDtmfCode(channel_id)));
+
+		logger << "dtmf hit while play file.\n";
+
+		::StopPlay(channel_id);
+		play_list.clear();
+
+		return true;
 	} else if (::CheckPlayEnd(channel_id)){
 		if (play_list.empty()) {
 			resp.reset(new Response(current_state));
@@ -110,16 +128,6 @@ bool Channel::PlayFile()
 
 			logger << "play next file.\n";
 		}
-	} else if (::DtmfHit(channel_id)) {
-		resp.reset(new Response(current_state));
-		resp->argument_map["is_start"] = req->argument_map["is_start"];
-		resp->argument_map["is_end"] = req->argument_map["is_end"];
-		resp->argument_map["dtmf_hit"] = "true";
-		// resp->argument_map["user_input"] = string_cast(ConvertDtmf(::GetDtmfCode(channel_id)));
-
-		logger << "dtmf hit while play file.\n";
-
-		return true;
 	}
 
 	return false;

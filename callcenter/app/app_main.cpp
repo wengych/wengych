@@ -90,22 +90,26 @@ int main(int argc, char** argv)
 					}
 
                     app.PlayFile(file_names.str(), (bool)flag);
+					if (!app.IsRingIn())
+						break;
                     InputRangeSet input_range_set = sess.GetInputRange();
 
 					user_input = app.WaitUserInput(input_range_set);
 					if (!app.IsRingIn())
-                    {
-						last_command = "END";
-						user_input = "";
-						sess.DoCommand(last_command, argv[1], caller_id, host_id, user_input);
-						last_command = sess.GetLastCommand();
-						if (last_command != "END")
-							throw std::string ("END");
-					}
+						break;
 				}
 
 			} while (last_command != "END");
 
+			if (!app.IsRingIn() || last_command == "END")
+			{
+				last_command = "END";
+				user_input = "";
+				sess.DoCommand(last_command, argv[1], caller_id, host_id, user_input);
+				last_command = sess.GetLastCommand();
+
+				app.HangUp();
+			}
 
 		} catch (const std::string& err) {
 			std::cout << err << std::endl;

@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yscom_win", "yscom_win.vcproj", "{1A99F58D-A555-485A-A037-805EA22CA68B}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "YsCli", "..\YsCli\YsCli.vcproj", "{7C4E7A3B-97C5-4EAC-9F7A-901771A280CC}"

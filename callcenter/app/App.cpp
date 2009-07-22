@@ -79,7 +79,7 @@ void App::PlayFile( const std::string& file_names, bool block )
 	Request req("PLAY_FILE");
 	req.argument_map["file_list"] = file_names;
 	req.argument_map["is_start"] = "false";
-	req.argument_map["block"] = boost::lexical_cast<std::string>(block);
+	req.argument_map["block"] = block ? "true" : "false";
 	SendRequest(req);
 
 	Response resp = RecvResponse();
@@ -91,7 +91,8 @@ void App::PlayFile( const std::string& file_names, bool block )
 	Response::ArgMap::iterator it = resp.argument_map.find("dtmf_hit");
 	if (it != resp.argument_map.end() &&
 		it->second ==  "true") {
-		StopPlay();
+		// StopPlay();
+			return ;
 	}
 }
 
@@ -106,6 +107,8 @@ void App::StopPlay()
 std::string App::WaitUserInput( std::set<int> input_type )
 {
     std::string menu_string = "*";
+	if (!ring_in)
+		return "";
 
     if (input_type.size() == 0)
         return "";
@@ -128,22 +131,42 @@ std::string App::WaitUserInput( std::set<int> input_type )
     else if (input_type.size() == 2)
     {
         if (input_type.find(_InputTypeNone) != input_type.end())
+		{
             return WaitNone();
+		}
         if (input_type.find(_InputTypeMenu) != input_type.end() &&
             input_type.find(_InputTypeString) != input_type.end())
+		{
             return WaitMenuString(menu_string);
-        else if (input_type.find(_InputTypeMenu) != input_type.end()) {
+		}
+        else if (input_type.find(_InputTypeMenu) != input_type.end())
+		{
             std::set<int>::iterator it = input_type.begin();
             while (it != input_type.end() && *it <= 1)
                 ++it;
             return WaitMenuStringWithLen(menu_string, *it);
         }
-        else if (input_type.find(_InputTypeString) != input_type.end()) {
+        else if (input_type.find(_InputTypeString) != input_type.end())
+		{
             std::set<int>::iterator it = input_type.begin();
             while (it != input_type.end() && *it <= 1)
                 ++it;
             return WaitStringStringWithLen(*it);
         }
+		else
+		{
+			int len = *(input_type.begin());
+			std::set<int>::iterator it = input_type.begin();
+			++it;
+			while (it != input_type.end())
+			{
+				if (len > *it)
+					len = *it;
+				++it;
+			}
+
+			return WaitStringWithLen(len);
+		}
     }
     else if (input_type.size() == 3)
     {
@@ -212,8 +235,9 @@ Response App::RecvResponse()
 
 bool App::CheckCmd(const std::string& cmd)
 {
-	if (cmd == "END")
-		HangUp();
+	if (cmd == "END") {
+		return false;
+	}
 	else if (cmd == "PICKUP") {
 		OffHook();
 		return false;
@@ -238,7 +262,7 @@ std::string App::WaitMenu()
 {
     SendRequest(Request("WAIT_DTMF"));
     Response resp = RecvResponse();
-    if (resp.state == "USER_OFF_HOOK") {
+    if (resp.state == "USER_HANG_UP") {
         ring_in = false;
         return "";
     }
@@ -256,7 +280,7 @@ std::string App::WaitString()
     {
         SendRequest(Request("WAIT_DTMF"));
         Response resp = RecvResponse();
-        if (resp.state == "USER_OFF_HOOK") {
+        if (resp.state == "USER_HANG_UP") {
             ring_in = false;
             return "";
         }
@@ -285,7 +309,7 @@ std::string App::WaitStringWithLen(int len)
 
         SendRequest(Request("WAIT_DTMF"));
         Response resp = RecvResponse();
-        if (resp.state == "USER_OFF_HOOK") {
+        if (resp.state == "USER_HANG_UP") {
             ring_in = false;
             return "";
         }
@@ -305,11 +329,14 @@ std::string App::WaitStringWithLen(int len)
 std::string App::WaitMenuString( std::string menu_string )
 {
     std::string ret = WaitMenu();
+	if (ret.empty())
+		return ret;
     std::string::iterator it = std::find(menu_string.begin(), menu_string.end(), *ret.begin());
     if (it != menu_string.end())
         return ret;
 
-    ret += WaitString();
+	if ("#" != ret)
+		ret += WaitString();
 
     return ret;
 }
@@ -321,7 +348,7 @@ std::string App::WaitMenuStringWithLen( std::string menu_string, int len )
     if (it != menu_string.end())
         return ret;
 
-    ret += WaitStringWithLen(len);
+	ret += WaitStringWithLen(len);
 
     return ret;
 }
@@ -334,7 +361,7 @@ std::string App::WaitStringStringWithLen( int len )
 
         SendRequest(Request("WAIT_DTMF"));
         Response resp = RecvResponse();
-        if (resp.state == "USER_OFF_HOOK") {
+        if (resp.state == "USER_HANG_UP") {
             ring_in = false;
             return "";
         }

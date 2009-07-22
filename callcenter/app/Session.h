@@ -9,7 +9,7 @@
 
 #define YSPAY_TBS_COMMAND "__YSPAY_TBS_COMMAND__"
 #define YSPAY_TBS_MENU "__YSPAY_TBS_MENU__"
-#define YSPAY_TBS_INPUT_RANGE "__YSPAY_TBS_MENU_INPUT_RANGE__"
+#define YSPAY_TBS_INPUT_RANGE "__YSPAY_TBS_INPUT_RANGE__"
 
 typedef boost::function<void(void* /*bus_in*/, void** /*bus_out*/)> SessionSockCallBackType;
 typedef std::list<void*> BusArray;

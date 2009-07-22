@@ -3,9 +3,28 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
 #include <ostream>
+#include <fstream>
 
 static unsigned long trace_no = 0;
 extern std::ostream& logger;
+
+void output_var_to_xml_file( void* var, const std::string& sep = "========" )
+{
+	void* str = NULL;
+	while (1)
+	{
+		str = YSVarStringNew2(10240);
+		YSVarShow(var, 0, str);
+		std::ofstream ofile("test.xml", std::ios_base::app);
+		ofile << "\n<" << sep << "/>\n";
+		ofile.write((char*)YSVarStringGet(str), YSVarStringGetLen(str));
+		ofile.close();
+
+		break;
+	}
+
+	YSVarFree(str);
+}
 
 StringArray GetFileNameListByToken(std::string str)
 {
@@ -54,6 +73,9 @@ void Session::DoCommand(std::string cmd, std::string channel_id, std::string cal
 	logger << "\n";
 
 	out_bus_arr.push_front(out_bus);
+
+	output_var_to_xml_file(in_bus, "Send bus");
+	output_var_to_xml_file(out_bus, "Recv bus");
 }
 
 const std::string Session::GetLastCommand()
@@ -80,7 +102,7 @@ StringArray Session::GetMenu()
 	{
 		void* varStr = YSVarArrayGet(arr, i);
 		char* str = (char*)YSVarStringGet(varStr);
-        if (strncmp(str, "FILE:", strlen("FILE:")))
+        if (0 == strncmp(str, "FILE", strlen("FILE")))
             strArr.push_back(std::string(str+strlen("FILE:")));
         else
 		    strArr.push_back(std::string(str));
@@ -107,14 +129,17 @@ int Session::GetFlag()
 InputRangeSet Session::GetInputRange()
 {
     input_range_set.clear();
-	void* obj = NULL;
-	int idx = 0;
-	while (NULL != (obj = YSUserBusArrayGet(*(out_bus_arr.begin()), YSPAY_TBS_INPUT_RANGE, idx)))
+	void* input_range = NULL;
+	int index = 0;
+	while (NULL != (input_range = YSUserBusArrayGet(*(out_bus_arr.begin()), YSPAY_TBS_INPUT_RANGE, index)))
     {
 		int cur = 0;
-		YSVarInt32Get(obj, &cur);
+		void* len = YSVarStructGetByKey(input_range, "LEN", strlen("LEN"));
+		YSVarInt32Get(len, &cur);
 		
         input_range_set.insert(cur);
+
+		++index;
 	}
 
 	return input_range_set;
