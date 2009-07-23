@@ -1,0 +1,24 @@
+${GTKMM_BASEPATH}/lib
+<listOptionValue builtIn="false" value="gtkmm-2.4"/>
+<listOptionValue builtIn="false" value="giomm-2.4"/>
+<listOptionValue builtIn="false" value="gdkmm-2.4"/>
+<listOptionValue builtIn="false" value="atkmm-1.6"/>
+<listOptionValue builtIn="false" value="xml++-2.6"/>
+<listOptionValue builtIn="false" value="gtk-win32-2.0"/>
+<listOptionValue builtIn="false" value="pangomm-1.4"/>
+<listOptionValue builtIn="false" value="cairomm-1.0"/>
+<listOptionValue builtIn="false" value="glibmm-2.4"/>
+<listOptionValue builtIn="false" value="sigc-2.0"/>
+<listOptionValue builtIn="false" value="gdk-win32-2.0"/>
+<listOptionValue builtIn="false" value="atk-1.0"/>
+<listOptionValue builtIn="false" value="gio-2.0"/>
+<listOptionValue builtIn="false" value="gdk_pixbuf-2.0"/>
+<listOptionValue builtIn="false" value="pangowin32-1.0"/>
+<listOptionValue builtIn="false" value="gdi32"/>
+<listOptionValue builtIn="false" value="pangocairo-1.0"/>
+<listOptionValue builtIn="false" value="pango-1.0"/>
+<listOptionValue builtIn="false" value="cairo"/>
+<listOptionValue builtIn="false" value="gobject-2.0"/>
+<listOptionValue builtIn="false" value="gmodule-2.0"/>
+<listOptionValue builtIn="false" value="glib-2.0"/>
+<listOptionValue builtIn="false" value="intl"/>

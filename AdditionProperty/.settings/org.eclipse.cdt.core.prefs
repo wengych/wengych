@@ -1,0 +1,4 @@
+#Wed Jul 22 16:47:51 CST 2009
+eclipse.preferences.version=1
+environment/project/cdt.managedbuild.config.gnu.mingw.exe.debug.1726420401=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?>\r\n<environment append\="true" appendContributed\="true"/>\r\n
+environment/project/cdt.managedbuild.config.gnu.mingw.exe.release.86674165=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?>\r\n<environment append\="true" appendContributed\="true">\r\n<variable delimiter\=";" name\="GTMKK_LIB" operation\="append" value\="${GTKMM_LIB}"/>\r\n<variable delimiter\=";" name\="GTKMM_INC" operation\="append" value\="${GTKMM_INC}"/>\r\n</environment>\r\n
