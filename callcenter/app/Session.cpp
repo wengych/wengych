@@ -111,6 +111,15 @@ StringArray Session::GetMenu()
 	return strArr;
 }
 
+char* Session::GetMenuMsg()
+{
+    void* menu_msg = YSUserBusArrayGet(*(out_bus_arr.begin()), YSPAY_TBS_MENUMSG, 0);
+    if (!menu_msg)
+        return "";
+
+    return (char*)YSVarStringGet(menu_msg);
+}
+
 int Session::GetFlag()
 {
 	void* bus_obj = YSUserBusGet(*(out_bus_arr.begin()), YSPAY_TBS_MENU);
@@ -143,4 +152,13 @@ InputRangeSet Session::GetInputRange()
 	}
 
 	return input_range_set;
+}
+
+int Session::GetTimeOut()
+{
+    int ret = 0;
+    void* time_out = YSUserBusArrayGet(*(out_bus_arr.begin()), "__YSPAY_TBS_INPUT_TIMEOUT__", 0);
+    if (YSVarInt32Get(time_out, &ret))
+        return ret;
+    return 0;
 }

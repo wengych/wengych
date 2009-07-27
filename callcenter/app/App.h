@@ -4,6 +4,8 @@
 #include "../dj_driver/Request.h"
 #include "../dj_driver/Response.h"
 #include <boost/interprocess/ipc/message_queue.hpp>
+#include <boost/interprocess/shared_memory_object.hpp>
+#include <boost/interprocess/sync/named_mutex.hpp>
 #include <boost/function.hpp>
 #include <ostream>
 #include <Windows.h>
@@ -29,9 +31,9 @@ public:
 
 	bool RingIn();
 	void OffHook();
-	void PlayFile(const std::string& file_name, bool block);
+	void PlayFile(const std::string& file_name, const std::string& menu_msg, bool block);
 	void StopPlay();
-    std::string WaitUserInput(std::set<int> input_type);
+    std::string WaitUserInput(std::set<int> input_type, int time_out);
     std::string WaitNone();
     std::string WaitMenu();
     std::string WaitString();
@@ -40,6 +42,8 @@ public:
     std::string WaitMenuStringWithLen( std::string menu_string, int len );
     std::string WaitStringStringWithLen( int len );
     std::string WaitMenuStringStringWithLen( std::string menu_string, int len );
+
+    void WriteSharedMemory(std::string);
 
 	std::string GetHostId();
 	std::string GetCallerId();
@@ -52,11 +56,14 @@ public:
 private:
 	boost::interprocess::message_queue request_queue;
 	boost::interprocess::message_queue response_queue;
-	bool monitor;
-	HWND hwnd;
 	char buffer[BUFFER_SIZE];
     bool ring_in;
     std::map<std::set<int>, boost::function<std::string()> > wait_user_input_function_map;
+
+    std::string channel_id;
+    std::string caller_id;
+
+    int time_out;
 };
 
 extern std::ostream& logger;

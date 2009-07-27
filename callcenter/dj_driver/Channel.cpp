@@ -245,7 +245,6 @@ Channel::WorkType Channel::GetWork()
 	if (current_state == "USER_HANG_UP")
 		return bind(&Channel::HangUp, &(*this));
 
-
 	return NULL;
 }
 

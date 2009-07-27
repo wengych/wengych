@@ -27,7 +27,12 @@ struct Request {
         {
 			if (*it == "Request") {
 				++it;
-				state = *it;
+                if (it == token.end()) {
+                    state = "";
+                    break;
+                }
+
+                state = *it;
 			} else if (*it != "") {
 				token_iter it_next = it;
 				if (++it_next == token.end())

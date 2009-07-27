@@ -2,6 +2,7 @@
 #include <string>
 #include <ysdef.h>
 #include <boost/lexical_cast.hpp>
+#include <boost/interprocess/exceptions.hpp>
 
 #ifdef __OS_WIN__
 #pragma comment(lib,"wsock32.lib")
@@ -45,77 +46,89 @@ bool init_socket()
 	return true;
 }
 
+void MyMethod( App &app, char** argv ) 
+{
+    while (app.RingIn()) {
+        try {
+            std::string host_id = app.GetHostId();
+            std::string caller_id = app.GetCallerId();
+
+            Session sess(ServiceCallSock);
+            std::string last_command = "RING";
+            std::string user_input = "";
+            do {
+                logger << "Command: " << last_command << '\n';
+                sess.DoCommand(last_command, argv[1], caller_id, host_id, user_input);
+                last_command = sess.GetLastCommand();
+                if (!app.CheckCmd(last_command))
+                {
+                    // need input args.
+                    StringArray menu = sess.GetMenu();
+                    int flag = sess.GetFlag();
+
+                    logger << "menu: ";
+                    for (StringArray::iterator it = menu.begin(); it != menu.end(); ++it)
+                        logger << *it << std::endl;
+                    if (menu.empty())
+                        continue;
+
+                    std::stringstream file_names;
+                    StringArray::iterator it = menu.begin();
+                    file_names << *it;
+                    ++it;
+                    while (it != menu.end()) {
+                        file_names << ',' << *it;
+                        ++it;
+                    }
+
+                    std::string menu_msg = sess.GetMenuMsg();
+
+                    app.PlayFile(file_names.str(), menu_msg, (bool)flag);
+                    if (!app.IsRingIn())
+                        break;
+                    InputRangeSet input_range_set = sess.GetInputRange();
+                    int time_out = sess.GetTimeOut();
+
+                    user_input = app.WaitUserInput(input_range_set, time_out);
+                    if (!app.IsRingIn())
+                        break;
+                }
+
+            } while (last_command != "END");
+
+            if (!app.IsRingIn() || last_command == "END")
+            {
+                last_command = "END";
+                user_input = "";
+                sess.DoCommand(last_command, argv[1], caller_id, host_id, user_input);
+                last_command = sess.GetLastCommand();
+
+                app.HangUp();
+            }
+
+        } catch (const std::string& err) {
+            std::cout << err << std::endl;
+            app.Reset();
+        }
+    }
+}
 int main(int argc, char** argv)
 {
 	if (argc <= 1)
 		return -1;
+    try {
+	    App app(argv[1]/*channel_id*/);
+	    Dict dict;
 
-	App app(argv[1]/*channel_id*/);
-	Dict dict;
+	    init_socket();
 
-	init_socket();
+	    app.InitChannel();
+        MyMethod(app, argv);
 
-	app.InitChannel();
-	while (app.RingIn()) {
-		try {
-			std::string host_id = app.GetHostId();
-			std::string caller_id = app.GetCallerId();
-
-			Session sess(ServiceCallSock);
-			std::string last_command = "RING";
-			std::string user_input = "";
-			do {
-				logger << "Command: " << last_command << '\n';
-				sess.DoCommand(last_command, argv[1], caller_id, host_id, user_input);
-				last_command = sess.GetLastCommand();
-				if (!app.CheckCmd(last_command))
-                {
-					// need input args.
-					StringArray menu = sess.GetMenu();
-					int flag = sess.GetFlag();
-
-					logger << "menu: ";
-					for (StringArray::iterator it = menu.begin(); it != menu.end(); ++it)
-						logger << *it << std::endl;
-					if (menu.empty())
-						continue;
-
-					std::stringstream file_names;
-					StringArray::iterator it = menu.begin();
-					file_names << *it;
-					++it;
-					while (it != menu.end()) {
-						file_names << ',' << *it;
-						++it;
-					}
-
-                    app.PlayFile(file_names.str(), (bool)flag);
-					if (!app.IsRingIn())
-						break;
-                    InputRangeSet input_range_set = sess.GetInputRange();
-
-					user_input = app.WaitUserInput(input_range_set);
-					if (!app.IsRingIn())
-						break;
-				}
-
-			} while (last_command != "END");
-
-			if (!app.IsRingIn() || last_command == "END")
-			{
-				last_command = "END";
-				user_input = "";
-				sess.DoCommand(last_command, argv[1], caller_id, host_id, user_input);
-				last_command = sess.GetLastCommand();
-
-				app.HangUp();
-			}
-
-		} catch (const std::string& err) {
-			std::cout << err << std::endl;
-			app.Reset();
-		}
-	}
+    } catch (boost::interprocess::interprocess_exception& err) {
+        logger << err.what() << std::endl;
+        exit(-1);
+    }
 
 	return 0;
 }

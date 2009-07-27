@@ -29,7 +29,12 @@ struct Response {
 		for (token_iter it = token.begin();
 			it != token.end(); ++it) {
 				if (*it == "Response") {
-					++it;
+                    ++it;
+                    if (it == token.end()) {
+                        state = "";
+                        break;
+                    }
+
 					state = *it;
 				} else if (*it != "") {
 					token_iter it_next = it;

@@ -1,3 +1,5 @@
+#include <boost/interprocess/sync/scoped_lock.hpp>
+#include <boost/interprocess/mapped_region.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/bind.hpp>
 #include <ostream>
@@ -6,6 +8,11 @@
 
 std::string response_queue_name = "response_queue_";
 std::string request_queue_name = "request_queue_";
+std::string shared_memory_name = "monitor_shared_memory";
+std::string lock_shared_memory_name = "monitor_lock_shared_memory";
+std::string exe_file_name = "瑞通ivr系统";
+
+const int windows_message_type = 0x0400+1001;
 
 extern std::ostream& logger;
 
@@ -17,10 +24,48 @@ ring_in(false)
 	logger << "request queue: " << request_queue_name << channel_id << std::endl;
 	logger << "response queue: " << response_queue_name << channel_id << std::endl;
 
+    this->channel_id = channel_id;
+}
+
+void App::WriteSharedMemory(std::string str)
+{
+    using namespace boost::interprocess;
+    try {
+
+        named_mutex mutex(open_only, lock_shared_memory_name.c_str());
+
+        HWND hwnd = FindWindow(NULL, exe_file_name.c_str());
+        if (!hwnd)
+            return ;
+
+        std::stringstream ss;
+        ss  << "app:"
+            << channel_id
+            << ":"
+            << (caller_id.empty() ? "NULL" : caller_id)
+            << ":"
+            << str
+            << "\n";
+        {
+            scoped_lock<named_mutex> lock (mutex);
+            shared_memory_object shared_memory(open_only, shared_memory_name.c_str(), read_write);
+            mapped_region region(shared_memory, read_write);
+            char *mem = static_cast<char*>(region.get_address());
+
+            strcat(mem, ss.str().c_str());
+        }
+        PostMessage(hwnd, windows_message_type, NULL, NULL);
+    } catch (interprocess_exception& err) {
+        logger << "open shared_memory_object or named_mutex failed:" << err.what() << std::endl;
+        return ;
+    }
+
+    return ;
 }
 
 bool App::InitChannel()
 {
+    WriteSharedMemory("Init.");
 	Request req("INIT");
 	logger << req.str() << '\n';
 	SendRequest(Request("INIT"));
@@ -32,6 +77,8 @@ bool App::InitChannel()
 
 bool App::RingIn()
 {
+    WriteSharedMemory("等待用户呼入.");
+    caller_id = "";
 	logger << "wait ring in.\n";
 	SendRequest(Request("WAIT_RING"));
 	Response resp = RecvResponse();
@@ -47,6 +94,7 @@ bool App::RingIn()
 
 void App::OffHook()
 {
+    WriteSharedMemory("摘机");
 	SendRequest(Request("OFF_HOOK"));
 
 	Response resp = RecvResponse();
@@ -60,6 +108,7 @@ void App::OffHook()
 
 void App::HangUp()
 {
+    WriteSharedMemory("挂机");
 	SendRequest(Request("USER_HANG_UP"));
 
 	Response resp = RecvResponse();
@@ -71,11 +120,12 @@ void App::HangUp()
 		throw std::string ("Hang Up.");
 }
 
-void App::PlayFile( const std::string& file_names, bool block )
+void App::PlayFile( const std::string& file_names, const std::string& menu_msg, bool block )
 {
     if (!ring_in)
         return ;
 
+    WriteSharedMemory(menu_msg.c_str());
 	Request req("PLAY_FILE");
 	req.argument_map["file_list"] = file_names;
 	req.argument_map["is_start"] = "false";
@@ -98,18 +148,23 @@ void App::PlayFile( const std::string& file_names, bool block )
 
 void App::StopPlay()
 {
+    WriteSharedMemory("停止播放语音文件.");
 	SendRequest(Request("STOP_PLAY"));
 	Response resp = RecvResponse();
 
 	return ;
 }
 
-std::string App::WaitUserInput( std::set<int> input_type )
+std::string App::WaitUserInput( std::set<int> input_type, int time_out )
 {
     std::string menu_string = "*";
 	if (!ring_in)
 		return "";
+    std::string wait_user_input = "等待用户输入";
 
+    this->time_out = time_out;
+
+    WriteSharedMemory(wait_user_input);
     if (input_type.size() == 0)
         return "";
     else if (input_type.size() == 1)
@@ -199,17 +254,26 @@ std::string App::GetCallerId()
 
 	logger << "caller_id: " << resp.argument_map["caller_id"] << '\n';
 
+    caller_id = resp.argument_map["caller_id"];
 	return resp.argument_map["caller_id"];
 }
 
 void App::Reset()
 {
-	;
+	caller_id = "";
 }
 
-void App::SendRequest( Request& req )
+void App::SendRequest( Request& req = Request(""))
 {
-	request_queue.send(req.str().c_str(), req.str().length(), 0);
+    if (time_out == 0)
+    {
+        request_queue.send(req.str().c_str(), req.str().length(), 0);
+        return ;
+    }
+
+    boost::posix_time::time_duration duration(0, 0, time_out);
+    request_queue.timed_send(req.str().c_str(), req.str().length(), 0, 
+        boost::posix_time::ptime(boost::gregorian::date(), duration));
 }
 
 Response App::RecvResponse()
@@ -218,16 +282,14 @@ Response App::RecvResponse()
 	unsigned int priority;
 	response_queue.receive(buffer, BUFFER_SIZE, recvd_size, priority);
 	Response resp(buffer, recvd_size);
-	while (resp.state == "SET_MONITOR") {
+	if (resp.state == "EXIT") {
 		// hwnd = boost::lexical_cast<HWND>(resp.argument_map["HANDLE"]);
-		hwnd = ::FindWindow(NULL, resp.argument_map["window_name"].c_str());
-		if (hwnd)
-			monitor = true;
-		else
-			monitor = false;
+        logger << "Receive EXIT from monitor.\n";
+        logger << "will shut up this channel[" << channel_id << "].\n";
+        SendRequest();
+        system("pause");
 
-		response_queue.receive(buffer, BUFFER_SIZE, recvd_size, priority);
-		resp = Response(buffer, recvd_size);
+        exit(0);
 	}
 	logger << "app:resp:" << resp.state << std::endl;
 	return resp;
@@ -260,6 +322,7 @@ std::string App::WaitNone()
 
 std::string App::WaitMenu()
 {
+    std::string ret ;
     SendRequest(Request("WAIT_DTMF"));
     Response resp = RecvResponse();
     if (resp.state == "USER_HANG_UP") {
@@ -270,7 +333,11 @@ std::string App::WaitMenu()
     Request::ArgMap::iterator it = resp.argument_map.find("user_input");
     if (it == resp.argument_map.end())
         throw std::string ("WaitUserInput: no user_input.");
-    return it->second;
+    ret = it->second;
+
+    std::string user_input = "用户输入：";
+    WriteSharedMemory(user_input + ret);
+    return ret;
 }
 
 std::string App::WaitString()
@@ -296,6 +363,9 @@ std::string App::WaitString()
             ret += ".";
         else
             ret += it->second;
+
+        std::string user_input = "用户输入：";
+        WriteSharedMemory(user_input + ret);
     }
 
     return ret;
@@ -322,7 +392,11 @@ std::string App::WaitStringWithLen(int len)
             ret += ".";
         else
             ret += it->second;
+
+        std::string user_input = "用户输入：";
+        WriteSharedMemory(user_input + ret);
     }
+
     return ret;
 }
 
@@ -338,6 +412,8 @@ std::string App::WaitMenuString( std::string menu_string )
 	if ("#" != ret)
 		ret += WaitString();
 
+    std::string user_input = "用户输入：";
+    WriteSharedMemory(user_input + ret);
     return ret;
 }
 
@@ -350,6 +426,8 @@ std::string App::WaitMenuStringWithLen( std::string menu_string, int len )
 
 	ret += WaitStringWithLen(len);
 
+    std::string user_input = "用户输入：";
+    WriteSharedMemory(user_input + ret);
     return ret;
 }
 
@@ -378,6 +456,9 @@ std::string App::WaitStringStringWithLen( int len )
         else
             ret += it->second;
     }
+
+    std::string user_input = "用户输入：";
+    WriteSharedMemory(user_input + ret);
     return ret;
 }
 
@@ -390,5 +471,7 @@ std::string App::WaitMenuStringStringWithLen( std::string menu_string, int len )
 
     ret += WaitStringStringWithLen(len);
 
+    std::string user_input = "用户输入：";
+    WriteSharedMemory(user_input + ret);
     return ret;
 }
