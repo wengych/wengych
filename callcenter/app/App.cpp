@@ -287,6 +287,7 @@ Response App::RecvResponse()
 	Response resp(buffer, recvd_size);
 
     while (resp.state == "ACTIVE_CHECK") {
+        logger << "Receive ACTIVE CHECK.\n";
         UpdateActiveFile();
         response_queue.receive(buffer, BUFFER_SIZE, recvd_size, priority);
         resp = Response(buffer, recvd_size);

@@ -16,14 +16,21 @@ typedef std::vector<Channel> ChannelArray;
 
 void UpdateActiveFile()
 {
-    std::string file_name = std::string("_driver");
-    std::ofstream out_file;
-    out_file.open(file_name.c_str(), std::ios_base::out | std::ios_base::trunc);
+    static int i = 0;
+    const int COUNT = 10;
 
-    time_t tm_t;
-    out_file << getpid() << ":";
+    if (++i >= COUNT) {
+        std::string file_name = std::string("_driver");
+        std::ofstream out_file;
+        out_file.open(file_name.c_str(), std::ios_base::out | std::ios_base::trunc);
 
-    out_file << time(&tm_t);
+        time_t tm_t;
+        out_file << getpid() << ":";
+
+        out_file << time(&tm_t);
+
+        i = 0;
+    }
 }
 
 // Init system
@@ -53,6 +60,7 @@ void DoWork(ChannelArray& lines)
 			it->DoWork();
 
 		Sleep (50);
+        UpdateActiveFile();
 	}
 }
 
