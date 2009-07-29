@@ -418,6 +418,8 @@ void CRuiTongIVRGUIDlg::AddCtrlsToGroup(int group_id, ArrayOfGroupControlsArray&
     CWnd* edt = GetDlgItem(IDC_EDIT_LINE_NO);
     int style = edt->GetStyle();
     int ex_style = edt->GetExStyle();
+    CRect rc;
+    edt->GetWindowRect(rc);
 
     int swp_style = SWP_NOZORDER | SWP_SHOWWINDOW;
 
@@ -425,7 +427,7 @@ void CRuiTongIVRGUIDlg::AddCtrlsToGroup(int group_id, ArrayOfGroupControlsArray&
     // int default_width = 100;
     // int default_height = 20;
     int ctrl_to_parent_left = 10;
-    int ctrl_to_parent_top = 10;
+    int ctrl_to_parent_top = 5;
     int ctrl_to_ctrl = 5;
 
     CRect rcDialog, rcGroup, rcCtrl;
@@ -441,7 +443,7 @@ void CRuiTongIVRGUIDlg::AddCtrlsToGroup(int group_id, ArrayOfGroupControlsArray&
     rcCtrl.top = rcGroup.top - rcDialog.top + ctrl_to_parent_top;
     rcCtrl.bottom = rcCtrl.top + it->height;
     // 首行首列控件
-    it->ctrl->SetWindowPos(NULL, rcCtrl.left, rcCtrl.top, rcCtrl.right, rcCtrl.bottom, swp_style);
+    it->ctrl->SetWindowPos(NULL, rcCtrl.left, rcCtrl.top, it->width, it->height, swp_style);
     //it->ctrl->UpdateWindow();
 
     // 循环画首行剩下控件
@@ -449,7 +451,7 @@ void CRuiTongIVRGUIDlg::AddCtrlsToGroup(int group_id, ArrayOfGroupControlsArray&
     {
         rcCtrl.left = rcCtrl.right + ctrl_to_ctrl;
         rcCtrl.right = rcCtrl.left + it->width;
-        it->ctrl->SetWindowPos(NULL, rcCtrl.left, rcCtrl.top, rcCtrl.right, rcCtrl.bottom, swp_style);
+        it->ctrl->SetWindowPos(NULL, rcCtrl.left, rcCtrl.top, it->width, it->height, swp_style);
         //it->ctrl->UpdateWindow();
     }
 
@@ -463,7 +465,7 @@ void CRuiTongIVRGUIDlg::AddCtrlsToGroup(int group_id, ArrayOfGroupControlsArray&
         rcCtrl.top = rcCtrl.bottom + ctrl_to_ctrl;
         rcCtrl.bottom = rcCtrl.top + it->height;
         // 本行首列控件
-        //it->ctrl->SetWindowPos(NULL, rcCtrl.left, rcCtrl.top, rcCtrl.right, rcCtrl.bottom, swp_style);
+        it->ctrl->SetWindowPos(NULL, rcCtrl.left, rcCtrl.top, it->width, it->height, swp_style);
         //it->ctrl->UpdateWindow();
 
         // 循环画剩下控件
@@ -471,7 +473,7 @@ void CRuiTongIVRGUIDlg::AddCtrlsToGroup(int group_id, ArrayOfGroupControlsArray&
         {
             rcCtrl.left = rcCtrl.right + ctrl_to_ctrl;
             rcCtrl.right = rcCtrl.left + it->width;
-            //it->ctrl->SetWindowPos(NULL, rcCtrl.left, rcCtrl.top, rcCtrl.right, rcCtrl.bottom, swp_style);
+            it->ctrl->SetWindowPos(NULL, rcCtrl.left, rcCtrl.top, it->width, it->height, swp_style);
             //it->ctrl->UpdateWindow();
         }
 
@@ -491,23 +493,23 @@ void CRuiTongIVRGUIDlg::InitChannelGroupControls( ArrayOfGroupControlsArray& arr
         CStatic* channel_id = new CStatic();
         channel_id->Create(_T("c"), wnd_style ,zero_rect, this);
         grp_ctrl.ctrl = channel_id;
-        grp_ctrl.height = 10;
-        grp_ctrl.width = 10;
+        grp_ctrl.height = 21;
+        grp_ctrl.width = 20;
         arr.push_back(grp_ctrl);
 
         CEdit* channel_status = new CEdit();
         channel_status->Create(wnd_style, zero_rect, this, IDC_EDIT_CHANNEL_STATUS + i);
         channel_status->SetWindowText(_T("test"));
         grp_ctrl.ctrl = channel_status;
-        grp_ctrl.height = 10;
-        grp_ctrl.width = 50;
+        grp_ctrl.height = 21;
+        grp_ctrl.width = 200;
         arr.push_back(grp_ctrl);
 
         CButton* channel_btn = new CButton();
         channel_btn->Create(_T("开启通道"), wnd_style, zero_rect, this, IDC_BTN_CHANNEL + i);
         grp_ctrl.ctrl = channel_btn;
-        grp_ctrl.height = 10;
-        grp_ctrl.width = 30;
+        grp_ctrl.height = 21;
+        grp_ctrl.width = 60;
         arr.push_back(grp_ctrl);
 
         arr_arr.push_back(arr);

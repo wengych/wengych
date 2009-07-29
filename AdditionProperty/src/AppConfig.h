@@ -6,17 +6,17 @@
 
 struct CfgServerInfo : public string
 {
-	CfgServerInfo(const string& cfg_name);
+    CfgServerInfo(const string& cfg_name);
 };
 
 struct CfgMainWindow : public string
 {
-	CfgMainWindow(const string& cfg_name);
+    CfgMainWindow(const string& cfg_name);
 };
 
 struct CfgTradeList : public string
 {
-	CfgTradeList(const string& cfg_name);
+    CfgTradeList(const string& cfg_name);
 };
 
 class AppConfig
@@ -24,8 +24,10 @@ class AppConfig
 public:
     AppConfig();
     ~AppConfig();
-    void Init();
-    string ReadOne(const string& config_name);
+    void
+    Init();
+    string
+    ReadOne(const string& config_name);
 protected:
     xmlpp::Node* m_configRoot;
     xmlpp::DomParser xml_parser;

@@ -7,11 +7,24 @@
 #include <ostream>
 #include <iostream>
 #include <vector>
+#include <fstream>
+#include <process.h>
 #include <boost/interprocess/exceptions.hpp>
 
 std::ostream& logger = std::cout;
 typedef std::vector<Channel> ChannelArray;
 
+void UpdateActiveFile()
+{
+    std::string file_name = std::string("_driver");
+    std::ofstream out_file;
+    out_file.open(file_name.c_str(), std::ios_base::out | std::ios_base::trunc);
+
+    time_t tm_t;
+    out_file << getpid() << ":";
+
+    out_file << time(&tm_t);
+}
 
 // Init system
 ChannelArray InitLines()

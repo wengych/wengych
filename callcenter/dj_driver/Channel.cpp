@@ -43,8 +43,11 @@ bool Channel::GetCallerId( )
 {
 	std::string caller_id;
 	if (DtmfHit(channel_id)) {
-		while (DtmfHit(channel_id))
-			caller_id += ConvertDtmf(GetDtmfCode(channel_id));
+        while (DtmfHit(channel_id)) {
+			char c= ConvertDtmf(GetDtmfCode(channel_id));
+            if (c != 'd')
+                caller_id += c;
+        }
 	} else {
 		char buff[128] = { 0 };
 		GetCallerIDStr(channel_id, buff);
@@ -319,3 +322,4 @@ bool Channel::PostResponse()
 {
 	return response_queue->try_send(resp->str().c_str(), resp->str().length(), 0);
 }
+

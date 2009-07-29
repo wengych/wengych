@@ -1,8 +1,11 @@
 #include <boost/interprocess/sync/scoped_lock.hpp>
 #include <boost/interprocess/mapped_region.hpp>
+#include <boost/date_time/local_time/local_time.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/bind.hpp>
 #include <ostream>
+#include <fstream>
+#include <process.h>
 
 #include "App.h"
 
@@ -282,15 +285,24 @@ Response App::RecvResponse()
 	unsigned int priority;
 	response_queue.receive(buffer, BUFFER_SIZE, recvd_size, priority);
 	Response resp(buffer, recvd_size);
+
+    while (resp.state == "ACTIVE_CHECK") {
+        UpdateActiveFile();
+        response_queue.receive(buffer, BUFFER_SIZE, recvd_size, priority);
+        resp = Response(buffer, recvd_size);
+    }
+
 	if (resp.state == "EXIT") {
 		// hwnd = boost::lexical_cast<HWND>(resp.argument_map["HANDLE"]);
         logger << "Receive EXIT from monitor.\n";
         logger << "will shut up this channel[" << channel_id << "].\n";
         SendRequest();
-        system("pause");
+        // system("pause");
 
         exit(0);
 	}
+
+    UpdateActiveFile();
 	logger << "app:resp:" << resp.state << std::endl;
 	return resp;
 }
@@ -474,4 +486,16 @@ std::string App::WaitMenuStringStringWithLen( std::string menu_string, int len )
     std::string user_input = "ÓÃ»§ÊäÈë£º";
     WriteSharedMemory(user_input + ret);
     return ret;
+}
+
+void App::UpdateActiveFile()
+{
+    std::string file_name = std::string("_app_") + channel_id;
+    std::ofstream out_file;
+    out_file.open(file_name.c_str(), std::ios_base::out | std::ios_base::trunc);
+
+    time_t tm_t;
+    out_file << getpid() << ":";
+
+    out_file << time(&tm_t);
 }

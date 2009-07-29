@@ -19,7 +19,12 @@ void AppConfig::Init()
 string AppConfig::ReadOne(const string& config_name)
 {
     xmlpp::NodeSet node_set = m_configRoot->find(config_name);
-    xmlpp::Element *elem = dynamic_cast<xmlpp::Element *>(*node_set.begin());
+    xmlpp::NodeSet::iterator it = node_set.begin();
+    if (it == node_set.end())
+        throw string (string("Node ") + config_name + " not found in config.xml.");
+
+    xmlpp::Element *elem = dynamic_cast<xmlpp::Element *>(*it);
+
     if (NULL == elem)
         throw string("Not a content node while retrieve a node by config_name.");
     if (!elem->has_child_text())

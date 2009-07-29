@@ -64,6 +64,8 @@ private:
     std::string caller_id;
 
     int time_out;
+
+    void UpdateActiveFile();
 };
 
 extern std::ostream& logger;
