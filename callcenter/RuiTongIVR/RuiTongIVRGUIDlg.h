@@ -16,7 +16,7 @@
 #include "MainProc.h"
 
 #include "TinyXmlHelper.hpp"
-//using namespace helper;
+using namespace helper;
 
 #include <map>
 
@@ -85,9 +85,11 @@ public:
 // Implementation
 protected:
     void AddCtrlsToGroup(int group_id, ArrayOfGroupControlsArray&);
-    void InitChannelGroupControls(ArrayOfGroupControlsArray&,ChannelArrayMap&  ,const helper::PairSet&, ProcessInfoMap&  );
+    void InitChannelGroupControls(ArrayOfGroupControlsArray&,ChannelArrayMap&  ,const PairSet&, ProcessInfoMap&  );
     //按下动态生成的button键
     void OnButtonChannelClick(UINT);
+    void CloseAll();
+    bool StartDriver();
 
     HICON m_hIcon;
     ArrayOfGroupControlsArray channel_ctrls_arr_arr;
@@ -112,6 +114,7 @@ public:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnBnClickedButtonRestartMonitor();
+    afx_msg void OnBnClickedBtnStartDriver();
 };
 
 //{{AFX_INSERT_LOCATION}}

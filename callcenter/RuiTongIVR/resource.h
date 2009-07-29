@@ -35,6 +35,7 @@
 #define IDC_EDIT_SYS_CUR_TIME           1011
 #define IDC_BUTTON_SYS_RUN              1012
 #define IDC_BUTTON_SYS_PAUSE            1013
+#define IDC_BTN_START_DRIVER            1013
 
 // Next default values for new objects
 // 

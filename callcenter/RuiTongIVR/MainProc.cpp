@@ -37,8 +37,8 @@ BOOL InitSysEnv()
     bool bAutoStart = false;
 	int icount = 0;
     const std::string mapKey = "driver";
-    const std::string gwFile = "driver";
-
+    const std::string gwFile = "_driver";
+    const std::string appFile = "_app_";
 
 	LogWrapper::Info("InitSysEnv().........");
 
@@ -59,152 +59,163 @@ BOOL InitSysEnv()
 	//g_psChannelPid = g_pidConfig.GetChannelsPID();*/
 
 	CProcessManage pm;
-	DWORD dwPid;
-    string strPid;
+	bool is_process_running;
+    std::string strPid;
 
 	if (startType == "auto")
-    {//是否自动启动进程
+    {
+        //是否自动启动进程
         bAutoStart  =true;
     }
 
-		//对gateway启动测试
-		{
+	//对gateway启动测试
+	{
+        PROCESS_INFO process_info;
+        memset(&process_info,0x00,sizeof(PROCESS_INFO));
+        process_info._app_file = g_gateWay;
+        process_info._process_name= g_gateWay.substr(g_gateWay.find_last_of("\\")+1);
+        process_info._app_type = DRIVER;
+		process_info._check_file = strPathBuf+"\\"+gwFile;
+		process_info._last_active_time = CTime::GetCurrentTime();
+		process_info._last_check_time = CTime::GetCurrentTime();
+		process_info._app_name  = process_info._app_file;
+		process_info._time_out_count = 0;
 
-            PROCESS_INFO process_info;
-            memset(&process_info,0x00,sizeof(PROCESS_INFO));
-            process_info._app_file = g_gateWay;
-            process_info._process_name= g_gateWay.substr(g_gateWay.find_last_of("\\")+1);
-            process_info._app_type = AppType::DRIVER;
-			process_info._check_file = strPathBuf+"\\"+"_driver";
-			process_info._last_active_time = CTime::GetCurrentTime();
-			process_info._last_check_time = CTime::GetCurrentTime();
-			process_info._app_name  = process_info._app_file;
-			process_info._time_out_count = 0;
+        DWORD gwPid;
+        CActiveFile activeFile(process_info._check_file);
+        if (!activeFile.GetPInfo(gwPid,process_info._last_active_time))
+        {
+            //读取不成功，说明dj_driver没启动过
+            is_process_running = false;
+        }
+        else
+        {
+            //说明启动过
+            CTime getTime( process_info._last_active_time);
+            LogWrapper::Debug("从文件中%s读取到进程id:%d ,最后更新时间 %04d:%02d:%02d",
+                 process_info._check_file.c_str(),gwPid,getTime.GetHour(),getTime.GetMinute(),getTime.GetSecond());
+            is_process_running = CProcessManage::IsProgramRunning( gwPid, "dj_driver.exe");
+       }
 
-            dwPid = pm.IsProgramRunning( g_gwPid);
-			if(dwPid == 0)
-			{
-                if (bAutoStart)
-                {//没启动则启动
-                    dwPid = pm.StartProgram(g_gateWay);
-                    process_info._process_id = dwPid;
+        if(!is_process_running)
+	    {
+            //是否为启动进程
+            if (bAutoStart)
+            {
+                //设置了自动启动
+                // dwPid = pm.StartProgram( process_info._app_file);
+                process_info._process_id = pm.StartProgram( process_info._app_file );
 
-                    if (dwPid == 0)
-                    {
-                        process_info._is_active = false;
-                        process_info._start_type = StartType::FIRST_STOP;//启动失败，要求手工启动,系统不去主动启动
-                        LogWrapper::Error("创建gateway进程失败,app：%s",g_gateWay.c_str());
-                    }
-                    else
-                    {//记录创建的进程
-                        g_pidConfig.SetGateWayPID(dwPid);
-                        char szPid[64] = "";
-                        sprintf(szPid,"%d",dwPid);
-                        g_gwPid = szPid;
-
-                        process_info._is_active = true;
-                        process_info._start_type = StartType::FIRST_START;
-
-                        LogWrapper::Debug("创建gateway进程成功,app：%s ,pid：%d",g_gateWay.c_str(),dwPid);
-                        //休眠3's,等待gateway启动
-                        Sleep(3000);
-                    }
+                if (process_info._process_id == 0)
+                {
+                    process_info._is_active = false;
+                    process_info._start_type = FIRST_STOP;//启动失败，要求手工启动,系统不去主动启动
+                    LogWrapper::Error("创建gateway进程失败,app：%s",g_gateWay.c_str());
                 }
                 else
-                {//如果非自动读取
-					LogWrapper::Debug("gateway进程非自动启动,app：%s ",g_gateWay.c_str());
-                    process_info._process_id = dwPid;
-                    process_info._is_active = false;
-                    process_info._start_type = StartType::FIRST_STOP;
+                {
+                    //记录创建的进程
+                    process_info._is_active = true;
+                    process_info._start_type = FIRST_START;
+
+                    LogWrapper::Debug("创建gateway进程成功,app：%s ,pid：%d", g_gateWay.c_str(), process_info._process_id);
+                    //休眠3's,等待gateway启动
+                    Sleep(3000);
                 }
+            }
+            else
+            {
+                //如果非自动读取
+			    LogWrapper::Debug("gateway进程非自动启动,app：%s ", g_gateWay.c_str());
+                process_info._process_id = 0;
+                process_info._is_active = false;
+                process_info._start_type = FIRST_STOP;
+            }
+	    }
+	    else
+	    {
+		    process_info._process_id = gwPid;
+		    process_info._is_active = true;
+            process_info._start_type = FIRST_START;
+		    LogWrapper::Debug("存在gateway原进程,app：%s ,pid：%d", g_gateWay.c_str(), process_info._process_id);
+	    }
+
+		// 插入driver及其进程信息到map中
+		g_piMap.insert(make_pair(mapKey,process_info));
+	}
+
+	{
+		//对app启动测试
+		for(std::vector<Pair>::size_type i=0;i<g_psApp.size();i++)
+		{
+			PROCESS_INFO process_info;
+			process_info._app_file = g_psApp[i].second;
+            process_info._app_name = process_info._app_file +" "+ g_psApp[i].first;
+			process_info._process_name = g_psApp[i].second.substr(g_psApp[i].second.find_last_of("\\")+1);
+            process_info._app_type = APP;
+            process_info._check_file = strPathBuf+ "\\" +"_app_"+g_psApp[i].first;
+			process_info._last_active_time = CTime::GetCurrentTime();
+			process_info._last_check_time = CTime::GetCurrentTime();
+			process_info._time_out_count = 0;
+
+            DWORD appPid;
+            CActiveFile activeFile(process_info._check_file);
+            if (!activeFile.GetPInfo(appPid,process_info._last_active_time))
+            {
+                //读取不成功，说明dj_driver没启动过
+                is_process_running = false;
+            }
+            else
+            {//说明启动过
+                CTime getTime( process_info._last_active_time);
+                
+                LogWrapper::Debug("从文件中%s读取到进程id:%d ，最后更新时间 %04d:%02d:%02d",
+                    process_info._check_file.c_str(),appPid,getTime.GetHour(),getTime.GetMinute(),getTime.GetSecond());
+                is_process_running = CProcessManage::IsProgramRunning( appPid, "app.exe" );
+            }
+		
+			if (!is_process_running)
+			{//程序未启动
+
+                if (bAutoStart)
+                {
+				    process_info._process_id = pm.StartProgram( process_info._app_name);
+
+				    if (process_info._process_id == 0)
+				    {
+					    process_info._is_active = false;
+                        process_info._start_type = FIRST_STOP;
+    				    LogWrapper::Error("创建app进程失败,app：%s",process_info._app_file.c_str());
+					    //std::cerr<<"创建进程失败"<<std::endl;
+				    }
+				    else
+				    {//记录创建的进程
+					    icount ++;
+
+					    process_info._is_active = true;
+                        process_info._start_type = FIRST_START;
+					    LogWrapper::Debug("创建app进程成功,app：%s ,pid：%d",process_info._app_file.c_str(), process_info._process_id);
+				    }
+               }
+                else
+                {//如果不是自动启动
+                    process_info._process_id = appPid;
+                    process_info._is_active = false;
+                    process_info._start_type = FIRST_STOP;
+               }
 			}
 			else
 			{
-				process_info._process_id = dwPid;
+				process_info._process_id = appPid;
 				process_info._is_active = true;
-                process_info._start_type = StartType::FIRST_START;
-				LogWrapper::Debug("存在gateway原进程,app：%s ,pid：%d",g_gateWay.c_str(),dwPid);
+                process_info._start_type = FIRST_START;
+				icount++;
 			}
-			//插入对应
-			g_piMap.insert(make_pair(mapKey,process_info));
-		}
-
-		//if (ret)
-		{//如果连gateway都没启动，说明配置错误
-
-			//对app启动测试
-			for(std::vector<Pair>::size_type i=0;i<g_psApp.size();i++)
-			{
-				PROCESS_INFO process_info;
-				process_info._app_file = g_psApp[i].second;
-				process_info._process_name = g_psApp[i].second.substr(g_psApp[i].second.find_last_of("\\")+1);
-                process_info._app_type = AppType::APP;
-				process_info._last_active_time = CTime::GetCurrentTime();
-				process_info._last_check_time = CTime::GetCurrentTime();
-				process_info._time_out_count = 0;
-
-				std::string sPid = g_pidConfig.GetChannelPID(g_psApp[i].first);
-				
-				dwPid = pm.IsProgramRunning(sPid);
-				if (dwPid == 0)
-				{//程序未启动
-					std::string prog = g_psApp[i].second + " ";
-					prog += g_psApp[i].first;
-                    process_info._check_file = strPathBuf+ "\\" +"_app_"+g_psApp[i].first;
-                    process_info._app_name = process_info._app_file +" "+ g_psApp[i].first;
-
-                    if (bAutoStart)
-                    {
- 					    dwPid = pm.StartProgram(prog);
-    					
-					    process_info._process_id = dwPid;
-
-					    if (dwPid == 0)
-					    {
-						    process_info._is_active = false;
-                            process_info._start_type = StartType::FIRST_STOP;
-        				    LogWrapper::Error("创建app进程失败,app：%s",prog.c_str());
-						    //std::cerr<<"创建进程失败"<<std::endl;
-					    }
-					    else
-					    {//记录创建的进程
-						    icount ++;
-						    g_pidConfig.SetChannelPID(g_psApp[i].first,dwPid);
-                            for(std::vector<Pair>::size_type j=0;j<g_psApp.size();j++)
-                            {
-                                if (g_psChannelPid[j].first ==g_psApp[i].first )
-                                {//更新pid
-                                    char szPid[64] = "";
-                                    sprintf(szPid,"%d",dwPid);
-                                    g_psChannelPid[j].second = szPid;
-                                    break;
-                                }
-                            }
-						    process_info._is_active = true;
-                            process_info._start_type = StartType::FIRST_START;
-						    LogWrapper::Debug("创建app进程成功,app：%s ,pid：%d",prog.c_str(),dwPid);
-					    }
-                   }
-                    else
-                    {//如果不是自动启动
-                        process_info._process_id = dwPid;
-                        process_info._is_active = false;
-                        process_info._start_type = StartType::FIRST_STOP;
-                   }
-				}
-				else
-				{
-					process_info._process_id = dwPid;
-					process_info._is_active = true;
-                    process_info._start_type = StartType::FIRST_START;
-					icount++;
-				}
-                g_piMap.insert(std::make_pair(g_psApp[i].first,process_info));
-
-			}
-			LogWrapper::Debug("存在app进程数量：%d",icount);
+            g_piMap.insert(make_pair(g_psApp[i].first,process_info));
 
 		}
+		LogWrapper::Debug("存在app进程数量：%d",icount);
+	}
 	return ret;
 }
 //

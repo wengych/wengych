@@ -24,9 +24,9 @@ enum StartType{
 typedef struct _tagProcessInfo
 {
     AppType _app_type;//是driver还是app
-    std::string _process_name;//对通道，取通道id
+    std::string _process_name;//文件名称，不带路径
     DWORD _process_id;//进程id
-    std::string _app_name;//app文件名，不带路径，用来查找进程信息时使用
+    std::string _app_name;//app文件名，带路径，参数
     std::string _app_file;//app文件（带路径和文件名）
     std::string _check_file;//要定时检查的文件，通过这个来确定进程是否存活
     CTime _last_active_time;//指定进程上次活动时间
@@ -35,10 +35,10 @@ typedef struct _tagProcessInfo
     bool _is_active;//进程是否活动
     StartType _start_type;
     int _time_out_count;//进程统计次数
-
 }PROCESS_INFO,*PPROCESS_INFO;
 
 //map的 first：对driver来说是"driver"，对app来说，是通道id;
+// <driver|channel_id : process_info>
 typedef std::map<std::string ,PROCESS_INFO> ProcessInfoMap;
 
 // 定义全局变量
@@ -53,7 +53,7 @@ extern CString g_szTitle;
 //extern CPIDConfig g_pidConfig;*/*/
 
 extern std::string g_gateWay;
-extern helper::PairSet g_psApp;
+extern PairSet g_psApp;
 extern ProcessInfoMap g_piMap;
 
 //初始化系统环境

@@ -204,3 +204,34 @@ void CMemMsg::Write(std::string str)
 {
 	m_sMem.Write(str);
 }
+
+//////////////////////////////////////////////////////////////////////////
+
+CActiveFile::CActiveFile(std::string fileName)
+{
+    m_fileName = fileName;    
+}
+
+bool CActiveFile::GetPInfo(DWORD& pid,CTime& tm)
+{
+    bool ret = false;
+    CFile myfile;
+    if (myfile.Open(m_fileName.c_str(),CFile::modeRead ))
+    {//打开成功
+        char fileBuf[1024*4] = {0x00};
+        myfile.Read(fileBuf,1024*4);
+        std::string fileData = fileBuf;
+        //时间
+        std::string segData = fileData.substr(fileData.find_last_of(":")+1);
+        time_t tt = atol(segData.c_str());
+        tm = CTime(tt);
+        
+        //进程id
+        segData = fileData.substr(0,fileData.find_last_of(":"));
+        pid = atol(segData.c_str());
+        ret=true;
+    }
+    return ret;
+}
+
+//////////////////////////////////////////////////////////////////////////

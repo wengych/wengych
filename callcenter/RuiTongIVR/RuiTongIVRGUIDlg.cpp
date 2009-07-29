@@ -9,7 +9,7 @@
 #include "ProcessManage.h"
 #include <vector>
 
-// using namespace std;
+using namespace std;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -98,6 +98,7 @@ BEGIN_MESSAGE_MAP(CRuiTongIVRGUIDlg, CDialog)
 	ON_WM_TIMER()
 	//}}AFX_MSG_MAP
 	ON_BN_CLICKED(IDC_BUTTON_RESTART_MONITOR, &CRuiTongIVRGUIDlg::OnBnClickedButtonRestartMonitor)
+    ON_BN_CLICKED(IDC_BTN_START_DRIVER, &CRuiTongIVRGUIDlg::OnBnClickedBtnStartDriver)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -400,19 +401,13 @@ void CRuiTongIVRGUIDlg::OnTimer(UINT nIDEvent)
     for(;piIterator!=g_piMap.end();++piIterator)   
     {
          PROCESS_INFO pi = piIterator->second;
-        CFile myfile;
+        
+         DWORD dwId;
+         CActiveFile activeFile((piIterator->second)._check_file);
+         activeFile.GetPInfo(dwId,piIterator->second._last_active_time );
 
-        if (myfile.Open((piIterator->second)._check_file.c_str(),CFile::modeRead ))
-        {//打开成功
-            char fileBuf[1024*4] = {0x00};
-            myfile.Read(fileBuf,1024*4);
-            std::string fileData = fileBuf;
-            std::string modtime = fileData.substr(fileData.find_last_of(":")+1);
-            time_t tt = atol(modtime.c_str());
-            piIterator->second._last_active_time = CTime(tt);
-        }
-
-        if ((tmNow - piIterator->second._last_check_time ) >tsCheck)
+        if (piIterator->second._is_active ==true &&
+            (tmNow - piIterator->second._last_check_time ) >tsCheck)
         {
 			LogWrapper::Debug("tmNow:%02d%02d%02d",tmNow.GetHour(),tmNow.GetMinute(),tmNow.GetSecond());
 			LogWrapper::Debug("_last_check_time:%02d%02d%02d",piIterator->second._last_check_time.GetHour(),piIterator->second._last_active_time.GetMinute(),piIterator->second._last_active_time.GetSecond());
@@ -429,12 +424,13 @@ void CRuiTongIVRGUIDlg::OnTimer(UINT nIDEvent)
             }       
         }
 
-        if ((tmNow - piIterator->second._last_active_time ) >ts)
+        if (piIterator->second._is_active ==true &&
+            (tmNow - piIterator->second._last_active_time ) >ts)
         {//说明超时,说明进程已经死了
-			GLog("进程或许已经死掉，超时未返回数据：[%s] ",piIterator->second._app_name.second());
+			GLog("进程或许已经死掉，超时未返回数据：[%s] ",piIterator->second._app_name.c_str());
             if (piIterator->second._is_active == true)
             {//说明进程存活
-                if (piIterator->first == "driver")
+               //  if (piIterator->first == "driver")
                 {//就必须杀死进程
                     HANDLE hProcess=OpenProcess(PROCESS_ALL_ACCESS,TRUE, piIterator->second._process_id);   
                     if(hProcess!=NULL)   
@@ -447,6 +443,7 @@ void CRuiTongIVRGUIDlg::OnTimer(UINT nIDEvent)
                         GLog("打开进程错误");
                     }
                 }
+                /*
                 else
                 {//是app
                     GLog("发送停止监控信息到app：[%s] ",piIterator->first.c_str());
@@ -457,6 +454,7 @@ void CRuiTongIVRGUIDlg::OnTimer(UINT nIDEvent)
                     int arrayId = channel_array_map[piIterator->first];
                     channel_ctrls_arr_arr[arrayId][CHANNEL_BUTTON_ID_TO_INDEX].ctrl->SetWindowText("启动");
                 }
+                */
 
                 piIterator->second._process_id = 0;
                 piIterator->second._is_active = false;
@@ -493,30 +491,6 @@ void CRuiTongIVRGUIDlg::OnTimer(UINT nIDEvent)
 
 void CRuiTongIVRGUIDlg::OnBnClickedButtonRestartMonitor()
 {
-	//std::vector<std::string> strV;
-	//	//m_memMsg.Read(strV);
-	//
-	//	std::string msg;
-	//	std::stringstream ss;
-	//	CTime time = CTime::GetCurrentTime();   
-	//
-	//	for (int i = 0;i<g_iChannelNum;i++)
-	//	{
-	//		ss  << "app:"
-	//			<< i
-	//			<< ":"
-	//			<< rand()
-	//			<< ":"
-	//			<< rand()
-	//			<< "\n";
-	//		//msg += ss.str();
-	//	}
-	//msg = ss.str();
-	//m_memMsg.Write(msg);
-
-	//PostMessage(WM_APP_WRITE_DATA,0,0);
-	//GLog("post msg WM_APP_WRITE_DATA ");
-	//GLog("msg: [%s]",msg.c_str());
 }
 
 // 向group中逐行添加控件
@@ -525,12 +499,6 @@ void CRuiTongIVRGUIDlg::AddCtrlsToGroup(int group_id, ArrayOfGroupControlsArray&
 {
     if (group_ctrls_arr_arr.empty() || group_ctrls_arr_arr.begin()->empty())
         return ;
-
-    CWnd* edt = GetDlgItem(IDC_EDIT_LINE_NO);
-    int style = edt->GetStyle();
-    int ex_style = edt->GetExStyle();
-    CRect rc;
-    edt->GetWindowRect(rc);
 
     int swp_style = SWP_NOZORDER | SWP_SHOWWINDOW;
 
@@ -591,7 +559,7 @@ void CRuiTongIVRGUIDlg::AddCtrlsToGroup(int group_id, ArrayOfGroupControlsArray&
     }
 }
 
-void CRuiTongIVRGUIDlg::InitChannelGroupControls(ArrayOfGroupControlsArray& arr_arr,ChannelArrayMap& channel_array_map,const helper::PairSet& psApp ,ProcessInfoMap& piMap)
+void CRuiTongIVRGUIDlg::InitChannelGroupControls(ArrayOfGroupControlsArray& arr_arr,ChannelArrayMap& channel_array_map,const PairSet& psApp ,ProcessInfoMap& piMap)
 {
     std::string view_path = "/configuration/view";
     CRect zero_rect(0,0,0,0);
@@ -655,71 +623,89 @@ void CRuiTongIVRGUIDlg::OnButtonChannelClick(UINT butID)
 {
     bool bCreakOk = false;
     std::string channelId ;
-    for (UINT i =0;i<g_psChannelPid.size();i++)
+    // PROCESS_INFO process_info;
+    PROCESS_INFO& process_info = g_piMap[button_channel_map[butID]];
+    DWORD dwPid = CProcessManage::IsProgramRunning(process_info._process_id, "app.exe");
+
+    if (dwPid == 0)
     {
-        if (g_psChannelPid[i].first ==button_channel_map[butID]  )
-        {//
-            channelId = g_psChannelPid[i].first;
-            DWORD dwPid = CProcessManage::IsProgramRunning(g_psChannelPid[i].second);
-            if (dwPid == 0)
-            {//说明进程没有启动,启动程序
-                for (UINT j = 0;j <g_psApp.size();j++)
-                {
-                    if (g_psApp[j].first == g_psChannelPid[i].first)
-                    {
-                        std::string prog = g_psApp[i].second + " ";
-                        prog += g_psApp[i].first;
-                        dwPid = CProcessManage::StartProgram(prog);
-                        if (dwPid == 0)
-                        {
-                            //ret &= false;
-                            GLog("创建app进程失败,app：%s",prog.c_str());
-                            //std::cerr<<"创建进程失败"<<std::endl;
-                        }
-                        else
-                        {//记录创建的进程
-                            g_pidConfig.SetChannelPID(g_psApp[j].first,dwPid);
-                            g_piMap[g_psApp[j].first]._process_id = dwPid;
-                            g_piMap[g_psApp[j].first]._is_active = true;
-                            g_piMap[g_psApp[j].first]._start_type = StartType::MANUAL_START;
+        dwPid = CProcessManage::StartProgram(process_info._app_name);
+        if (dwPid == 0)
+        {
+            GLog("创建app进程失败,app：%s",process_info._app_name.c_str());
+        }
+        else
+        {//记录创建的进程
+            process_info._process_id = dwPid;
+            process_info._is_active = true;
+            process_info._start_type = StartType::MANUAL_START;
 
-                            char szPid[64] = "";
-                            sprintf(szPid,"%d",dwPid);
-                            g_psChannelPid[i].second = szPid;
-                            bCreakOk  = true;
-                            GLog("创建app进程成功,app：%s ,pid：%d",prog.c_str(),dwPid);
-                        }
-                        break;
-                    }
-                }
-                if (bCreakOk)
-                {
-                    int arrayId = channel_array_map[channelId];
-                    channel_ctrls_arr_arr[arrayId][CHANNEL_BUTTON_ID_TO_INDEX].ctrl->SetWindowText("停止");
-                }
-            }
-            else
-            {//说明进程已经启动了，要停止
-               //发送停止监控信息
-                GLog("发送停止监控信息到app：[%s] ",button_channel_map[butID].c_str());
-                std::string queueName = MSG_QUEUE_TAG;
-                queueName += button_channel_map[butID];
-                //CMessage msg;
-                CMessage::SendExitMsg(queueName);
-
-                //置空
-               g_psChannelPid[i].second = "";
-               g_pidConfig.SetChannelPID(g_psChannelPid[i].first,"null");
-               g_piMap[g_psChannelPid[i].first]._process_id = 0;
-               g_piMap[g_psChannelPid[i].first]._is_active = false;
-               g_piMap[g_psChannelPid[i].first]._start_type = StartType::MANUAL_STOP;
-
-                int arrayId = channel_array_map[channelId];
-                channel_ctrls_arr_arr[arrayId][CHANNEL_BUTTON_ID_TO_INDEX].ctrl->SetWindowText("启动");
-
-            }
-            break;
+            bCreakOk  = true;
+            GLog("创建app进程成功,app：%s ,pid：%d",process_info._app_name.c_str(),dwPid);
+        }
+        if (bCreakOk)
+        {
+            int arrayId = channel_array_map[button_channel_map[butID]];
+            channel_ctrls_arr_arr[arrayId][CHANNEL_BUTTON_ID_TO_INDEX].ctrl->SetWindowText("停止");
         }
     }
- 
+    else
+    {//进程已经启动
+        GLog("发送停止监控信息到app：[%s] ",button_channel_map[butID].c_str());
+        std::string queueName = MSG_QUEUE_TAG;
+        queueName += button_channel_map[butID];
+        CMessage::SendExitMsg(queueName);
+
+        //置空
+        process_info._process_id = 0;
+        process_info._is_active = false;
+        process_info._start_type = StartType::MANUAL_STOP;
+
+        int arrayId = channel_array_map[button_channel_map[butID]];
+        channel_ctrls_arr_arr[arrayId][CHANNEL_BUTTON_ID_TO_INDEX].ctrl->SetWindowText("启动");
+    }
+
+}
+
+void CRuiTongIVRGUIDlg::OnBnClickedBtnStartDriver()
+{
+    // TODO: 在此添加控件通知处理程序代码
+    if (g_piMap["driver"]._is_active) {
+        if (MB_OK != MessageBox(_T("是否关闭驱动程序及应用程序?"), NULL, MB_OKCANCEL))
+            return ;
+        CloseAll();
+        GetDlgItem(IDC_BTN_START_DRIVER)->SetWindowText("启动设备驱动");
+    }
+    else
+    {
+        if (!StartDriver()) {
+            MessageBox(_T("启动设备驱动程序失败."));
+            return ;
+        }
+        GetDlgItem(IDC_BTN_START_DRIVER)->SetWindowText("关闭设备驱动");
+    }
+}
+
+void CRuiTongIVRGUIDlg::CloseAll()
+{
+    for (ProcessInfoMap::iterator it = g_piMap.begin(); it != g_piMap.end(); ++it)
+    {
+        HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, it->second._process_id);
+        TerminateProcess(hProcess, 0);
+        it->second._is_active = false;
+        CloseHandle(hProcess);
+    }
+}
+
+bool CRuiTongIVRGUIDlg::StartDriver()
+{
+    ProcessInfoMap::iterator it = g_piMap.find("driver");
+    if (it == g_piMap.end())
+        return false;
+    if (0 == 
+       (it->second._process_id ==
+        CProcessManage::StartProgram(it->second._app_name)))
+        return false;
+
+    return true;
 }

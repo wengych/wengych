@@ -14,7 +14,7 @@
 #include <vector>
 
 using namespace boost::interprocess;
-// using namespace std;
+using namespace std;
 
 
 //要发送的队列的头
@@ -72,6 +72,17 @@ public:
 	CMemMsg();
     bool Read(std::vector<std::string>& strVector);
     void Write(std::string str);
+};
+
+class CActiveFile
+{
+private:
+    std::string m_fileName;
+    //bool b_open;
+public:
+    CActiveFile(std::string fileName);
+    bool GetPInfo(DWORD& pid,CTime& tm);
+    //CTime GetTime();
 };
 
 #endif

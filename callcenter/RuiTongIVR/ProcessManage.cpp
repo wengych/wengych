@@ -1,55 +1,40 @@
 #include "stdafx.h"
 #include "ProcessManage.h"
 #include "TinyXmlHelper.hpp"
+#include <boost/lexical_cast.hpp>
+#include <algorithm>
+#include <Psapi.h>
 
-// using namespace helper;
+#pragma comment(lib, "psapi")
+
+using namespace helper;
 
 //////////////////////////////////////////////////////////////////////////
-DWORD CProcessManage::IsProgramRunning(const std::string& pid) 
+bool CProcessManage::IsProgramRunning(const std::string& pid, std::string valid_process_name) 
 {
-    DWORD dwPid;
-    dwPid = (DWORD)atol(pid.c_str());
-
-    if (pid != "null")
-    {
-        if (dwPid > 0)
-        {
-            HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION |  
-                PROCESS_VM_READ,                                       
-                FALSE, dwPid );                                  
-
-            if (hProcess)                                              
-            {                         
-                return dwPid;
-            }
-        }
-    }
-
-	return 0;
+    return IsProgramRunning(boost::lexical_cast<DWORD>(pid), valid_process_name);
 }
 
 
-DWORD CProcessManage::IsProgramRunning(DWORD pid) 
+bool CProcessManage::IsProgramRunning(DWORD pid, std::string valid_process_name) 
 {
-    //HANDLE hProcess = HANDLE(pid);
-    //DWORD dwExitCode;
-    //if( GetExitCodeProcess(hProcess, &dwExitCode) )
-    //	return (dwExitCode == STILL_ACTIVE) ? pid : 0;
-    //return DWORD(-1);
+    if (pid < 0)
+        return false;
+    char path[MAX_PATH] = "";
 
-    if (pid >0)
-    {
-        HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION |  
-            PROCESS_VM_READ,                                       
-            FALSE, pid );                                  
+    HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid );
+    if (!hProcess)
+        return false;
 
-        if (hProcess)                                              
-        {                         
-            return pid;
-        }
-    }
+    HMODULE hModule;
+    DWORD needed;
+    EnumProcessModules(hProcess, &hModule, sizeof(hModule), &needed);
+    GetModuleFileNameEx(hProcess, hModule, path, sizeof(path));
 
-    return 0;
+    if (NULL == strstr(path, valid_process_name.c_str()))
+        return false;
+
+    return true;
 }
 
 

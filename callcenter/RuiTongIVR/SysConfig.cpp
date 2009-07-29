@@ -1,3 +1,4 @@
+
 #include "stdafx.h"
 #include "SysConfig.h"
 
@@ -36,15 +37,15 @@ std::string CSysConfig::GetGateWay()
 	return retVal;
 }
 
-helper::PairSet CSysConfig::GetChannels()
+PairSet CSysConfig::GetChannels()
 {
-	std::string xPath = "/configuration/device/channels";
-    helper::PairSet ps;
-	if (isLoaded)
-	{
-		ps = xDoc.GetKeyAndTextOfChilds(xPath,"id");
-	}
-	return   ps;
+		std::string xPath = "/configuration/device/channels";
+		PairSet ps;
+		if (isLoaded)
+		{
+			ps = xDoc.GetKeyAndTextOfChilds(xPath,"id");
+		}
+		return   ps;
 }
 
 
@@ -59,7 +60,7 @@ CPIDConfig::CPIDConfig(std::string strFile)
 		isLoaded = xDoc.LoadFile(strFile);
 	}
 }
-void CPIDConfig::SetConfigFile(std::string strFile)
+void CPIDConfig::SetConfigFile(string strFile)
 {
     if (strFile.length() >0)
     {
@@ -78,10 +79,10 @@ std::string CPIDConfig::GetGateWayPID()
 	return retVal;
 }
 
-helper::PairSet CPIDConfig::GetChannelsPID()
+PairSet CPIDConfig::GetChannelsPID()
 {
 	std::string xPath = "/configuration/device/channels";
-	helper::PairSet ps;
+	PairSet ps;
 	if (isLoaded)
 	{
 		ps = xDoc.GetKeyAndTextOfChilds(xPath,"id");
@@ -128,7 +129,7 @@ void CPIDConfig::SetGateWayPID(std::string pid)
     }
 }
 
-void CPIDConfig::SetChannelPID(std::string channel,DWORD pid)
+void CPIDConfig::SetChannelPID(string channel,DWORD pid)
 {
 	char xPath[512] = "";
 	sprintf(xPath ,"/configuration/device/channels/channel[@id='%s']",channel.c_str());
@@ -143,7 +144,7 @@ void CPIDConfig::SetChannelPID(std::string channel,DWORD pid)
 	}
 }
 
-void CPIDConfig::SetChannelPID(std::string channel, std::string pid)
+void CPIDConfig::SetChannelPID(string channel,string pid)
 {
     char xPath[512] = "";
     sprintf(xPath ,"/configuration/device/channels/channel[@id='%s']",channel.c_str());
