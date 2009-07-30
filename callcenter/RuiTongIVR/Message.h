@@ -36,6 +36,7 @@ public:
 	static bool SendStopMonitMsg(std::string queueName);
 	static bool SendExitMsg(std::string queueName);
     static bool SendActiveMsg(std::string queueName);
+    static std::string GetMutexName(const char channel_id);
 };
 
 

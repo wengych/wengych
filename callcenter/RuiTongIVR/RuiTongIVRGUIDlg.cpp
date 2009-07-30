@@ -91,9 +91,6 @@ BEGIN_MESSAGE_MAP(CRuiTongIVRGUIDlg, CDialog)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDC_BUTTON_SYS_RUN, OnButtonSysRun)
-	ON_BN_CLICKED(IDC_BUTTON_SYS_PAUSE, OnButtonSysPause)
-	ON_BN_CLICKED(IDC_BUTTON_SYS_STOP, OnButtonSysStop)
 	ON_BN_CLICKED(IDC_BUTTON_SYS_QUIT, OnButtonSysQuit)
 	ON_WM_TIMER()
 	//}}AFX_MSG_MAP
@@ -173,6 +170,16 @@ BOOL CRuiTongIVRGUIDlg::OnInitDialog()
 
         InitChannelGroupControls(channel_ctrls_arr_arr,channel_array_map,g_psApp,g_piMap);
         AddCtrlsToGroup(IDC_GROUP_CHANNEL, channel_ctrls_arr_arr);
+
+		if (g_piMap["driver"]._is_active)
+		{
+			GetDlgItem(IDC_BTN_START_DRIVER)->SetWindowText("关闭设备驱动");
+		}
+		else
+		{
+			GetDlgItem(IDC_BTN_START_DRIVER)->SetWindowText("启动设备驱动");
+		}
+
 		GLog("系统启动！");
 	}
 
@@ -236,42 +243,22 @@ LRESULT CRuiTongIVRGUIDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam
 	{
 	case WM_APP_WRITE_DATA://响应自定义的消息
 		{
-			//读取映射内存数据
-            std::vector<std::string > strVector;
-			std::string channelid;
-			std::string phone;
-			std::string stat;
-            int arrayId;
-            if (channel_ctrls_arr_arr.empty() )
-            {
-                break;
-            }
-			if(m_memMsg.Read(strVector))
-			{
-				for(std::vector<std::string >::size_type i = 0; i<strVector.size();)
-				{
-					channelid = strVector[i+1];
-					phone = strVector[i+2];
-					stat = strVector[i+3];
-					// m_listSysRunInfo.SetItemStat(atoi(id.c_str()),phone,stat);
-                    arrayId = channel_array_map[channelid];
-                    
-                    //int arrArrId = CHANNEL_CTR_ID_TO_INDEX(IDC_EDIT_CHANNEL_STATUS);
-                    channel_ctrls_arr_arr[arrayId][CHANNEL_EDIT_ID_TO_INDEX].ctrl->SetWindowText(stat.c_str());
-                    
-					i +=4;
-				}
-			}
+            OnMsgAppWriteData();
 		}
 		break;
     case WM_COMMAND://响应button的按键信息
         {
             UINT msgerId = LOWORD(wParam ); 
             if (msgerId <= IDC_BTN_CHANNEL + g_psApp.size() && msgerId >= IDC_BTN_CHANNEL)
-            {//说明是button产生的消息
+            {
+				//说明是button产生的消息
                 //::MessageBox(NULL,"button click","",0);
                 OnButtonChannelClick(msgerId);
             }
+			else if (msgerId == IDC_BTN_START_DRIVER)
+			{
+				OnBnClickedBtnStartDriver();
+			}
         }
         break;
 	default:
@@ -298,185 +285,85 @@ BOOL CRuiTongIVRGUIDlg::OnCommand(WPARAM wParam, LPARAM lParam)
 	return CDialog::OnCommand(wParam, lParam);
 }
 
-void CRuiTongIVRGUIDlg::OnButtonSysRun() 
-{
-}
-
-void CRuiTongIVRGUIDlg::OnButtonSysPause() 
-{
-	//if(glo_storeData.GetServerStatus()->GetParentThreadStatus() == CServerStatus::Running)
-	//{
-	//	glo_storeData.GetServerStatus()->SetPause();
-	//	glo_myDisplay.PutLine(CSysInfoDisplay::Message,"系统暂停运行");
-	//	GetDlgItem(IDC_BUTTON_SYS_PAUSE)->SetWindowText("系统恢复");
-	//}
-	//else if(glo_storeData.GetServerStatus()->GetParentThreadStatus() == CServerStatus::Pause)
-	//{
-	//	glo_storeData.GetServerStatus()->SetResume();
-	//	glo_myDisplay.PutLine(CSysInfoDisplay::Message,"系统恢复运行");
-	//	GetDlgItem(IDC_BUTTON_SYS_PAUSE)->SetWindowText("系统暂停");
-	//}
-	//else
-	//	glo_myDisplay.PutLine(CSysInfoDisplay::Message,"状态不正确，不能暂停或恢复");
-}
-
-void CRuiTongIVRGUIDlg::OnButtonSysStop() 
-{
-
-	DWORD dwID = IDC_EDIT_LINE_NO;
-	CEdit* pEdit = (CEdit*)GetDlgItem(dwID);
-	CString szText;
-	pEdit->GetWindowText(szText);
-	char szNum[128] ="";
-	sprintf(szNum,"%s",szText.Trim());
-	
-	for (int j = 0;j<strlen(szNum);j++)
-	{
-		if (isdigit(szNum[j]) == 0)
-		{
-			GLog(log4cplus::ERROR_LOG_LEVEL,"输入的线路号[%s]错误，请重新输入",szText);
-			return;
-		}
-	}
-
-	if(szText.Trim().GetLength() ==0 )
-	{
-		GLog(log4cplus::ERROR_LOG_LEVEL,"输入的线路号[%s]错误，请重新输入",szText);
-		return;
-	}
-
-
-	bool isRight = false;
-	for(UINT i = 0;i <g_psApp.size();i++)
-	{
-		if(atoi(szText) == atoi(g_psApp[i].first.c_str()))
-		{
-			isRight = true;
-			break;
-		}
-	}
-
-	if (isRight)
-	{
-		GLog("发送停止监控信息到app：[%s] ",szText);
-		std::string queueName = MSG_QUEUE_TAG;
-		queueName += szText.GetString();
-		//CMessage msg;
-        CMessage::SendExitMsg(queueName);
-	}
-	else
-	{
-		GLog(log4cplus::ERROR_LOG_LEVEL,"输入的线路号[%s]错误，请重新输入",szText);
-	}
-}
 
 void CRuiTongIVRGUIDlg::OnButtonSysQuit() 
 {
-
-		if(IDYES == AfxMessageBox("是否要退出？",MB_YESNO))
-		{
-			::RemoveProp(m_hWnd,g_szTitle);
-			QuitSystem();
-			CDialog::OnOK();
-		}
-
+    if(IDYES == AfxMessageBox("是否要退出？",MB_YESNO))
+    {
+        ::RemoveProp(m_hWnd,g_szTitle);
+        QuitSystem();
+        CDialog::OnOK();
+    }
 }
 
 void CRuiTongIVRGUIDlg::OnTimer(UINT nIDEvent) 
 {
-    //三分钟超时
-    CTimeSpan ts(0,0,3,0);
-    CTimeSpan tsCheck(0,0,1,0);
-	CTime tmNow = CTime::GetCurrentTime();
-	CString szNow;
-	szNow.Format("%02d%02d %02d:%02d:%02d",
-		tmNow.GetMonth(),tmNow.GetDay(),
-		tmNow.GetHour(),tmNow.GetMinute(),tmNow.GetSecond());
-	DWORD dwID = IDC_EDIT_SYS_CUR_TIME;
-	CEdit* pEdit = (CEdit*)GetDlgItem(dwID);
-	pEdit->SetWindowText(szNow.GetString());
+    //关闭后10s后启动
+    CTimeSpan ts(0,0,0,10);
+    //1分钟发一次心跳请求
+    CTimeSpan tsCheck(0,0,0,30);
+    //超时时间次数
+    const int time_out_count = 4;
+    CTime tmNow = CTime::GetCurrentTime();
+    CString szNow;
+    szNow.Format("%02d%02d %02d:%02d:%02d",
+        tmNow.GetMonth(),tmNow.GetDay(),
+        tmNow.GetHour(),tmNow.GetMinute(),tmNow.GetSecond());
+    DWORD dwID = IDC_EDIT_SYS_CUR_TIME;
+    CEdit* pEdit = (CEdit*)GetDlgItem(dwID);
+    pEdit->SetWindowText(szNow.GetString());
 
     //读取心跳文件
     std::map<std::string,PROCESS_INFO>::iterator   piIterator=g_piMap.begin();   
     for(;piIterator!=g_piMap.end();++piIterator)   
     {
-         PROCESS_INFO pi = piIterator->second;
-        
-         DWORD dwId;
-         CActiveFile activeFile((piIterator->second)._check_file);
-         activeFile.GetPInfo(dwId,piIterator->second._last_active_time );
+        PROCESS_INFO& pi = piIterator->second;        
 
-        if (piIterator->second._is_active ==true &&
-            (tmNow - piIterator->second._last_check_time ) >tsCheck)
+        if (pi._is_active ==true &&
+            (tmNow - pi._last_check_time ) >tsCheck)
         {
-			LogWrapper::Debug("tmNow:%02d%02d%02d",tmNow.GetHour(),tmNow.GetMinute(),tmNow.GetSecond());
-			LogWrapper::Debug("_last_check_time:%02d%02d%02d",piIterator->second._last_check_time.GetHour(),piIterator->second._last_active_time.GetMinute(),piIterator->second._last_active_time.GetSecond());
-			piIterator->second._last_check_time = tmNow;
-            if (piIterator->second._is_active == true)
-            {//说明进程存活
-                if (piIterator->first != "driver")
-                {//是app
-                    GLog("发送激活信息到app：[%s] ",piIterator->first.c_str());
-                    std::string queueName = MSG_QUEUE_TAG  + piIterator->first;
-                    //CMessage msg;
-                    CMessage::SendActiveMsg(queueName);
-                }
-            }       
-        }
-
-        if (piIterator->second._is_active ==true &&
-            (tmNow - piIterator->second._last_active_time ) >ts)
-        {//说明超时,说明进程已经死了
-			GLog("进程或许已经死掉，超时未返回数据：[%s] ",piIterator->second._app_name.c_str());
-            if (piIterator->second._is_active == true)
-            {//说明进程存活
-               //  if (piIterator->first == "driver")
-                {//就必须杀死进程
-                    HANDLE hProcess=OpenProcess(PROCESS_ALL_ACCESS,TRUE, piIterator->second._process_id);   
-                    if(hProcess!=NULL)   
-                    {   
-                        TerminateProcess(hProcess,0);   
-                        CloseHandle(hProcess);
-                    }
-                    else
-                    {
-                        GLog("打开进程错误");
-                    }
-                }
-                /*
-                else
-                {//是app
-                    GLog("发送停止监控信息到app：[%s] ",piIterator->first.c_str());
-                    std::string queueName = MSG_QUEUE_TAG  + piIterator->first;
-                    //CMessage msg;
-                    CMessage::SendExitMsg(queueName);
-
-                    int arrayId = channel_array_map[piIterator->first];
-                    channel_ctrls_arr_arr[arrayId][CHANNEL_BUTTON_ID_TO_INDEX].ctrl->SetWindowText("启动");
-                }
-                */
-
-                piIterator->second._process_id = 0;
-                piIterator->second._is_active = false;
-                piIterator->second._start_type = StartType::MONITOR_STOP;
-				piIterator->second._last_stop_time =tmNow;
-
-            }            
-        }
-
-        if (piIterator->second._is_active == false 
-			&& piIterator->second._start_type == StartType::MONITOR_STOP
-			&& (tmNow-piIterator->second._last_stop_time) >tsCheck)
-        {//如果是死掉了，就必须启动，并且如果超过一段时间后启动
-			GLog("定时启动进程");
-            DWORD dwPid = CProcessManage::StartProgram(piIterator->second._app_name);
-            if (dwPid >0)
+            //说明进程存活
+            if (piIterator->first != "driver")
             {
-                piIterator->second._process_id = dwPid;
-                piIterator->second._is_active = true;
-                piIterator->second._start_type = StartType::MONITOR_START;
-				piIterator->second._last_active_time = tmNow;
-				piIterator->second._last_check_time = tmNow;
+                //是app
+                GLog("发送激活信息到app：[%s] ",piIterator->first.c_str());
+                std::string queueName = MSG_QUEUE_TAG  + piIterator->first;
+                //CMessage msg;
+                CMessage::SendActiveMsg(queueName);
+            }
+
+            DWORD dwId;
+            CActiveFile activeFile(pi._check_file);
+            activeFile.GetPInfo(dwId,pi._last_active_time );
+
+            pi._last_check_time = tmNow;
+
+            if ( pi._time_out_count ++ >time_out_count)
+            {
+                //说明超时,进程已经死了，或者进程已经退出
+                GLog("进程已经死掉或者已经退出，超时未更新数据：[%s] ",pi._app_name.c_str());
+                CProcessManage::ExitProgram(pi._process_id);
+
+                pi._process_id = 0;
+                pi._is_active = false;
+                pi._start_type = MONITOR_STOP;
+                pi._last_stop_time =tmNow;
+                pi._time_out_count = 0;
+            }
+        }
+
+
+        if (pi._start_type == MONITOR_STOP
+            && (tmNow-pi._last_stop_time) >ts)
+        {//如果是死掉了，就必须启动，并且如果超过一段时间后启动
+            GLog("定时启动进程");
+            pi._process_id  = CProcessManage::StartProgram(pi._app_name);
+            if ( pi._process_id  >0)
+            {
+                pi._is_active = true;
+                pi._start_type = MONITOR_START;
+                pi._last_active_time = tmNow;
+                pi._time_out_count = 0;
             }
             else
             {
@@ -485,7 +372,7 @@ void CRuiTongIVRGUIDlg::OnTimer(UINT nIDEvent)
         }
     }
 
-	CDialog::OnTimer(nIDEvent);
+    CDialog::OnTimer(nIDEvent);
 }
 
 
@@ -638,11 +525,13 @@ void CRuiTongIVRGUIDlg::OnButtonChannelClick(UINT butID)
         {//记录创建的进程
             process_info._process_id = dwPid;
             process_info._is_active = true;
-            process_info._start_type = StartType::MANUAL_START;
+            process_info._start_type = MANUAL_START;
+            process_info._last_active_time = CTime::GetCurrentTime();
 
             bCreakOk  = true;
             GLog("创建app进程成功,app：%s ,pid：%d",process_info._app_name.c_str(),dwPid);
         }
+
         if (bCreakOk)
         {
             int arrayId = channel_array_map[button_channel_map[butID]];
@@ -659,7 +548,8 @@ void CRuiTongIVRGUIDlg::OnButtonChannelClick(UINT butID)
         //置空
         process_info._process_id = 0;
         process_info._is_active = false;
-        process_info._start_type = StartType::MANUAL_STOP;
+        process_info._start_type = MANUAL_STOP;
+        process_info._last_stop_time = CTime::GetCurrentTime();
 
         int arrayId = channel_array_map[button_channel_map[butID]];
         channel_ctrls_arr_arr[arrayId][CHANNEL_BUTTON_ID_TO_INDEX].ctrl->SetWindowText("启动");
@@ -671,7 +561,7 @@ void CRuiTongIVRGUIDlg::OnBnClickedBtnStartDriver()
 {
     // TODO: 在此添加控件通知处理程序代码
     if (g_piMap["driver"]._is_active) {
-        if (MB_OK != MessageBox(_T("是否关闭驱动程序及应用程序?"), NULL, MB_OKCANCEL))
+        if (IDCANCEL == MessageBox(_T("是否关闭驱动程序及应用程序?"), NULL, MB_OKCANCEL))
             return ;
         CloseAll();
         GetDlgItem(IDC_BTN_START_DRIVER)->SetWindowText("启动设备驱动");
@@ -690,10 +580,11 @@ void CRuiTongIVRGUIDlg::CloseAll()
 {
     for (ProcessInfoMap::iterator it = g_piMap.begin(); it != g_piMap.end(); ++it)
     {
-        HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, it->second._process_id);
-        TerminateProcess(hProcess, 0);
+        CProcessManage::ExitProgram(it->second._process_id);
+        it->second._process_id = 0;
         it->second._is_active = false;
-        CloseHandle(hProcess);
+        it->second._start_type = MANUAL_STOP;
+        it->second._last_stop_time = CTime::GetCurrentTime();
     }
 }
 
@@ -703,9 +594,44 @@ bool CRuiTongIVRGUIDlg::StartDriver()
     if (it == g_piMap.end())
         return false;
     if (0 == 
-       (it->second._process_id ==
+        (it->second._process_id =
         CProcessManage::StartProgram(it->second._app_name)))
         return false;
 
+    it->second._is_active = true;
+    it->second._start_type = MANUAL_START;
+    it->second._last_active_time = CTime::GetCurrentTime();
+
     return true;
+}
+
+void CRuiTongIVRGUIDlg::OnMsgAppWriteData()
+{
+    //读取映射内存数据
+    std::vector<std::string > strVector;
+    std::string channelid;
+    std::string phone;
+    std::string stat;
+    int arrayId;
+    if (channel_ctrls_arr_arr.empty() )
+    {
+        return;
+    }
+    if(m_memMsg.Read(strVector))
+    {
+        for(std::vector<std::string >::size_type i = 0; i<strVector.size();)
+        {
+            channelid = strVector[i+1];
+            phone = strVector[i+2];
+            stat = strVector[i+3];
+            // m_listSysRunInfo.SetItemStat(atoi(id.c_str()),phone,stat);
+            arrayId = channel_array_map[channelid];
+
+            int array_index;
+            CHANNEL_CTR_ID_TO_INDEX(IDC_EDIT_CHANNEL_STATUS,array_index);
+            channel_ctrls_arr_arr[arrayId][array_index].ctrl->SetWindowText(stat.c_str());
+
+            i +=4;
+        }
+    }
 }

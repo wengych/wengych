@@ -47,11 +47,6 @@ extern CDialog *glo_pMainDlg;
 extern HANDLE  g_hMutex;
 extern CString g_szTitle;
 
-//配置文件全局变量
-//extern std::string g_gwPid;
-//extern PairSet g_psChannelPid ;
-//extern CPIDConfig g_pidConfig;*/*/
-
 extern std::string g_gateWay;
 extern PairSet g_psApp;
 extern ProcessInfoMap g_piMap;

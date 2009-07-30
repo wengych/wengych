@@ -31,17 +31,17 @@ using namespace helper;
 #define CHANNEL_EDIT_ID_TO_INDEX 1
 #define CHANNEL_BUTTON_ID_TO_INDEX 2
 
-//
-//#define  CHANNEL_CTR_ID_TO_INDEX(UINT control_id)\
-//    switch (control_id)\
-//    {\
-//    case IDC_EDIT_CHANNEL_STATUS:\
-//        return 1;\
-//        break;\
-//    case IDC_BTN_CHANNEL:\
-//        return 2;\
-//    	break;\
-//  }
+
+#define  CHANNEL_CTR_ID_TO_INDEX(control_id,arr_index)\
+    switch (control_id)\
+    {\
+    case IDC_EDIT_CHANNEL_STATUS:\
+        arr_index = 1;\
+        break;\
+    case IDC_BTN_CHANNEL:\
+        arr_index = 2;\
+    	break;\
+  }
 
 struct GroupControl {
     CWnd* ctrl;
@@ -106,15 +106,14 @@ public:
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
-	afx_msg void OnButtonSysRun();
-	afx_msg void OnButtonSysPause();
-	afx_msg void OnButtonSysStop();
 	afx_msg void OnButtonSysQuit();
 	afx_msg void OnTimer(UINT nIDEvent);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnBnClickedButtonRestartMonitor();
     afx_msg void OnBnClickedBtnStartDriver();
+    void OnMsgAppWriteData();
+
 };
 
 //{{AFX_INSERT_LOCATION}}

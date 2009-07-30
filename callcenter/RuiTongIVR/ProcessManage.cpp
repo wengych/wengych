@@ -66,10 +66,21 @@ DWORD CProcessManage::StartProgram(std::string strProgram)
 		) 
 	{ 
 		return pi.dwProcessId;
-		//do nothing
-		//::MessageBox("CreateProcess failed.");
-		//ErrorExit( "CreateProcess failed." ); 
 	} 
 
 	return dwPid;
+}
+
+bool CProcessManage::ExitProgram(DWORD pid)
+{
+    bool bRet = false;
+
+    HANDLE hProcess=OpenProcess(PROCESS_ALL_ACCESS,TRUE, pid);   
+    if(hProcess!=NULL)   
+    {   
+        TerminateProcess(hProcess,0);   
+        CloseHandle(hProcess);
+        bRet = true;
+    }
+    return bRet;
 }

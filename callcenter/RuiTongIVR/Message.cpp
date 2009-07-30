@@ -11,6 +11,8 @@ bool CMessage::SendMsg(std::string queueName,std::string msg)
 	try{
 		//Open a message queue.
 		message_queue mq(open_only ,queueName.c_str());
+        named_mutex mutex(open_only, GetMutexName(*queueName.rbegin()).c_str());
+        scoped_lock<named_mutex> sc_lck(mutex);
 
 		return mq.try_send(msg.c_str(),msg.length(),0);
 	}
@@ -49,6 +51,10 @@ bool CMessage::SendActiveMsg(std::string queueName)
     return CMessage::SendMsg(queueName,msg);
 }
 
+std::string CMessage::GetMutexName( const char channel_id )
+{
+    return std::string("response_queue_lock_") + channel_id;
+}
 //////////////////////////////////////////////////////////////////////////
 
 CShareMem::CShareMem():m_memSize(SHARE_MEM_SIZE)

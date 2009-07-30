@@ -376,7 +376,7 @@ bool xml::InsertNode(const string& xpath, const string& text)
 {
 	TiXmlElement addThis("");
 	//addThis.Parse(text.c_str(), NULL, TiXmlEncoding::TIXML_ENCODING_UTF8);
-	addThis.Parse(text.c_str(), NULL, TiXmlEncoding::TIXML_ENCODING_UNKNOWN);
+	addThis.Parse(text.c_str(), NULL, TIXML_ENCODING_UNKNOWN);
 	TiXmlNode * afterThis = TinyXPath::XNp_xpath_node(xmlRoot_, xpath.c_str());
 	if (afterThis)
 	{

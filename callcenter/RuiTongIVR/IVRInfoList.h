@@ -1,19 +1,19 @@
 #pragma once
-#include "VoiceCardHelper.h"
 
-// CIVRInfoList
+typedef struct _tagLINESTRUCT
+{
+    //int nType;
+    //int State;
+    //char CallerID[32];
+    ////Ë«Òô¶àÆµÐÅºÅ
+    //char Dtmf[32];
+    //int nTimeElapse;
+    std::string szType;
+    int iChannel;
+    std::string szPhone;
+    std::string szChannelStat;
+}LINESTRUCT,*PLINESTRUCT;
 
-
-//
-//struct LINESTRUCT
-//{
-//	int nType;
-//	int State;
-//	char CallerID[32];
-//	//Ë«Òô¶àÆµÐÅºÅ
-//	char Dtmf[32];
-//	int nTimeElapse;
-//};
 
 class CIVRInfoList : public CListCtrl
 {

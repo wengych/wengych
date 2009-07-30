@@ -268,10 +268,6 @@
 				RelativePath=".\TinyXmlHelper.cpp"
 				>
 			</File>
-			<File
-				RelativePath=".\VoiceCardHelper.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -325,10 +321,6 @@
 				RelativePath=".\TinyXmlHelper.hpp"
 				>
 			</File>
-			<File
-				RelativePath=".\VoiceCardHelper.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -347,6 +339,10 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\app.config.XML"
+			>
+		</File>
 		<File
 			RelativePath=".\log4cplus.properties"
 			>

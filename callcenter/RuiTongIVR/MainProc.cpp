@@ -46,19 +46,12 @@ BOOL InitSysEnv()
 	GetCurrentDirectory(512,pathBuf);
     std::string strPathBuf = pathBuf;
 	std::string strAppConfigFile = strPathBuf + "\\"+ app_config_name;
-	//std::string strProIdFile = strPathBuf + "\\"+ monitor_pro_id_tmp;
 
 	CSysConfig sysConfig(strAppConfigFile);
 	std::string startType = sysConfig.GetStartType();
     g_gateWay = sysConfig.GetGateWay();
 	g_psApp = sysConfig.GetChannels();
 
-	//读取pid配置
-	//g_pidConfig.SetConfigFile(strProIdFile);
-	//g_gwPid = g_pidConfig.GetGateWayPID();
-	//g_psChannelPid = g_pidConfig.GetChannelsPID();*/
-
-	CProcessManage pm;
 	bool is_process_running;
     std::string strPid;
 
@@ -104,7 +97,7 @@ BOOL InitSysEnv()
             {
                 //设置了自动启动
                 // dwPid = pm.StartProgram( process_info._app_file);
-                process_info._process_id = pm.StartProgram( process_info._app_file );
+                process_info._process_id = CProcessManage::StartProgram( process_info._app_file );
 
                 if (process_info._process_id == 0)
                 {
@@ -179,7 +172,7 @@ BOOL InitSysEnv()
 
                 if (bAutoStart)
                 {
-				    process_info._process_id = pm.StartProgram( process_info._app_name);
+				    process_info._process_id = CProcessManage::StartProgram( process_info._app_name);
 
 				    if (process_info._process_id == 0)
 				    {
@@ -218,40 +211,6 @@ BOOL InitSysEnv()
 	}
 	return ret;
 }
-//
-////启动程序
-//int StartProgram(std::string& pid,std::string strProgram)
-//{
-//    bool ret = false;
-//   DWORD dwPid = CProcessManage::IsProgramRunning(pid);
-//    if (dwPid == 0)
-//    {//程序未启动
-//
-//        dwPid = CProcessManage::StartProgram(prog);
-//        if (dwPid == 0)
-//        {
-//            //ret = true;
-//            LogWrapper::Error("创建app进程失败,app：%s",prog.c_str());
-//            //std::cerr<<"创建进程失败"<<std::endl;
-//        }
-//        else
-//        {//记录创建的进程
-//            ret = true;
-//            g_pidConfig.SetChannelPID(g_psApp[i].first,dwPid);
-//            //for(std::vector<Pair>::size_type j=0;j<g_psApp.size();j++)
-//            //{
-//            //    if (g_psChannelPid[j].first ==g_psApp[i].first )
-//            //    {//更新pid
-//            //        char szPid[64] = "";
-//            //        sprintf(szPid,"%d",dwPid);
-//            //        g_psChannelPid[j].second = szPid;
-//            //        break;
-//            //    }
-//            //}
-//            LogWrapper::Debug("创建app进程成功,app：%s ,pid：%d",prog.c_str(),dwPid);
-//        }
-//    }
-//}
 
 
 int GlobalOpenUniqueProcess()
