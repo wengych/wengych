@@ -2,6 +2,7 @@
 #define __CHANNEL_WORK__
 #include <boost/function.hpp>
 #include <boost/interprocess/ipc/message_queue.hpp>
+#include <boost/interprocess/sync/named_mutex.hpp>
 #include <list>
 #include <string>
 
@@ -9,6 +10,7 @@ enum CHANNEL_STATE;
 struct Request;
 struct Response;
 using boost::interprocess::message_queue;
+using boost::interprocess::named_mutex;
 
 const int MAX_NUM_MSG = 4096;
 const int MAX_MSG_SIZE = 1024;
@@ -31,6 +33,7 @@ public:
 
 	void CreateRequestQueue();
 	void CreateResponseQueue();
+    void CreateResponseMutex();
 	bool GetRequest();
 	bool PostResponse();
 
@@ -41,6 +44,7 @@ public:
 
 private:
 	typedef boost::shared_ptr<message_queue> MessageQueuePtr;
+	typedef boost::shared_ptr<named_mutex> NamedMutexPtr;
 
 	boost::shared_ptr<Response> resp;
 	boost::shared_ptr<Request> req;
@@ -52,5 +56,6 @@ private:
 	char QUEUE_BUFFER[MAX_MSG_SIZE];
 	MessageQueuePtr request_queue;
 	MessageQueuePtr response_queue;
+    NamedMutexPtr response_mutex;
 };
 #endif

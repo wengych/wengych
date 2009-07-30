@@ -4,6 +4,7 @@
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
+#include <boost/interprocess/sync/scoped_lock.hpp>
 
 #include "Channel.h"
 #include "common.h"
@@ -16,7 +17,8 @@ using namespace boost;
 using namespace boost::interprocess;
 
 const char* request_queue_name = "request_queue_";
-const char* responst_queue_name = "response_queue_";
+const char* response_queue_name = "response_queue_";
+const char* response_mutex_name = "response_queue_lock_";
 char* WelcomFileName = "C:\\DJDBDK\\voc\\bank.001";
 
 #define bool_cast lexical_cast<bool> 
@@ -197,7 +199,7 @@ void Channel::CreateRequestQueue( )
 void Channel::CreateResponseQueue( )
 {
 	std::stringstream ss;
-	ss << responst_queue_name << channel_id;
+	ss << response_queue_name << channel_id;
 	message_queue::remove(ss.str().c_str());
 	response_queue.reset(new message_queue(open_or_create,
 			ss.str().c_str(),
@@ -209,11 +211,23 @@ void Channel::CreateResponseQueue( )
 	logger << ss.str() << '\n';
 }
 
+void Channel::CreateResponseMutex()
+{
+    std::stringstream ss;
+    ss << response_mutex_name << channel_id;
+    named_mutex::remove(ss.str().c_str());
+    response_mutex.reset(new named_mutex(open_or_create,
+        ss.str().c_str()));
+
+    logger << ss.str() << '\n';
+}
+
 Channel::Channel( int _channel_id )
 : channel_id(_channel_id)
 {
 	CreateRequestQueue();
 	CreateResponseQueue();
+    CreateResponseMutex();
 
 	current_state = "";
 	current_work = GetWork();
@@ -223,7 +237,8 @@ Channel::Channel( const Channel& rhs )
 : channel_id(rhs.channel_id),
 current_state(rhs.current_state),
 request_queue(rhs.request_queue),
-response_queue(rhs.response_queue)
+response_queue(rhs.response_queue),
+response_mutex(rhs.response_mutex)
 {
 	current_work = GetWork();
 }
@@ -320,6 +335,8 @@ bool Channel::GetRequest()
 
 bool Channel::PostResponse()
 {
+	using namespace boost::interprocess;
+
+	scoped_lock<named_mutex> sc_lock(*response_mutex);
 	return response_queue->try_send(resp->str().c_str(), resp->str().length(), 0);
 }
-
