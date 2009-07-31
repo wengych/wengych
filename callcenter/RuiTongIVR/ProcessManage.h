@@ -17,7 +17,7 @@ public :
 	//return:	0:错误 >0对应进程（由于pid为0是系统进程，因此创建的时候肯定不会返回0）
 	static DWORD  StartProgram(std::string strFile);
     //杀死指定id号的进程 ,返回false表示指定id的进程不存在
-    static bool ExitProgram(DWORD pid);
+    static bool ExitProgram(DWORD& pid, std::string valid_process_name);
 	
 };
 

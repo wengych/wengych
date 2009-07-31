@@ -178,31 +178,28 @@ CMemMsg::CMemMsg()
 bool CMemMsg::Read(std::vector<std::string>& strVector)
 {
 	std::string readData;
-	bool ret = m_sMem.ReadAndClear(readData);
-	if (ret)
-	{
-		GLog("接收到数据:\n%s",readData.c_str());
-		//读取的数据类型:
-		//共享内存区的数据格式为:
-		//app:n:通道状态:电话号码
-		//		n为通道号
-		ret = false;
-		typedef boost::char_delimiters_separator<char> separator;  
-		typedef boost::tokenizer<separator>            tokenizer;  
-		separator sep(true, "", ":\n");  
-		tokenizer tok(readData, sep);  
-		for (tokenizer::iterator i = tok.begin();                          
-			i != tok.end();                           
-			++i) 
-		{    
-			strVector.push_back(*i) ;
-		}
-		if (strVector.size() >0)
-		{
-			ret = true;
-		}
+	if (!m_sMem.ReadAndClear(readData))
+        return false;
+
+	GLog("接收到数据:\n%s",readData.c_str());
+	// 读取的数据类型:
+	// 共享内存区的数据格式为:
+	// app:n:通道状态:电话号码
+	//		n为通道号
+	typedef boost::char_delimiters_separator<char> separator;
+	typedef boost::tokenizer<separator>            tokenizer;
+	separator sep(true, "", ":\n");
+	tokenizer tok(readData, sep);
+	for (tokenizer::iterator i = tok.begin();
+		i != tok.end();
+		++i)
+	{    
+		strVector.push_back(*i);
 	}
-	return ret;
+	if (strVector.size() >0)
+		return true;
+
+    return false;
 }
 
 
@@ -215,29 +212,32 @@ void CMemMsg::Write(std::string str)
 
 CActiveFile::CActiveFile(std::string fileName)
 {
-    m_fileName = fileName;    
+    m_fileName = fileName;
+	// m_mutexName = fileName.substr(fileName.find_last_of("\\") + 1) + "_lock";
 }
 
-bool CActiveFile::GetPInfo(DWORD& pid,CTime& tm)
+bool CActiveFile::GetPInfo(DWORD& pid, CTime& tm, std::string mutex_name)
 {
-    bool ret = false;
+    named_mutex mutex(open_or_create, mutex_name.c_str());
     CFile myfile;
+
+    scoped_lock<named_mutex> sc_lock(mutex);
     if (myfile.Open(m_fileName.c_str(),CFile::modeRead ))
     {//打开成功
         char fileBuf[1024*4] = {0x00};
         myfile.Read(fileBuf,1024*4);
         std::string fileData = fileBuf;
-        //时间
-        std::string segData = fileData.substr(fileData.find_last_of(":")+1);
+        // 时间
+        std::string segData = fileData.substr(fileData. find_last_of(":")+1);
         time_t tt = atol(segData.c_str());
         tm = CTime(tt);
         
-        //进程id
-        segData = fileData.substr(0,fileData.find_last_of(":"));
+        // 进程id
+        segData = fileData.substr(0, fileData.find_last_of(":"));
         pid = atol(segData.c_str());
-        ret=true;
+        return true;
     }
-    return ret;
+    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////

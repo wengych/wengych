@@ -82,7 +82,7 @@ private:
     //bool b_open;
 public:
     CActiveFile(std::string fileName);
-    bool GetPInfo(DWORD& pid,CTime& tm);
+    bool GetPInfo(DWORD& pid,CTime& tm, std::string mutex_name);
     //CTime GetTime();
 };
 

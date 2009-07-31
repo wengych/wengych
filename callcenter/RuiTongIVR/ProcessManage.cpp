@@ -71,16 +71,19 @@ DWORD CProcessManage::StartProgram(std::string strProgram)
 	return dwPid;
 }
 
-bool CProcessManage::ExitProgram(DWORD pid)
+bool CProcessManage::ExitProgram(DWORD& pid, std::string valid_process_name)
 {
-    bool bRet = false;
+    if (!pid)
+        return false;
+    if (!IsProgramRunning(pid, valid_process_name))
+        return false;
 
-    HANDLE hProcess=OpenProcess(PROCESS_ALL_ACCESS,TRUE, pid);   
-    if(hProcess!=NULL)   
-    {   
-        TerminateProcess(hProcess,0);   
-        CloseHandle(hProcess);
-        bRet = true;
-    }
-    return bRet;
+    HANDLE hProcess=OpenProcess(PROCESS_TERMINATE,TRUE, pid);   
+    if(!hProcess)
+        return false;
+
+    TerminateProcess(hProcess,0);   
+    CloseHandle(hProcess);
+    pid = 0;
+    return true;
 }
