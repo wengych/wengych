@@ -45,7 +45,7 @@ xml::~xml()
 	delete xmlDoc_;
 }
 
-bool xml::LoadFile(const string& filename)
+bool xml::LoadFile(const std::string& filename)
 {
 	xmlDoc_->Clear();
 
@@ -73,12 +73,12 @@ bool xml::SaveFile(const char* filename)
 	return xmlDoc_->SaveFile(filename);
 }
 
-bool xml::SaveFile(const string& filename)
+bool xml::SaveFile(const std::string& filename)
 {
 	return xmlDoc_->SaveFile(filename);
 }
 
-bool xml::LoadBuffer(const string& str)
+bool xml::LoadBuffer(const std::string& str)
 {
 	xmlDoc_->Clear();
 	xmlDoc_->Parse(str.c_str());
@@ -90,7 +90,7 @@ bool xml::LoadBuffer(const string& str)
 
 
 
-Pair xml::GetPair(const string& xpath)
+Pair xml::GetPair(const std::string& xpath)
 {
 	//using namespace std;
 	//static tr1::regex  regexAttr("(.+/@\\w+$)");
@@ -123,7 +123,7 @@ Pair xml::GetPair(const string& xpath)
 		return Pair();
 }
 
-string xml::GetValue(const string& xpath)
+std::string xml::GetValue(const std::string& xpath)
 {
 	if(xpath.rfind("/@") != npos)
 	{
@@ -139,12 +139,12 @@ string xml::GetValue(const string& xpath)
 		return "";
 }
 
-string xml::GetValue(const char* xpath)
+std::string xml::GetValue(const char* xpath)
 {
-	return GetValue(string(xpath));
+	return GetValue(std::string(xpath));
 }
 
-Pair xml::GetSingleNode(const string& xpath)
+Pair xml::GetSingleNode(const std::string& xpath)
 {
 	Pair p;
 	TiXmlNode* node = TinyXPath::XNp_xpath_node(xmlRoot_, xpath.c_str());
@@ -159,7 +159,7 @@ Pair xml::GetSingleNode(const string& xpath)
 	return p;
 }
 
-string xml::GetNodeValue(const string& xpath)
+std::string xml::GetNodeValue(const std::string& xpath)
 {
 	TiXmlNode* node = TinyXPath::XNp_xpath_node(xmlRoot_, xpath.c_str());
 	if(node == NULL)
@@ -171,7 +171,7 @@ string xml::GetNodeValue(const string& xpath)
 	return t->Value();
 }
 
-string xml::GetNodeValue(const char* xpath)
+std::string xml::GetNodeValue(const char* xpath)
 {
 	TiXmlNode* node = TinyXPath::XNp_xpath_node(xmlRoot_, xpath);
 	if(node == NULL)
@@ -183,7 +183,7 @@ string xml::GetNodeValue(const char* xpath)
 	return t->Value();
 }
 
-bool xml::SetNode(const string& xpath, const string& value)
+bool xml::SetNode(const std::string& xpath, const std::string& value)
 {
 	TiXmlNode* node = TinyXPath::XNp_xpath_node(xmlRoot_, xpath.c_str());
 	if(node == NULL)
@@ -210,7 +210,7 @@ bool xml::SetNode(const char* xpath, const char* value)
 	return true;
 }
 
-Pair xml::GetSingleAttr(const string& xpath)
+Pair xml::GetSingleAttr(const std::string& xpath)
 {
 	Pair p;
 	TiXmlAttribute* attr = TinyXPath::XAp_xpath_attribute(xmlRoot_, xpath.c_str());
@@ -221,7 +221,7 @@ Pair xml::GetSingleAttr(const string& xpath)
 	return p;
 }
 
-string xml::GetAttrValue(const string& xpath)
+std::string xml::GetAttrValue(const std::string& xpath)
 {
 	TiXmlAttribute* attr = TinyXPath::XAp_xpath_attribute(xmlRoot_, xpath.c_str());
 	if(attr == NULL)
@@ -229,7 +229,7 @@ string xml::GetAttrValue(const string& xpath)
 	return attr->Value();
 }
 
-string xml::GetAttrValue(const char* xpath)
+std::string xml::GetAttrValue(const char* xpath)
 {
 	TiXmlAttribute* attr = TinyXPath::XAp_xpath_attribute(xmlRoot_, xpath);
 	if(attr == NULL)
@@ -237,7 +237,7 @@ string xml::GetAttrValue(const char* xpath)
 	return attr->Value();
 }
 
-bool xml::SetAttr(const string& xpath, const string& value)
+bool xml::SetAttr(const std::string& xpath, const std::string& value)
 {
 	TiXmlAttribute* attr = TinyXPath::XAp_xpath_attribute(xmlRoot_,  xpath.c_str());
 	if(attr == NULL)
@@ -255,7 +255,7 @@ bool xml::SetAttr(const char* xpath, const char* value)
 	return true;
 }
 
-PairSet xml::GetTagAndTextOfChilds(const string& xpath)
+PairSet xml::GetTagAndTextOfChilds(const std::string& xpath)
 {	
 	PairSet v;
 	TiXmlNode* node = TinyXPath::XNp_xpath_node(xmlRoot_, xpath.c_str());
@@ -284,7 +284,7 @@ PairSet xml::GetTagAndTextOfChilds(const string& xpath)
 	return v;
 }
 
-PairSet xml::GetKeyAndTextOfChilds(const string& xpath, const string& attrName)
+PairSet xml::GetKeyAndTextOfChilds(const std::string& xpath, const std::string& attrName)
 {
 	PairSet v;
 	TiXmlNode* node = TinyXPath::XNp_xpath_node(xmlRoot_, xpath.c_str());
@@ -303,7 +303,7 @@ PairSet xml::GetKeyAndTextOfChilds(const string& xpath, const string& attrName)
 			continue;
 
 		TiXmlAttribute* attr = NULL;
-		string attrXPath = string("@") + attrName;
+		std::string attrXPath = std::string("@") + attrName;
 		attr = TinyXPath::XAp_xpath_attribute(subNode, attrXPath.c_str());
 		if(attr == NULL)
 			continue;
@@ -320,7 +320,7 @@ PairSet xml::GetKeyAndTextOfChilds(const string& xpath, const string& attrName)
 	return v;
 }
 
-PairSetSet xml::GetAttrsOfChilds(const string& xpath)
+PairSetSet xml::GetAttrsOfChilds(const std::string& xpath)
 {
 	PairSetSet m;
 	TiXmlNode* node = TinyXPath::XNp_xpath_node(xmlRoot_, xpath.c_str());
@@ -372,7 +372,7 @@ PairSetSet xml::GetAttrsOfChilds(const string& xpath)
 }
 
 
-bool xml::InsertNode(const string& xpath, const string& text)
+bool xml::InsertNode(const std::string& xpath, const std::string& text)
 {
 	TiXmlElement addThis("");
 	//addThis.Parse(text.c_str(), NULL, TiXmlEncoding::TIXML_ENCODING_UTF8);
@@ -393,7 +393,7 @@ bool xml::InsertNode(const string& xpath, const string& text)
 	return false;	
 }
 
-bool xml::RemoveNode(const string& xpath)
+bool xml::RemoveNode(const std::string& xpath)
 {
 	TiXmlNode * removeThis = TinyXPath::XNp_xpath_node(xmlRoot_, xpath.c_str());
 	if (removeThis)
@@ -403,7 +403,7 @@ bool xml::RemoveNode(const string& xpath)
 	return false;
 }
 
-bool xml::RemoveNodes(const string& xpath)
+bool xml::RemoveNodes(const std::string& xpath)
 {
 	TiXmlNode * removeThis = TinyXPath::XNp_xpath_node(xmlRoot_, xpath.c_str());
 	while(removeThis)
@@ -416,7 +416,7 @@ bool xml::RemoveNodes(const string& xpath)
 	return true;
 }
 
-bool xml::ClearNode(const string& xpath)
+bool xml::ClearNode(const std::string& xpath)
 {
 	TiXmlNode * node = TinyXPath::XNp_xpath_node(xmlRoot_, xpath.c_str());
 	if(node)
@@ -427,7 +427,7 @@ bool xml::ClearNode(const string& xpath)
 	return false;	
 }
 
-bool xml::IsEmpty(const string& xpath)
+bool xml::IsEmpty(const std::string& xpath)
 {
 	TiXmlNode * node = TinyXPath::XNp_xpath_node(xmlRoot_, xpath.c_str());
 	if (!node->FirstChild())

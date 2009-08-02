@@ -49,6 +49,29 @@ public:
     void SetChannelPID(std::string channel,std::string pid);
 };
 
+//////////////////////////////////////////////////////////////////////////
+
+class CChannelViewConfig
+{
+private:
+    xml xDoc;
+    bool isLoaded;
+public:
+    CChannelViewConfig(std::string strFile);
+    CChannelViewConfig(){isLoaded = false;};
+public:
+    void SetConfigFile(std::string strFile);
+
+    std::pair<int ,int> GetChannelIDView();
+    std::pair<int ,int> GetChannelStateView();
+    std::pair<int ,int> GetChannelCtrlBtnView();
+
+protected:
+    std::pair<int,int> GetChannelCtrlView(std::string xpath);
+
+};
+
+
 
 
 

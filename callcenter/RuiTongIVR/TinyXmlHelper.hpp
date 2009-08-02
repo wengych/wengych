@@ -29,11 +29,11 @@ class TiXmlElement;
 
 	namespace helper
 	{
-		using std::pair;
-		using std::string;
-		using std::vector;
+		// using std::pair;
+		// using std::string;
+		// using std::vector;
 
-		typedef std::pair<string, string> Pair;
+		typedef std::pair<std::string, std::string> Pair;
 		typedef std::vector<Pair> PairSet;
 		typedef std::vector<PairSet> PairSetSet;
 		
@@ -46,7 +46,7 @@ class TiXmlElement;
 
 			/**	装入xml文件
 			*/
-			bool LoadFile(const string& filename);
+			bool LoadFile(const std::string& filename);
 
 			/**	保存文件
 			*/
@@ -55,47 +55,47 @@ class TiXmlElement;
 			/**	另存文件
 			*/
 			bool SaveFile(const char* filename);
-			bool SaveFile(const string& filename);
+			bool SaveFile(const std::string& filename);
 
 			/** 从缓冲中装入
 			*/
-			bool LoadBuffer(const string& str);
+			bool LoadBuffer(const std::string& str);
 
 			/**选择一个键值对
 			*/
-			Pair GetPair(const string& xpath);
+			Pair GetPair(const std::string& xpath);
 			
 			/**得到一个值
 			 */
-			string GetValue(const string& xpath);
-			string GetValue(const char* xpath);
+			std::string GetValue(const std::string& xpath);
+			std::string GetValue(const char* xpath);
 
 			/**	选择单个结点
 			\param xpath 格式: /root/node
 			*/
-			Pair GetSingleNode(const string& xpath);
-			string GetNodeValue(const string& xpath);
-			string GetNodeValue(const char* xpath);
+			Pair GetSingleNode(const std::string& xpath);
+			std::string GetNodeValue(const std::string& xpath);
+			std::string GetNodeValue(const char* xpath);
 
 			/**设置节点文本、
 			\param xpath 格式: /root/node、
 			\param value 
 			 */
-			bool SetNode(const string& xpath, const string& value);
+			bool SetNode(const std::string& xpath, const std::string& value);
 			bool SetNode(const char* xpath, const char* value);
 
 			/**	选择单个属性
 			\param xpath 格式：/root/node/@attr
 			*/
-			Pair GetSingleAttr(const string& xpath);
-			string GetAttrValue(const string& xpath);
-			string GetAttrValue(const char* xpath);
+			Pair GetSingleAttr(const std::string& xpath);
+			std::string GetAttrValue(const std::string& xpath);
+			std::string GetAttrValue(const char* xpath);
 
 			/**设置属性值
 			\param xpath 格式: /root/node/@attr
 			\param value 
 			*/
-			bool SetAttr(const string& xpath, const string& value);
+			bool SetAttr(const std::string& xpath, const std::string& value);
 			bool SetAttr(const char* xpath, const char* value);
 
 			/** 选择一个结点下的多个子结点的tag与text：\n
@@ -109,11 +109,11 @@ class TiXmlElement;
 			\param xpath 格式: /root/node
 
 			*/
-			PairSet GetTagAndTextOfChilds(const string& xpath);
+			PairSet GetTagAndTextOfChilds(const std::string& xpath);
 
 			/** 读取结点下多个子结点指定的一个属性与文本
 			*/
-			PairSet GetKeyAndTextOfChilds(const string& xpath, const string& attrName="key");
+			PairSet GetKeyAndTextOfChilds(const std::string& xpath, const std::string& attrName="key");
 
 			/** 选择一个结点下子结点的本身及属性集合，[i][0].second是结点i的文本内容
 			\code
@@ -125,32 +125,32 @@ class TiXmlElement;
 			\endcode
 			\param xpath 格式： /root/node
 			*/
-			PairSetSet GetAttrsOfChilds(const string& xpath);
+			PairSetSet GetAttrsOfChilds(const std::string& xpath);
 			
 
 			/// 将有根节点的文本做为一个节点加入 xpath 指定的结点之下
-			bool InsertNode(const string& xpath, const string& text);
+			bool InsertNode(const std::string& xpath, const std::string& text);
 
 			/** 移出 xpath 指定的一个节点 
 			*/
-			bool RemoveNode(const string& xpath);
+			bool RemoveNode(const std::string& xpath);
 
 			/** 移出 xpath 指定的全部节点 
 			*/
-			bool RemoveNodes(const string& xpath);
+			bool RemoveNodes(const std::string& xpath);
 
 			/** 清理一个节点下的所有节点
 			*/
-			bool ClearNode(const string& xpath);
+			bool ClearNode(const std::string& xpath);
 
 			/** 节点下是否有子节点	
 			*/
-			bool IsEmpty(const string& xpath);
+			bool IsEmpty(const std::string& xpath);
 
 		private:
 			TiXmlDocument * xmlDoc_;
 			TiXmlElement* xmlRoot_;
-			string filename_;
+			std::string filename_;
 
 			static const std::string::size_type npos = -1;
 

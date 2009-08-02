@@ -60,7 +60,7 @@ CPIDConfig::CPIDConfig(std::string strFile)
 		isLoaded = xDoc.LoadFile(strFile);
 	}
 }
-void CPIDConfig::SetConfigFile(string strFile)
+void CPIDConfig::SetConfigFile(std::string strFile)
 {
     if (strFile.length() >0)
     {
@@ -129,7 +129,7 @@ void CPIDConfig::SetGateWayPID(std::string pid)
     }
 }
 
-void CPIDConfig::SetChannelPID(string channel,DWORD pid)
+void CPIDConfig::SetChannelPID(std::string channel,DWORD pid)
 {
 	char xPath[512] = "";
 	sprintf(xPath ,"/configuration/device/channels/channel[@id='%s']",channel.c_str());
@@ -144,7 +144,7 @@ void CPIDConfig::SetChannelPID(string channel,DWORD pid)
 	}
 }
 
-void CPIDConfig::SetChannelPID(string channel,string pid)
+void CPIDConfig::SetChannelPID(std::string channel,std::string pid)
 {
     char xPath[512] = "";
     sprintf(xPath ,"/configuration/device/channels/channel[@id='%s']",channel.c_str());
@@ -157,4 +157,54 @@ void CPIDConfig::SetChannelPID(string channel,string pid)
         xDoc.SetNode(xPath,pid.c_str());
         xDoc.SaveFile();
     }
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+CChannelViewConfig::CChannelViewConfig(std::string strFile)
+{
+    isLoaded = false;
+    if (strFile.length() >0)
+    {
+        isLoaded = xDoc.LoadFile(strFile);
+    }
+}
+void CChannelViewConfig::SetConfigFile(std::string strFile)
+{
+    if (strFile.length() >0)
+    {
+        isLoaded = xDoc.LoadFile(strFile);
+    }
+}
+std::pair<int ,int> CChannelViewConfig::GetChannelCtrlView(std::string xpath)
+{
+    std::string width = xpath + "/@width";
+    std::string heigtht = xpath +"/@height";
+
+    std::pair<int ,int> p;
+    if (isLoaded)
+    {
+//         Pair p1 = xDoc.GetAttrValue(width);
+//         Pair p2 = xDoc.GetAttrValue(heigtht);
+        p.first = atoi(xDoc.GetAttrValue(width).c_str());
+        p.second = atoi(xDoc.GetAttrValue(heigtht).c_str());
+    }
+    return p;
+}
+std::pair<int ,int> CChannelViewConfig::GetChannelIDView()
+{
+    std::string xpath = "/configuration/device/channel_view/channel_id";
+    return  GetChannelCtrlView(xpath);
+}
+
+std::pair<int ,int> CChannelViewConfig::GetChannelStateView()
+{
+    std::string xpath = "/configuration/device/channel_view/channel_state";
+    return  GetChannelCtrlView(xpath);
+}
+
+std::pair<int ,int> CChannelViewConfig::GetChannelCtrlBtnView()
+{
+    std::string xpath = "/configuration/device/channel_view/channel_ctl_btn";
+    return  GetChannelCtrlView(xpath);
 }
