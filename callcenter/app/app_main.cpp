@@ -76,15 +76,33 @@ void MyMethod( App &app, char** argv )
 
                     std::stringstream file_names;
                     StringArray::iterator it = menu.begin();
-                    file_names << "cn\\" << *it;
+                    // file_names << "cn\\" << *it;
+                    typedef boost::tokenizer< boost::char_separator<char> > tokenizer;
+                    boost::char_separator<char> sep(",");
+                    tokenizer token = tokenizer(*it, sep);
+                    tokenizer::iterator it_token = token.begin();
+                    file_names << "cn\\" << *it_token;
+                    while (++it_token != token.end())
+                    {
+                        file_names << ',' << "cn\\" << *it_token;
+                    }
                     ++it;
                     while (it != menu.end()) {
                         // .pcm files will put in directory [cn] currently.
                         // Replace with specific parameter that receive from service call later.
-                        file_names << ',' << "cn\\" << *it;
+//                         typedef boost::tokenizer< boost::char_separator<char> > tokenizer;
+//                         boost::char_separator<char> sep(",");
+//                         tokenizer token(*it, sep);
+                        token = tokenizer(*it, sep);
+                        for (it_token = token.begin();
+                            it_token != token.end(); ++it_token)
+                        {
+                            file_names << ',' << "cn\\" << *it_token;
+                        }
                         ++it;
                     }
 
+                    logger << "file names: " << file_names.str() << std::endl;
                     std::string menu_msg = sess.GetMenuMsg();
 
                     app.PlayFile(file_names.str(), menu_msg, (bool)flag);
