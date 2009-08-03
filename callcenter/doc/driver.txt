@@ -1,1 +1,32 @@
-dj_driver.exe进程负责循环查询线路状态，根据系统运行状态（由app进程决定某一条线路的运行状态）给语音卡设备下达指令。
+dj_driver.exe进程负责循环查询线路状态,根据系统运行状态(由app进程决定某一条线路的运行状态)给语音卡设备下达指令.
+该进程对于每条线路的操作都集中在Channel类的对象中,系统启动后根据线路数量创建Channel对象的数组,循环执行每条线路当前状态下需要执行的动作(详见: dj_driver/main.cpp:64).
+
+Channel类:
+    DoWork:
+        DoWork方法根据从app进程接受到的请求,动态决定函数对象current_work将调用的具体函数(详见: dj_driver/Channel.cpp:246).
+
+    Init:
+        暂时无用.
+
+    WaitRing:
+        等待用户呼入方法,当产生响铃事件后,反馈新的Response给app.
+
+    GetCallerId:
+        查询当前呼入的用户的电话号码.
+
+    OffHook:
+        摘机.
+
+    PlayFile:
+        循环播放请求中带来的语音文件列表.
+
+    StopPlay:
+        停止当前语音播放.
+
+    HangUp:
+        挂机.
+
+    WaitDtmf:
+        等待用户按键,每次按键消息产生都会发送新的Response给app.
+        
+
