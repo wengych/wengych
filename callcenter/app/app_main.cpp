@@ -76,10 +76,12 @@ void MyMethod( App &app, char** argv )
 
                     std::stringstream file_names;
                     StringArray::iterator it = menu.begin();
-                    file_names << *it;
+                    file_names << "cn\\" << *it;
                     ++it;
                     while (it != menu.end()) {
-                        file_names << ',' << *it;
+                        // .pcm files will put in directory [cn] currently.
+                        // Replace with specific parameter that receive from service call later.
+                        file_names << ',' << "cn\\" << *it;
                         ++it;
                     }
 

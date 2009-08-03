@@ -118,7 +118,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;BOOST_DATE_TIME_NO_LIB"
+				AdditionalIncludeDirectories="../Inc"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;BOOST_DATE_TIME_NO_LIB;__OS_WIN__"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
@@ -136,6 +137,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="$(TargetDir)/yscom_win.lib"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="1"
