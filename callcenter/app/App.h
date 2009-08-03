@@ -33,7 +33,8 @@ public:
 	void OffHook();
 	void PlayFile(const std::string& file_name, const std::string& menu_msg, bool block);
 	void StopPlay();
-    std::string WaitUserInput(std::set<int> input_type, int time_out);
+    void SetTimeOut(int to = 0, int to2 = 0);
+    std::string WaitUserInput(std::set<int> input_type, int encode);
     std::string WaitNone();
     std::string WaitMenu();
     std::string WaitString();
@@ -51,7 +52,10 @@ public:
 	void HangUp();
     bool IsRingIn();
 
-	bool CheckCmd(const std::string& cmd);
+    bool CheckCmd(const std::string& cmd);
+    void InitActiveFileLock();
+    void UpdateActiveFile();
+    std::string GetUserInput(std::string& user_input);
 
 private:
 	boost::interprocess::message_queue request_queue;
@@ -64,8 +68,10 @@ private:
     std::string caller_id;
 
     int time_out;
+    int time_out2;
+    int encode;
+    boost::posix_time::ptime first_user_input_time;
 
-    void UpdateActiveFile();
 };
 
 extern std::ostream& logger;

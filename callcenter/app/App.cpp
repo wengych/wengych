@@ -22,7 +22,8 @@ extern std::ostream& logger;
 App::App(char* channel_id) :
 request_queue(boost::interprocess::open_only, (request_queue_name + channel_id).c_str()),
 response_queue(boost::interprocess::open_only, (response_queue_name + channel_id).c_str()),
-ring_in(false)
+ring_in(false),
+time_out(0)
 {
 	logger << "request queue: " << request_queue_name << channel_id << std::endl;
 	logger << "response queue: " << response_queue_name << channel_id << std::endl;
@@ -158,14 +159,17 @@ void App::StopPlay()
 	return ;
 }
 
-std::string App::WaitUserInput( std::set<int> input_type, int time_out )
+std::string App::WaitUserInput( std::set<int> input_type, int en )
 {
+    first_user_input_time = boost::posix_time::second_clock::universal_time() +
+        boost::posix_time::seconds(time_out2);
+    // boost::posix_time::time_duration dur = boost::posix_time::seconds(time_out2);
+    // first_user_input_time += dur;
     std::string menu_string = "*";
 	if (!ring_in)
 		return "";
     std::string wait_user_input = "等待用户输入";
-
-    this->time_out = time_out;
+    encode = en;
 
     WriteSharedMemory(wait_user_input);
     if (input_type.size() == 0)
@@ -281,29 +285,45 @@ void App::SendRequest( Request& req = Request(""))
 
 Response App::RecvResponse()
 {
+    using namespace boost::posix_time;
 	std::size_t recvd_size;
 	unsigned int priority;
-	response_queue.receive(buffer, BUFFER_SIZE, recvd_size, priority);
-	Response resp(buffer, recvd_size);
+    ptime recv_time_out(second_clock::universal_time());
+    ptime user_input_time_out(second_clock::universal_time());
+    time_duration five_sec(seconds(5));
 
-    while (resp.state == "ACTIVE_CHECK") {
-        logger << "Receive ACTIVE CHECK.\n";
+    recv_time_out += five_sec;
+    user_input_time_out += time_duration(seconds(time_out));
+
+    // 每秒更新一次心跳文件
+    // 判断是否超时
+    while (!response_queue.timed_receive(buffer, BUFFER_SIZE, recvd_size, priority, recv_time_out))
+    {
         UpdateActiveFile();
-        response_queue.receive(buffer, BUFFER_SIZE, recvd_size, priority);
-        resp = Response(buffer, recvd_size);
+        recv_time_out += five_sec;
+
+        // member var time_out will be set more than 0 by WaitUserInput
+        // when the WaitUserInput method finished, time_out will set back to 0
+        if (time_out > 0 &&
+            recv_time_out > user_input_time_out)
+            // return Response();
+            return Response("TIME_OUT");
+        else if (time_out2 > 0 &&
+            recv_time_out > first_user_input_time)
+            return Response("TIME_OUT");
     }
 
-	if (resp.state == "EXIT") {
-		// hwnd = boost::lexical_cast<HWND>(resp.argument_map["HANDLE"]);
+	Response resp(buffer, recvd_size);
+
+	if (resp.state == "EXIT")
+    {
         logger << "Receive EXIT from monitor.\n";
         logger << "will shut up this channel[" << channel_id << "].\n";
         SendRequest();
-        // system("pause");
 
         exit(0);
 	}
 
-    UpdateActiveFile();
 	logger << "app:resp:" << resp.state << std::endl;
 	return resp;
 }
@@ -328,6 +348,18 @@ bool App::IsRingIn()
     return ring_in;
 }
 
+std::string App::GetUserInput(std::string& user_input)
+{
+    std::string pre_string = "用户输入：";
+    if (encode == 0)
+        return pre_string + user_input;
+
+    for (size_t i = 0; i < user_input.length(); ++i)
+        pre_string += '*';
+
+    return pre_string;
+}
+
 std::string App::WaitNone()
 {
     return "";
@@ -342,14 +374,17 @@ std::string App::WaitMenu()
         ring_in = false;
         return "";
     }
+    if (resp.state == "TIME_OUT") {
+        return "TIME_OUT";
+    }
+
 
     Request::ArgMap::iterator it = resp.argument_map.find("user_input");
     if (it == resp.argument_map.end())
         throw std::string ("WaitUserInput: no user_input.");
     ret = it->second;
 
-    std::string user_input = "用户输入：";
-    WriteSharedMemory(user_input + ret);
+    WriteSharedMemory(GetUserInput(ret)/*user_input + ret*/);
     return ret;
 }
 
@@ -364,6 +399,9 @@ std::string App::WaitString()
             ring_in = false;
             return "";
         }
+        if (resp.state == "TIME_OUT") {
+            return "TIME_OUT";
+        }
 
         Request::ArgMap::iterator it = resp.argument_map.find("user_input");
         if (it == resp.argument_map.end())
@@ -377,8 +415,7 @@ std::string App::WaitString()
         else
             ret += it->second;
 
-        std::string user_input = "用户输入：";
-        WriteSharedMemory(user_input + ret);
+        WriteSharedMemory(GetUserInput(ret));
     }
 
     return ret;
@@ -396,6 +433,9 @@ std::string App::WaitStringWithLen(int len)
             ring_in = false;
             return "";
         }
+        if (resp.state == "TIME_OUT") {
+            return "TIME_OUT";
+        }
 
         Request::ArgMap::iterator it = resp.argument_map.find("user_input");
         if (it == resp.argument_map.end())
@@ -406,8 +446,7 @@ std::string App::WaitStringWithLen(int len)
         else
             ret += it->second;
 
-        std::string user_input = "用户输入：";
-        WriteSharedMemory(user_input + ret);
+        WriteSharedMemory(GetUserInput(ret));
     }
 
     return ret;
@@ -416,7 +455,7 @@ std::string App::WaitStringWithLen(int len)
 std::string App::WaitMenuString( std::string menu_string )
 {
     std::string ret = WaitMenu();
-	if (ret.empty())
+	if (ret.length() != 1)
 		return ret;
     std::string::iterator it = std::find(menu_string.begin(), menu_string.end(), *ret.begin());
     if (it != menu_string.end())
@@ -425,22 +464,22 @@ std::string App::WaitMenuString( std::string menu_string )
 	if ("#" != ret)
 		ret += WaitString();
 
-    std::string user_input = "用户输入：";
-    WriteSharedMemory(user_input + ret);
+    WriteSharedMemory(GetUserInput(ret));
     return ret;
 }
 
 std::string App::WaitMenuStringWithLen( std::string menu_string, int len )
 {
     std::string ret = WaitMenu();
+    if (ret.length() != 1)
+        return ret;
     std::string::iterator it = std::find(menu_string.begin(), menu_string.end(), *ret.begin());
     if (it != menu_string.end())
         return ret;
 
 	ret += WaitStringWithLen(len);
 
-    std::string user_input = "用户输入：";
-    WriteSharedMemory(user_input + ret);
+    WriteSharedMemory(GetUserInput(ret));
     return ret;
 }
 
@@ -456,6 +495,9 @@ std::string App::WaitStringStringWithLen( int len )
             ring_in = false;
             return "";
         }
+        if (resp.state == "TIME_OUT") {
+            return "TIME_OUT";
+        }
 
         Request::ArgMap::iterator it = resp.argument_map.find("user_input");
         if (it == resp.argument_map.end())
@@ -470,33 +512,49 @@ std::string App::WaitStringStringWithLen( int len )
             ret += it->second;
     }
 
-    std::string user_input = "用户输入：";
-    WriteSharedMemory(user_input + ret);
+    WriteSharedMemory(GetUserInput(ret));
     return ret;
 }
 
 std::string App::WaitMenuStringStringWithLen( std::string menu_string, int len )
 {
     std::string ret = WaitMenu();
+    if (ret.length() != 1)
+        return ret;
     std::string::iterator it = std::find(menu_string.begin(), menu_string.end(), *ret.begin());
     if (it != menu_string.end())
         return ret;
 
     ret += WaitStringStringWithLen(len);
 
-    std::string user_input = "用户输入：";
-    WriteSharedMemory(user_input + ret);
+    WriteSharedMemory(GetUserInput(ret));
     return ret;
+}
+
+void App::InitActiveFileLock()
+{
+    std::string lock_name = std::string("_app_") + channel_id + "_lock";
+    boost::interprocess::named_mutex::remove(lock_name.c_str());
 }
 
 void App::UpdateActiveFile()
 {
     std::string file_name = std::string("_app_") + channel_id;
+    std::string lock_name = file_name + "_lock";
     std::ofstream out_file;
+    time_t tm_t;
+    using namespace boost::interprocess;
+
+    named_mutex mutex(open_or_create, lock_name.c_str());
+    scoped_lock<named_mutex> sc_lock(mutex);
     out_file.open(file_name.c_str(), std::ios_base::out | std::ios_base::trunc);
 
-    time_t tm_t;
     out_file << getpid() << ":";
-
     out_file << time(&tm_t);
+}
+
+void App::SetTimeOut(int to, int to2)
+{
+    time_out = to;
+    time_out2 = to2;
 }

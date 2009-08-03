@@ -14,12 +14,23 @@
 std::ostream& logger = std::cout;
 typedef std::vector<Channel> ChannelArray;
 
+void InitActiveFileLock()
+{
+    std::string lock_name = "_driver_lock";
+    boost::interprocess::named_mutex::remove(lock_name.c_str());
+}
+
 void UpdateActiveFile()
 {
     static int i = 0;
     const int COUNT = 10;
 
     if (++i >= COUNT) {
+        using namespace boost::interprocess;
+
+        named_mutex mutex(open_or_create, "_driver_lock");
+        scoped_lock<named_mutex> sc_lock(mutex);
+
         std::string file_name = std::string("_driver");
         std::ofstream out_file;
         out_file.open(file_name.c_str(), std::ios_base::out | std::ios_base::trunc);
@@ -69,7 +80,9 @@ int main()
 	try {
 		DJDrv drv;
 		DJCard card;
-		ChannelArray lines = InitLines();
+        ChannelArray lines = InitLines();
+        InitActiveFileLock();
+        UpdateActiveFile();
 		Sig_Init(0);
 		logger << "Init success!" << std::endl;
 

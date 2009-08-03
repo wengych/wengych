@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <ysdef.h>
+#include <signal.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/interprocess/exceptions.hpp>
 
@@ -48,7 +49,8 @@ bool init_socket()
 
 void MyMethod( App &app, char** argv ) 
 {
-    while (app.RingIn()) {
+    while (app.RingIn())
+    {
         try {
             std::string host_id = app.GetHostId();
             std::string caller_id = app.GetCallerId();
@@ -87,11 +89,18 @@ void MyMethod( App &app, char** argv )
                     if (!app.IsRingIn())
                         break;
                     InputRangeSet input_range_set = sess.GetInputRange();
-                    int time_out = sess.GetTimeOut();
 
-                    user_input = app.WaitUserInput(input_range_set, time_out);
+                    app.SetTimeOut(sess.GetTimeOut(), sess.GetTimeOut2());
+                    user_input = app.WaitUserInput(input_range_set, sess.GetEncode());
+                    app.SetTimeOut();
                     if (!app.IsRingIn())
                         break;
+
+                    if (user_input == "TIME_OUT")
+                    {
+                        user_input = "";
+                        last_command = "END";
+                    }
                 }
 
             } while (last_command != "END");
@@ -112,13 +121,14 @@ void MyMethod( App &app, char** argv )
         }
     }
 }
+
 int main(int argc, char** argv)
 {
 	if (argc <= 1)
 		return -1;
     try {
 	    App app(argv[1]/*channel_id*/);
-	    Dict dict;
+        app.UpdateActiveFile();
 
 	    init_socket();
 

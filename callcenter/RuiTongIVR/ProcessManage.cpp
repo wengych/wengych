@@ -49,8 +49,8 @@ DWORD CProcessManage::StartProgram(std::string strProgram)
 	ZeroMemory( &si, sizeof(si) ); 
 	si.cb = sizeof(si); 
 	ZeroMemory( &pi, sizeof(pi) ); 
-	//si.wShowWindow = SW_HIDE;
-	//si.dwFlags   =   STARTF_USESHOWWINDOW;   
+	si.wShowWindow = SW_HIDE;
+	si.dwFlags   =   STARTF_USESHOWWINDOW;   
 
 	// Start the child process. 
 	if( CreateProcess( NULL, // No module name (use command line). 

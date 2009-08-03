@@ -26,6 +26,8 @@ public:
     char* GetMenuMsg();
 	int GetFlag();
     int GetTimeOut();
+    int GetTimeOut2();
+    int GetEncode();
 	InputRangeSet GetInputRange();
 
 private:

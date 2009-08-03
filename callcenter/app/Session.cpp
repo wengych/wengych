@@ -162,3 +162,22 @@ int Session::GetTimeOut()
         return ret;
     return 0;
 }
+
+int Session::GetTimeOut2()
+{
+    int ret = 0;
+    void* time_out = YSUserBusArrayGet(*(out_bus_arr.begin()), "__YSPAY_TBS_INPUT_TIMEOUT2__", 0);
+    if (YSVarInt32Get(time_out, &ret))
+        return ret;
+    return 0;
+}
+
+int Session::GetEncode()
+{
+    int ret = 0;
+    void* encode = YSUserBusArrayGet(*(out_bus_arr.begin()), "__YSPAY_TBS_INPUT_ENCODE__", 0);
+    if (YSVarInt32Get(encode, &ret))
+        return ret;
+
+    return 0;
+}

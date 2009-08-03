@@ -35,6 +35,7 @@ bool StartProcess(ProcessInfo& process_info)
         LogWrapper::Error("创建进程失败, file name: %s",process_info.file_name.c_str());
         return false;
     }
+    Sleep(1000);
     process_info.is_active = true;
     LogWrapper::Debug("创建进程成功, file name: %s ,pid: %d", process_info.file_name.c_str(), process_info.process_id);
     return true;
@@ -458,7 +459,7 @@ void CRuiTongIVRGUIDlg::ActiveCheck()
     for (ProcessInfoArray::iterator it = app_processes.begin();
         it != app_processes.end(); ++it)
     {
-        if (!CheckProcess(*it))
+        if (!CheckProcess(*it) || !driver_process.is_active)
         {
             CProcessManage::ExitProgram(it->process_id, it->process_name);
             boost::interprocess::named_mutex::remove(it->check_file_lock.c_str());
@@ -644,6 +645,7 @@ void CRuiTongIVRGUIDlg::OnButtonChannelStop(int idx)
     CMessage::SendExitMsg(queueName);
 
     channel_ctrls_arr_arr.at(idx).at(CHANNEL_BUTTON_ID_TO_INDEX).ctrl->SetWindowText("开启");
+    channel_ctrls_arr_arr.at(idx).at(CHANNEL_EDIT_ID_TO_INDEX).ctrl->SetWindowText("");
 }
 
 void CRuiTongIVRGUIDlg::OnBnClickedBtnStartDriver()
@@ -674,7 +676,7 @@ void CRuiTongIVRGUIDlg::OnBnClickedBtnStartDriver()
             return ;
         }
     }
-   UpdateStartDriverBtn();
+    UpdateStartDriverBtn();
 }
 
 void CRuiTongIVRGUIDlg::UpdateStartDriverBtn()
@@ -687,17 +689,23 @@ void CRuiTongIVRGUIDlg::UpdateStartDriverBtn()
         {
             channel_ctrls_arr_arr.at(i).at(CHANNEL_BUTTON_ID_TO_INDEX).ctrl->EnableWindow(FALSE);
             channel_ctrls_arr_arr.at(i).at(CHANNEL_BUTTON_ID_TO_INDEX).ctrl->SetWindowText("开启");
+            channel_ctrls_arr_arr.at(i).at(CHANNEL_EDIT_ID_TO_INDEX).ctrl->SetWindowText("");
         }
 
         GetDlgItem(IDC_BTN_START_DRIVER)->SetWindowText("开启设备驱动");
-     }
+    }
     else
     {
-        for (ArrayOfGroupControlsArray::iterator arr = channel_ctrls_arr_arr.begin();
-            arr != channel_ctrls_arr_arr.end() ; ++arr)
+        for (size_t i = 0; i < app_processes.size(); ++i)
         {
-            arr->at(CHANNEL_BUTTON_ID_TO_INDEX).ctrl->EnableWindow(TRUE);
+            channel_ctrls_arr_arr.at(i).at(CHANNEL_BUTTON_ID_TO_INDEX).ctrl->EnableWindow(TRUE);
+            if (!app_processes[i].is_active)
+            {
+                channel_ctrls_arr_arr.at(i).at(CHANNEL_BUTTON_ID_TO_INDEX).ctrl->SetWindowText("开启");
+                channel_ctrls_arr_arr.at(i).at(CHANNEL_EDIT_ID_TO_INDEX).ctrl->SetWindowText("");
+            }
         }
+
         GetDlgItem(IDC_BTN_START_DRIVER)->SetWindowText("关闭设备驱动");
     }
 }
