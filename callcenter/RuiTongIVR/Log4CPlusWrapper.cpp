@@ -17,11 +17,11 @@ static void get_logger( )
 	}\
 	if(g_pLogger->isEnabledFor(logLevel))\
 	{\
-		va_list args;\
-		va_start(args, pFormat);\
+		va_list channel_id;\
+		va_start(channel_id, pFormat);\
 		char buf[bufSize] = {0};\
-		vsnprintf(buf, sizeof(buf), pFormat, args);\
-		va_end(args);\
+		vsnprintf(buf, sizeof(buf), pFormat, channel_id);\
+		va_end(channel_id);\
 		g_pLogger->forcedLog(logLevel, buf, __FILE__, __LINE__); \
 	}
 

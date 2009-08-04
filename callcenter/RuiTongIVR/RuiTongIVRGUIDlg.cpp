@@ -28,7 +28,7 @@ const std::string app_config_name = "app.config.XML";
 // 启动指定进程
 bool StartProcess(ProcessInfo& process_info)
 {
-    process_info.process_id = CProcessManage::StartProgram( process_info.file_name + " " + process_info.args );
+    process_info.process_id = CProcessManage::StartProgram( process_info.file_name + " " + process_info.channel_id, process_info.server_ip, process_info.server_port, process_info.time_out);
     if (!process_info.process_id)
     {
         process_info.is_active = false;
@@ -119,6 +119,7 @@ bool CRuiTongIVRGUIDlg::InitSysEnv()
             it->first,                      // process command line argument
             app_active_file + it->first,    // active check file name
             bAutoStart);                    // is the process need start automatic
+        app_process.AddServerInfo();
         if (driver_process.is_active)
             InitProcess(app_process);
         app_processes.push_back(app_process);
@@ -641,7 +642,7 @@ void CRuiTongIVRGUIDlg::OnButtonChannelStop(int idx)
 
     GLog("发送停止监控信息到app：[%d],pid[%d] ", idx, process_info.process_id);
     std::string queueName = MSG_QUEUE_TAG;
-    queueName += process_info.args;
+    queueName += process_info.channel_id;
     CMessage::SendExitMsg(queueName);
 
     channel_ctrls_arr_arr.at(idx).at(CHANNEL_BUTTON_ID_TO_INDEX).ctrl->SetWindowText("开启");

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <fstream>
 #include <ysdef.h>
 #include <signal.h>
 #include <boost/lexical_cast.hpp>
@@ -18,36 +19,15 @@
 std::ostream& logger = std::cout;
 const std::string config_file_name = "app_config.ini";
 
-std::string GetConfig(std::string key)
-{
-    const int BUFF_SIZE = 1024;
-    char buff[BUFF_SIZE];
-    memset(buff, 0, BUFF_SIZE * sizeof(*buff));
-    std::ifstream ifile(config_file_name.c_str());
-    while (ifile.getline(buff, BUFF_SIZE))
-    {
-        typedef boost::tokenizer< boost::char_separator<char> > tokenizer;
-        boost::char_separator<char> sep("=");
-        tokenizer token(buff);
-        tokenizer::iterator it = token.begin();
-        if (*it == key)
-            return (++it == token.end()) ? *it : std::string("");
-
-        continue;
-    }
-
-    return std::string("");
-}
+std::string ip;
+short port;
+int time_out;
 
 void ServiceCallSock( void* p_in_bus, void** pp_out_bus)
 {
 // 	char* ip = "192.168.0.77";
 // 	short port = 6100;
 // 	int time_out = 10;
-
-    std::string ip = GetConfig("ip");
-    short port = boost::lexical_cast<short> (GetConfig("port"));
-    int time_out = boost::lexical_cast<int> (GetConfig("timeout"));
 
 	if (FALSE == YSServiceClientCallSock(ip.c_str(), port, time_out, p_in_bus, pp_out_bus)) {
 #ifdef __OS_WIN__
@@ -173,6 +153,9 @@ int main(int argc, char** argv)
 	if (argc <= 1)
 		return -1;
     try {
+        ip = argv[2];
+        port = boost::lexical_cast<short>(std::string(argv[3]));
+        time_out = boost::lexical_cast<int> (std::string(argv[4]));
 	    App app(argv[1]/*channel_id*/);
         app.UpdateActiveFile();
 

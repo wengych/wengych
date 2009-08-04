@@ -33,7 +33,10 @@ ProcessInfo::ProcessInfo()
 ProcessInfo::ProcessInfo(const ProcessInfo& rhs) :
     _app_type(rhs._app_type),
     file_name(rhs.file_name),
-    args(rhs.args),
+    channel_id(rhs.channel_id),
+    server_ip(rhs.server_ip),
+    server_port(rhs.server_port),
+    time_out(rhs.time_out),
     is_active(rhs.is_active),
     process_name(rhs.process_name),
     check_file(rhs.check_file),
@@ -49,7 +52,7 @@ ProcessInfo::ProcessInfo(AppType app_type, const std::string& exec_file_name, co
 {
     _app_type = app_type;
     file_name = exec_file_name;
-    args = cmd_arg;
+    channel_id = cmd_arg;
     is_active = false;
     process_name = exec_file_name.substr(exec_file_name.find_last_of("\\") + 1);
     check_file = exec_file_name.substr(0, exec_file_name.find_last_of("\\") + 1) + active_file_name;
@@ -64,7 +67,10 @@ ProcessInfo& ProcessInfo::operator=(const ProcessInfo& rhs)
 {
     _app_type = rhs._app_type;
     file_name = rhs.file_name;
-    args = rhs.args;
+    channel_id = rhs.channel_id;
+    server_ip = rhs.server_ip;
+    server_port = rhs.server_port;
+    time_out = rhs.time_out;
     is_active = rhs.is_active;
     process_name = rhs.process_name;
     check_file = rhs.check_file;

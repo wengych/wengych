@@ -30,7 +30,10 @@ struct ProcessInfo
     std::string process_name;       // 文件名称，不带路径
     DWORD process_id;               // 进程id
     std::string file_name;          // 可执行文件名,带路径
-    std::string args;               // 进程启动参数
+    std::string channel_id;         // 进程启动参数
+    std::string server_ip;          // Service Call Server ip
+    std::string server_port;        // Service Call Server port, driver does not need this
+    std::string time_out;           // time out
     std::string check_file;         // 要定时检查的文件，通过这个来确定进程是否存活
     std::string check_file_lock;    // 心跳文件锁名
     CTime last_active_time;         // 指定进程上次活动时间
