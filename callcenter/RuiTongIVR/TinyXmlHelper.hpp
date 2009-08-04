@@ -147,7 +147,7 @@ class TiXmlElement;
 			*/
 			bool IsEmpty(const std::string& xpath);
 
-		private:
+		// private:
 			TiXmlDocument * xmlDoc_;
 			TiXmlElement* xmlRoot_;
 			std::string filename_;

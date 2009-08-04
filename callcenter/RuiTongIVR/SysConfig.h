@@ -9,9 +9,7 @@
 
 #include "TinyXmlHelper.hpp"
 using namespace helper;
-
-
-using  namespace helper;
+typedef std::vector<ChannelConfig> ChannelConfigArray;
 
 class CSysConfig
 {

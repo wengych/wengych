@@ -37,15 +37,62 @@ std::string CSysConfig::GetGateWay()
 	return retVal;
 }
 
-PairSet CSysConfig::GetChannels()
+void SetServerInfo(TiXmlElement* elem, std::string& ip, std::string& port, std::string& time_out)
 {
-		std::string xPath = "/configuration/device/channels";
-		PairSet ps;
-		if (isLoaded)
-		{
-			ps = xDoc.GetKeyAndTextOfChilds(xPath,"id");
-		}
-		return   ps;
+    std::string text = elem->FirstChild().Text();
+    if (elem->Value() == "ip")
+        ip = text;
+    else if (elem->Value() == "port")
+        port = text;
+    else if (elem->Value() == "time_out")
+        time_out = text;
+    else
+        throw std::string("illegal xml config file in server info.");
+}
+
+ChannelConfigArray CSysConfig::GetChannels()
+{
+    std::string xPath = "/configuration/device/channels";
+    ChannelConfigArray cc_array;
+    if (!isLoaded)
+        return cc_array;
+
+    TiXmlNode* node = TinyXPath::Xnp_xpath_node(xDoc.xmlRoot_, xpath.c_str());
+    if (!node)
+        return cc_array;
+
+    for (TiXmlElement* channel_node = node->FirstChildElement();
+         channel_node != NULL;
+         channel_node = node->IterateChildren(channel_node))
+    {
+        try
+        {
+            std::string attr = sub->Attrbute("id");
+            if (attr.empty())
+                throw std::string("attribute id not found");
+
+            std::string ip, port, time_out;
+            TiXmlElement* tmp = sub->FirstChildElement();
+            if (NULL == tmp)
+                continue;
+            do
+            {
+                SetServerInfo(tmp, ip, port, time_out);
+            } while(NULL != (tmp = sub->IterateChildren(tmp)));
+        }
+        catch (const std::string& err)
+        {
+            return ChannelConfigArray();
+        }
+        
+    }
+//    std::string xPath = "/configuration/device/channels";
+//    PairSet ps;
+//    if (isLoaded)
+//    {
+//        ps = xDoc.GetKeyAndTextOfChilds(xPath,"id");
+//    }
+//    return   ps;
 }
 
 
