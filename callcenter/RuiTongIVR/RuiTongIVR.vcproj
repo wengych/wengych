@@ -49,7 +49,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(BOOST_HOME)&quot;;D:\Develop\tinyxpath_1_3_1;&quot;D:\Develop\log4cplus-1.0.3\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(BOOST_HOME)&quot;;&quot;$(TINYXML_HOME)&quot;;&quot;$(LOG4CPP_HOME)\include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;BOOST_DATE_TIME_NO_LIB"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -112,7 +112,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Release"
+			OutputDirectory="$(SolutionDir)\Release"
 			IntermediateDirectory=".\Release"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
@@ -143,7 +143,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="&quot;$(BOOST_HOME)&quot;;D:\Develop\tinyxpath_1_3_1;&quot;D:\Develop\log4cplus-1.0.3\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(BOOST_HOME)&quot;;&quot;$(TINYXML_HOME)&quot;;&quot;$(LOG4CPP_HOME)\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;BOOST_DATE_TIME_NO_LIB"
 				StringPooling="true"
 				RuntimeLibrary="2"
