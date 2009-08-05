@@ -20,6 +20,7 @@ typedef std::set<int> InputRangeSet;
 class Session {
 public:
 	Session(const SessionSockCallBackType&);
+    ~Session();
 	void DoCommand(std::string cmd, std::string channel_id, std::string caller_id, std::string host_id, std::string user_input);
 	const std::string GetLastCommand();
 	StringArray GetMenu();

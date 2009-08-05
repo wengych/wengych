@@ -10,6 +10,7 @@ extern std::ostream& logger;
 
 void output_var_to_xml_file( void* var, const std::string& sep = "========" )
 {
+#ifdef _Debug
 	void* str = NULL;
 	while (1)
 	{
@@ -24,6 +25,7 @@ void output_var_to_xml_file( void* var, const std::string& sep = "========" )
 	}
 
 	YSVarFree(str);
+#endif
 }
 
 StringArray GetFileNameListByToken(std::string str)
@@ -42,6 +44,14 @@ StringArray GetFileNameListByToken(std::string str)
 
 Session::Session(const SessionSockCallBackType& call_back) : m_func(call_back)
 {
+}
+Session::~Session()
+{
+    for (BusArray::iterator it = out_bus_arr.begin();
+        it != out_bus_arr.end(); ++it)
+    {
+        YSVarFree(*it);
+    }
 }
 
 void Session::DoCommand(std::string cmd, std::string channel_id, std::string caller_id, std::string host_id, std::string user_input)
@@ -76,6 +86,8 @@ void Session::DoCommand(std::string cmd, std::string channel_id, std::string cal
 
 	output_var_to_xml_file(in_bus, "Send bus");
 	output_var_to_xml_file(out_bus, "Recv bus");
+
+    YSVarFree(in_bus);
 }
 
 const std::string Session::GetLastCommand()

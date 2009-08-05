@@ -9,7 +9,20 @@
 
 #include "TinyXmlHelper.hpp"
 using namespace helper;
+
+class ChannelConfig;
 typedef std::vector<ChannelConfig> ChannelConfigArray;
+
+
+class ChannelConfig
+{
+public:
+    std::string id;
+    std::string ip;
+    std::string port;
+    std::string time_out;
+    std::string app_name;
+};
 
 class CSysConfig
 {
@@ -22,7 +35,7 @@ public:
 	std::string GetGateWay();
 	std::string GetStartType();
 
-	PairSet GetChannels();
+	ChannelConfigArray GetChannels();
 };
 
 //////////////////////////////////////////////////////////////////////////

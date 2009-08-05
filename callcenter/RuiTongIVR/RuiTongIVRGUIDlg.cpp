@@ -28,7 +28,12 @@ const std::string app_config_name = "app.config.XML";
 // 启动指定进程
 bool StartProcess(ProcessInfo& process_info)
 {
-    process_info.process_id = CProcessManage::StartProgram( process_info.file_name + " " + process_info.channel_id, process_info.server_ip, process_info.server_port, process_info.time_out);
+    process_info.process_id =
+        CProcessManage::StartProgram( process_info.file_name + " "
+            + process_info.channel_id + " "
+            + process_info.server_ip + " "
+            + process_info.server_port + " "
+            + process_info.time_out);
     if (!process_info.process_id)
     {
         process_info.is_active = false;
@@ -102,7 +107,7 @@ bool CRuiTongIVRGUIDlg::InitSysEnv()
 
     CSysConfig sysConfig(strAppConfigFile);
     std::string startType = sysConfig.GetStartType();
-    channel_config = sysConfig.GetChannels();
+    channel_cfg_arr = sysConfig.GetChannels();
 
     if (startType == "auto")
         // 是否自动启动进程
@@ -111,15 +116,15 @@ bool CRuiTongIVRGUIDlg::InitSysEnv()
     driver_process = ProcessInfo(DRIVER, sysConfig.GetGateWay(), "", driver_active_file, bAutoStart);
     InitProcess(driver_process);
 
-    for (helper::PairSet::iterator it = channel_config.begin();
-        it != channel_config.end(); ++it)
+    for (ChannelConfigArray::iterator it = channel_cfg_arr.begin();
+        it != channel_cfg_arr.end(); ++it)
     {
-        ProcessInfo app_process(APP,       // process type
-            it->second,                     // process execute file name
-            it->first,                      // process command line argument
-            app_active_file + it->first,    // active check file name
+        ProcessInfo app_process(APP,        // process type
+            it->app_name,                   // process execute file name
+            it->id,                         // process command line argument
+            app_active_file + it->id,       // active check file name
             bAutoStart);                    // is the process need start automatic
-        app_process.AddServerInfo();
+        app_process.AddServerInfo(it->ip, it->port, it->time_out);
         if (driver_process.is_active)
             InitProcess(app_process);
         app_processes.push_back(app_process);
@@ -272,7 +277,7 @@ BOOL CRuiTongIVRGUIDlg::OnInitDialog()
 		CEdit* pEdit = (CEdit*)GetDlgItem(dwID);
 		pEdit->SetWindowText(szNow.GetString());
 
-        InitChannelGroupControls(channel_ctrls_arr_arr, channel_config);
+        InitChannelGroupControls(channel_ctrls_arr_arr, channel_cfg_arr);
         AddCtrlsToGroup(IDC_GROUP_CHANNEL, channel_ctrls_arr_arr);
 
 		UpdateStartDriverBtn();
@@ -534,7 +539,7 @@ void CRuiTongIVRGUIDlg::AddCtrlsToGroup(int group_id, ArrayOfGroupControlsArray&
     }
 }
 
-void CRuiTongIVRGUIDlg::InitChannelGroupControls(ArrayOfGroupControlsArray& arr_arr, const PairSet& psApp)
+void CRuiTongIVRGUIDlg::InitChannelGroupControls(ArrayOfGroupControlsArray& arr_arr, const ChannelConfigArray& channel_cfg_arr)
 {
     char pathBuf[MAX_PATH] = "";
     GetCurrentDirectory(MAX_PATH, pathBuf);
@@ -547,13 +552,13 @@ void CRuiTongIVRGUIDlg::InitChannelGroupControls(ArrayOfGroupControlsArray& arr_
 
     CRect zero_rect(0,0,0,0);
     int wnd_style = WS_CHILD | WS_BORDER | WS_MINIMIZEBOX | WS_EX_CLIENTEDGE;
-    for (UINT i = 0; i <psApp.size() ; ++i)
+    for (UINT i = 0; i < channel_cfg_arr.size() ; ++i)
     {
         GroupControlsArray arr;
         GroupControl grp_ctrl;
 
         CStatic* channel_id = new CStatic();
-        channel_id->Create(psApp[i].first.c_str(), wnd_style ,zero_rect, this);
+        channel_id->Create(channel_cfg_arr[i].id.c_str(), wnd_style ,zero_rect, this);
         grp_ctrl.ctrl = channel_id;
         grp_ctrl.height = channel_id_view.second;
         grp_ctrl.width = channel_id_view.first;
@@ -754,7 +759,7 @@ void CRuiTongIVRGUIDlg::OnMsgAppWriteData()
             array_index < app_processes.size();
             ++array_index)
         {
-            if (app_processes.at(array_index).args == channelid)
+            if (app_processes.at(array_index).channel_id == channelid)
                 break;
         }
 

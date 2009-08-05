@@ -51,6 +51,7 @@ struct ProcessInfo
         bool);
 
     ProcessInfo& operator=(const ProcessInfo&);
+    void AddServerInfo(const std::string&, const std::string&, const std::string&);
 
     // std::string _app_name;   // app文件名，带路径，参数
     // StartType _start_type;

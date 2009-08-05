@@ -87,7 +87,7 @@ public:
 // Implementation
 protected:
     void AddCtrlsToGroup(int group_id, ArrayOfGroupControlsArray&);
-    void InitChannelGroupControls(ArrayOfGroupControlsArray&, const helper::PairSet& );
+    void InitChannelGroupControls(ArrayOfGroupControlsArray&, const ChannelConfigArray& );
 
     void OnButtonChannelClick(int);
     void OnButtonChannelStop(int);
@@ -109,7 +109,8 @@ private:
 	CMemMsg m_memMsg;
     ProcessInfoArray app_processes;
     ProcessInfo driver_process;
-    helper::PairSet channel_config;
+    ChannelConfigArray channel_cfg_arr;
+    // helper::PairSet channel_config;
 
 public:
 	// Generated message map functions

@@ -83,6 +83,13 @@ ProcessInfo& ProcessInfo::operator=(const ProcessInfo& rhs)
     return *this;
 }
 
+void ProcessInfo::AddServerInfo(const std::string& ip, const std::string& port, const std::string& to)
+{
+    this->server_ip = ip;
+    this->server_port = port;
+    this->time_out = to;
+}
+
 int GlobalOpenUniqueProcess()
 {
 	g_hMutex=::CreateMutex(NULL,TRUE,g_szTitle);   

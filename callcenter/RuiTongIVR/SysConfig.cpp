@@ -1,6 +1,8 @@
 
 #include "stdafx.h"
 #include "SysConfig.h"
+#include <tinyxml.h>
+#include <xpath_static.h>
 
 CSysConfig::CSysConfig(std::string strFile)
 {
@@ -37,15 +39,18 @@ std::string CSysConfig::GetGateWay()
 	return retVal;
 }
 
-void SetServerInfo(TiXmlElement* elem, std::string& ip, std::string& port, std::string& time_out)
+// void SetServerInfo(TiXmlElement* elem, std::string& ip, std::string& port, std::string& time_out, std::string& app_name)
+void SetChannelConfig(TiXmlElement* elem, ChannelConfig& cfg)
 {
-    std::string text = elem->FirstChild().Text();
+    std::string text = elem->FirstChild()->Value();
     if (elem->Value() == "ip")
-        ip = text;
+        cfg.ip = text;
     else if (elem->Value() == "port")
-        port = text;
+        cfg.port = text;
     else if (elem->Value() == "time_out")
-        time_out = text;
+        cfg.time_out = text;
+    else if (elem->Value() == "app")
+        cfg.app_name = text;
     else
         throw std::string("illegal xml config file in server info.");
 }
@@ -57,28 +62,30 @@ ChannelConfigArray CSysConfig::GetChannels()
     if (!isLoaded)
         return cc_array;
 
-    TiXmlNode* node = TinyXPath::Xnp_xpath_node(xDoc.xmlRoot_, xpath.c_str());
+    TiXmlNode* node = TinyXPath::XNp_xpath_node(xDoc.xmlRoot_, xPath.c_str());
     if (!node)
         return cc_array;
 
     for (TiXmlElement* channel_node = node->FirstChildElement();
          channel_node != NULL;
-         channel_node = node->IterateChildren(channel_node))
+         channel_node = node->NextSiblingElement())
     {
         try
         {
-            std::string attr = sub->Attrbute("id");
-            if (attr.empty())
+            ChannelConfig channel_cfg;
+            channel_cfg.id = channel_node->Attribute("id");
+            if (channel_cfg.id.empty())
                 throw std::string("attribute id not found");
 
-            std::string ip, port, time_out;
-            TiXmlElement* tmp = sub->FirstChildElement();
+            TiXmlElement* tmp = channel_node->FirstChildElement();
             if (NULL == tmp)
                 continue;
             do
             {
-                SetServerInfo(tmp, ip, port, time_out);
-            } while(NULL != (tmp = sub->IterateChildren(tmp)));
+                SetChannelConfig(tmp, channel_cfg);
+
+                cc_array.push_back(channel_cfg);
+            } while(NULL != (tmp = channel_node->NextSiblingElement()));
         }
         catch (const std::string& err)
         {
@@ -86,6 +93,8 @@ ChannelConfigArray CSysConfig::GetChannels()
         }
         
     }
+
+    return cc_array;
 //    std::string xPath = "/configuration/device/channels";
 //    PairSet ps;
 //    if (isLoaded)
