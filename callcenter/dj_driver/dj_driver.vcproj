@@ -185,6 +185,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\InterphonePool.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\main.cpp"
 				>
 			</File>
@@ -200,6 +204,10 @@
 			</File>
 			<File
 				RelativePath=".\common.h"
+				>
+			</File>
+			<File
+				RelativePath=".\InterphonePool.h"
 				>
 			</File>
 			<File

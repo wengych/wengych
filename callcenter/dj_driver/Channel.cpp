@@ -68,6 +68,65 @@ bool Channel::OffHook( )
 	return true;
 }
 
+bool Channel::Interphone()
+{
+    int interphone_id = boost::lexical_cast<int>(req->argument_map["interphone_id"]);
+
+    if (Sig_CheckBusy(channel_id))
+    {
+        ::ClearLink(channel_id, interphone_id);
+
+        ::FeedPower(interphone_id);
+        ::StartPlaySignal(channel_id, SIG_STOP);
+
+        ::HangUp(channel_id);
+
+        resp->state = "USER_HANG_UP";
+
+        first_in = true;
+        off_hook = false;
+        return true;
+    }
+    else if (first_in)
+    {
+        logger << "FeedRealRing.\n";
+        ::FeedRealRing(interphone_id);
+        first_in = false;
+    }
+    else if(off_hook)
+    {
+        if (HANG_UP_FLAG_TRUE == HangUpDetect(interphone_id))
+        {
+            logger << "HangUpDetect.\n";
+            resp->argument_map["hang_up"] = "inter_phone";
+
+            FeedPower(interphone_id);
+            StartPlaySignal(channel_id, SIG_STOP);
+
+            ::HangUp(channel_id);
+            ::ClearLink(channel_id, interphone_id);
+
+            first_in = true;
+            off_hook = false;
+            return true;
+        }
+    }
+    else if (OffHookDetect(interphone_id))
+    {
+        logger << "OffHookDetect.\n";
+        FeedPower(interphone_id);
+        StartPlaySignal(channel_id, SIG_STOP);
+        SetLink(channel_id, interphone_id);
+
+        StartHangUpDetect(interphone_id);
+        logger << "StartHangUpDetect.\n";
+
+        off_hook = true;
+    }
+
+    return false;
+}
+
 bool Channel::PlayFile()
 {
 	if (Sig_CheckBusy(channel_id)) {
@@ -231,6 +290,9 @@ Channel::Channel( int _channel_id )
 
 	current_state = "";
 	current_work = GetWork();
+
+    first_in = true;
+    off_hook = false;
 }
 
 Channel::Channel( const Channel& rhs )
@@ -238,7 +300,9 @@ Channel::Channel( const Channel& rhs )
 current_state(rhs.current_state),
 request_queue(rhs.request_queue),
 response_queue(rhs.response_queue),
-response_mutex(rhs.response_mutex)
+response_mutex(rhs.response_mutex),
+first_in(rhs.first_in),
+off_hook(rhs.off_hook)
 {
 	current_work = GetWork();
 }
@@ -262,6 +326,8 @@ Channel::WorkType Channel::GetWork()
 		return bind(&Channel::WaitDtmf, &(*this));
 	if (current_state == "USER_HANG_UP")
 		return bind(&Channel::HangUp, &(*this));
+    if (current_state == "INTERPHONE")
+        return bind(&Channel::Interphone, &(*this));
 
 	return NULL;
 }

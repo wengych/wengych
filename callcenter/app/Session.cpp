@@ -114,10 +114,16 @@ StringArray Session::GetMenu()
 	{
 		void* varStr = YSVarArrayGet(arr, i);
 		char* str = (char*)YSVarStringGet(varStr);
+        /*
         if (0 == strncmp(str, "FILE", strlen("FILE")))
             strArr.push_back(std::string(str+strlen("FILE:")));
+        else if (0 == strncmp(str, "CMD", strlen("CMD")))
+            strArr.push_back(std::string(str));
         else
 		    strArr.push_back(std::string(str));
+        */
+
+        strArr.push_back(std::string(str));
 	}
 
 	return strArr;

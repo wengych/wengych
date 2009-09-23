@@ -8,11 +8,12 @@
 #include <process.h>
 
 #include "App.h"
+#include "../dj_driver/InterphonePool.h"
 
 std::string response_queue_name = "response_queue_";
 std::string request_queue_name = "request_queue_";
-std::string shared_memory_name = "monitor_shared_memory";
-std::string lock_shared_memory_name = "monitor_lock_shared_memory";
+std::string monitor_shared_memory_name = "monitor_shared_memory";
+std::string monitor_lock_shared_memory_name = "monitor_lock_shared_memory";
 std::string exe_file_name = "瑞通ivr系统";
 
 const int windows_message_type = 0x0400+1001;
@@ -36,7 +37,7 @@ void App::WriteSharedMemory(std::string str)
     using namespace boost::interprocess;
     try {
 
-        named_mutex mutex(open_only, lock_shared_memory_name.c_str());
+        named_mutex mutex(open_only, monitor_lock_shared_memory_name.c_str());
 
         HWND hwnd = FindWindow(NULL, exe_file_name.c_str());
         if (!hwnd)
@@ -52,7 +53,7 @@ void App::WriteSharedMemory(std::string str)
             << "\n";
         {
             scoped_lock<named_mutex> lock (mutex);
-            shared_memory_object shared_memory(open_only, shared_memory_name.c_str(), read_write);
+            shared_memory_object shared_memory(open_only, monitor_shared_memory_name.c_str(), read_write);
             mapped_region region(shared_memory, read_write);
             char *mem = static_cast<char*>(region.get_address());
 
@@ -110,6 +111,37 @@ void App::OffHook()
 		throw std::string ("OffHook failed.");
 }
 
+void App::Interphone()
+{
+    WriteSharedMemory("转内线");
+
+
+    InterphonePool pool;
+    int interphone_id = pool.GetRandomAvailableChannel();
+ 
+    Request req("INTERPHONE");
+    req.argument_map["interphone_id"] = boost::lexical_cast<std::string>(interphone_id);
+
+    SendRequest(req);
+
+    Response resp = RecvResponse();
+
+    if (resp.state == "USER_HANG_UP")
+    {
+        ring_in = false;
+
+        pool.ModifyChannel(interphone_id, true);
+        return ;
+    }
+    else if (resp.argument_map["hang_up"] == "inter_phone")
+    {
+        ring_in = false;
+
+        pool.ModifyChannel(interphone_id, true);
+        return ;
+    }
+}
+
 void App::HangUp()
 {
     WriteSharedMemory("挂机");
@@ -121,13 +153,17 @@ void App::HangUp()
 		return ;
     }
 	else
+    {
 		throw std::string ("Hang Up.");
+    }
 }
 
-void App::PlayFile( const std::string& file_names, const std::string& menu_msg, bool block )
+// return true if play end
+// return false if play is interrupt
+bool App::PlayFile( const std::string& file_names, const std::string& menu_msg, bool block )
 {
     if (!ring_in)
-        return ;
+        return false;
 
     WriteSharedMemory(menu_msg.c_str());
 	Request req("PLAY_FILE");
@@ -139,15 +175,17 @@ void App::PlayFile( const std::string& file_names, const std::string& menu_msg, 
 	Response resp = RecvResponse();
     if (resp.state == "USER_HANG_UP") {
 		ring_in = false;
-        return ;
+        return false;
     }
 
 	Response::ArgMap::iterator it = resp.argument_map.find("dtmf_hit");
 	if (it != resp.argument_map.end() &&
 		it->second ==  "true") {
-		// StopPlay();
-			return ;
+		StopPlay();
+			return false;
 	}
+
+    return true;
 }
 
 void App::StopPlay()
@@ -246,7 +284,7 @@ std::string App::WaitUserInput( std::set<int> input_type, int en )
 
 std::string App::GetHostId()
 {
-	return "";
+	return "0000";
 }
 
 std::string App::GetCallerId()
@@ -262,7 +300,9 @@ std::string App::GetCallerId()
 	logger << "caller_id: " << resp.argument_map["caller_id"] << '\n';
 
     caller_id = resp.argument_map["caller_id"];
-	return resp.argument_map["caller_id"];
+    if (caller_id.empty())
+        caller_id = "0000";
+	return caller_id;
 }
 
 void App::Reset()
@@ -330,15 +370,19 @@ Response App::RecvResponse()
 
 bool App::CheckCmd(const std::string& cmd)
 {
-	if (cmd == "END") {
+	if (cmd == "END") 
+    {
 		return false;
 	}
-	else if (cmd == "PICKUP") {
-		OffHook();
+	else if (cmd == "PICKUP")
+    {
+		this->OffHook();
 		return false;
 	}
-	else if (cmd == "PROC")
+    else if (cmd == "PROC")
+    {
 		return false;
+    }
 
 	return true;
 }

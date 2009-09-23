@@ -53,6 +53,40 @@ bool init_socket()
 	return true;
 }
 
+void GetFileNames( std::stringstream& file_names, StringArray &menu ) 
+{
+    StringArray::iterator it = menu.begin();
+    // file_names << "cn\\" << *it;
+    typedef boost::tokenizer< boost::char_separator<char> > tokenizer;
+    boost::char_separator<char> sep(",");
+    tokenizer token = tokenizer(*it, sep);
+    tokenizer::iterator it_token = token.begin();
+    file_names << "cn\\" << *it_token;
+    while (++it_token != token.end())
+    {
+        file_names << ',' << "cn\\" << *it_token;
+    }
+    ++it;
+    while (it != menu.end()) {
+        // .pcm files will put in directory [cn] currently.
+        // Replace with specific parameter that receive from service call later.
+        //                         typedef boost::tokenizer< boost::char_separator<char> > tokenizer;
+        //                         boost::char_separator<char> sep(",");
+        //                         tokenizer token(*it, sep);
+        token = tokenizer(*it, sep);
+        for (it_token = token.begin();
+            it_token != token.end(); ++it_token)
+        {
+            file_names << ',' << "cn\\" << *it_token;
+        }
+        ++it;
+    }
+
+    logger << "file names: " << file_names.str() << std::endl;
+}
+
+
+
 void MyMethod( App &app, char** argv ) 
 {
     while (app.RingIn())
@@ -72,46 +106,32 @@ void MyMethod( App &app, char** argv )
                 {
                     // need input args.
                     StringArray menu = sess.GetMenu();
-                    int flag = sess.GetFlag();
+                    std::string menu_msg = sess.GetMenuMsg();
+                    bool flag = (bool)sess.GetFlag();
 
                     logger << "menu: ";
                     for (StringArray::iterator it = menu.begin(); it != menu.end(); ++it)
+                    {
                         logger << *it << std::endl;
+
+                        if (!app.DoCmd(*it, menu_msg, flag))
+                            break;
+
+                        if (!app.IsRingIn())
+                            break;
+                    }
+
+                    if (!app.IsRingIn())
+                        break;
+
                     if (menu.empty())
                         continue;
-
+/*
                     std::stringstream file_names;
-                    StringArray::iterator it = menu.begin();
-                    // file_names << "cn\\" << *it;
-                    typedef boost::tokenizer< boost::char_separator<char> > tokenizer;
-                    boost::char_separator<char> sep(",");
-                    tokenizer token = tokenizer(*it, sep);
-                    tokenizer::iterator it_token = token.begin();
-                    file_names << "cn\\" << *it_token;
-                    while (++it_token != token.end())
-                    {
-                        file_names << ',' << "cn\\" << *it_token;
-                    }
-                    ++it;
-                    while (it != menu.end()) {
-                        // .pcm files will put in directory [cn] currently.
-                        // Replace with specific parameter that receive from service call later.
-//                         typedef boost::tokenizer< boost::char_separator<char> > tokenizer;
-//                         boost::char_separator<char> sep(",");
-//                         tokenizer token(*it, sep);
-                        token = tokenizer(*it, sep);
-                        for (it_token = token.begin();
-                            it_token != token.end(); ++it_token)
-                        {
-                            file_names << ',' << "cn\\" << *it_token;
-                        }
-                        ++it;
-                    }
+                    GetFileNames(file_names, menu);
 
-                    logger << "file names: " << file_names.str() << std::endl;
-                    std::string menu_msg = sess.GetMenuMsg();
-
-                    app.PlayFile(file_names.str(), menu_msg, (bool)flag);
+                    app.PlayFile(file_names.str(), menu_msg, (bool)sess.GetFlag());
+*/
                     if (!app.IsRingIn())
                         break;
                     InputRangeSet input_range_set = sess.GetInputRange();

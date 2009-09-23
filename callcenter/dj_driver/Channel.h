@@ -24,6 +24,7 @@ public:
 
 	bool GetCallerId();
 	bool OffHook();
+    bool Interphone();
 	bool WaitRing();
 	bool Init();
 	bool PlayFile();
@@ -57,5 +58,9 @@ private:
 	MessageQueuePtr request_queue;
 	MessageQueuePtr response_queue;
     NamedMutexPtr response_mutex;
+
+    // for interphone
+    bool first_in;
+    bool off_hook;
 };
 #endif

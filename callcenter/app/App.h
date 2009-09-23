@@ -31,7 +31,8 @@ public:
 
 	bool RingIn();
 	void OffHook();
-	void PlayFile(const std::string& file_name, const std::string& menu_msg, bool block);
+    void Interphone();
+	bool PlayFile(const std::string& file_name, const std::string& menu_msg, bool block);
 	void StopPlay();
     void SetTimeOut(int to = 0, int to2 = 0);
     std::string WaitUserInput(std::set<int> input_type, int encode);
@@ -53,6 +54,40 @@ public:
     bool IsRingIn();
 
     bool CheckCmd(const std::string& cmd);
+
+    void GetFileNames( std::stringstream& file_names, std::string &menu ) 
+    {
+        // StringArray::iterator it = menu.begin();
+        // file_names << "cn\\" << *it;
+        typedef boost::tokenizer< boost::char_separator<char> > tokenizer;
+        boost::char_separator<char> sep(",");
+        tokenizer token = tokenizer(menu, sep);
+        tokenizer::iterator it_token = token.begin();
+        file_names << "cn\\" << *it_token;
+        while (++it_token != token.end())
+        {
+            file_names << ',' << "cn\\" << *it_token;
+        }
+    }
+    bool DoCmd(std::string& str, std::string& menu_msg, bool flag)
+    {
+        const std::string file_begin = "FILE:";
+        const std::string cmd_begin = "CMD:";
+        if (0 == str.compare(0, file_begin.length(), file_begin))
+        {
+            std::stringstream file_names;         
+            GetFileNames(file_names, str.substr(file_begin.length()));
+            return PlayFile(file_names.str(), menu_msg, flag);
+        }
+        else if (0 == str.compare(0, cmd_begin.length(), cmd_begin))
+        {
+            if (str.substr(cmd_begin.length()) == "INTERPHONE")
+                Interphone();
+
+            return true;
+        }
+    }
+
     void InitActiveFileLock();
     void UpdateActiveFile();
     std::string GetUserInput(std::string& user_input);

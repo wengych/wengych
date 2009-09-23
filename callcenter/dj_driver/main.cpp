@@ -2,6 +2,7 @@
 #include <string>
 #include "common.h"
 #include "Channel.h"
+#include "InterphonePool.h"
 #include "../Inc/tc08a32.h"
 #include "../Inc/NewSig.h"
 #include <ostream>
@@ -48,14 +49,22 @@ void UpdateActiveFile()
 ChannelArray InitLines()
 {
 	// GetVoicePath();
-
 	ChannelArray Lines;// = new LINESTRUCT[TotalLine];
+    InterphonePool::InitInterPhonePool();
+    InterphonePool pool;
 	SetBusyPara(350);
 	WORD TotalLine = CheckValidCh();
  	for(int i=0; i < TotalLine; i++)
  	{
-		Lines.push_back(Channel(i));
-		InitDtmfBuf(i);
+        if (CHTYPE_TRUNK == ::CheckChTypeNew(i))
+        {
+		    Lines.push_back(Channel(i));
+		    InitDtmfBuf(i);
+        }
+        else if (CHTYPE_USER == ::CheckChTypeNew(i))
+        {
+            pool.AddChannel(i);
+        }
  	}
 
 	return Lines;

@@ -189,6 +189,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\dj_driver\InterphonePool.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Session.cpp"
 				>
 			</File>
@@ -204,6 +208,10 @@
 			</File>
 			<File
 				RelativePath=".\Dict.h"
+				>
+			</File>
+			<File
+				RelativePath="..\dj_driver\InterphonePool.h"
 				>
 			</File>
 			<File
