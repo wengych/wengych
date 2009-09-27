@@ -132,4 +132,9 @@ void InterphonePool::InitInterPhonePool()
     shared_memory_object shared_memory(open_or_create, interphonepool_shared_memory_name.c_str(), read_write);
 
     shared_memory.truncate(10 * 1024);
+
+    mapped_region region(shared_memory, read_write);
+    char* mem = static_cast<char*>(region.get_address());
+
+    memset(mem, 0, 10 * 1024);
 }

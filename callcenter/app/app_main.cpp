@@ -3,6 +3,7 @@
 #include <fstream>
 #include <ysdef.h>
 #include <signal.h>
+#include <fstream>
 #include <boost/lexical_cast.hpp>
 #include <boost/interprocess/exceptions.hpp>
 
@@ -16,14 +17,14 @@
 #include "Dict.h"
 
 
-std::ostream& logger = std::cout;
+std::ostream& logger = std::ofstream("app.log");
 const std::string config_file_name = "app_config.ini";
 
 std::string ip;
 short port;
 int time_out;
 
-void ServiceCallSock( void* p_in_bus, void** pp_out_bus)
+bool ServiceCallSock( void* p_in_bus, void** pp_out_bus)
 {
 // 	char* ip = "192.168.0.77";
 // 	short port = 6100;
@@ -124,8 +125,6 @@ void MyMethod( App &app, char** argv )
                     if (!app.IsRingIn())
                         break;
 
-                    if (menu.empty())
-                        continue;
 /*
                     std::stringstream file_names;
                     GetFileNames(file_names, menu);

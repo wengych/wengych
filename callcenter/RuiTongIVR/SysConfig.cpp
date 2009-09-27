@@ -43,13 +43,14 @@ std::string CSysConfig::GetGateWay()
 void SetChannelConfig(TiXmlElement* elem, ChannelConfig& cfg)
 {
     std::string text = elem->FirstChild()->Value();
-    if (elem->Value() == "ip")
+    std::string key = elem->Value();
+    if (key == "ip")
         cfg.ip = text;
-    else if (elem->Value() == "port")
+    else if (key == "port")
         cfg.port = text;
-    else if (elem->Value() == "time_out")
+    else if (key == "time_out")
         cfg.time_out = text;
-    else if (elem->Value() == "app")
+    else if (key == "app")
         cfg.app_name = text;
     else
         throw std::string("illegal xml config file in server info.");
@@ -68,7 +69,7 @@ ChannelConfigArray CSysConfig::GetChannels()
 
     for (TiXmlElement* channel_node = node->FirstChildElement();
          channel_node != NULL;
-         channel_node = node->NextSiblingElement())
+         channel_node = channel_node->NextSiblingElement())
     {
         try
         {
@@ -84,8 +85,10 @@ ChannelConfigArray CSysConfig::GetChannels()
             {
                 SetChannelConfig(tmp, channel_cfg);
 
-                cc_array.push_back(channel_cfg);
-            } while(NULL != (tmp = channel_node->NextSiblingElement()));
+            } while(NULL != (tmp = tmp->NextSiblingElement()));
+
+
+            cc_array.push_back(channel_cfg);
         }
         catch (const std::string& err)
         {

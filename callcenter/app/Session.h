@@ -12,7 +12,7 @@
 #define YSPAY_TBS_INPUT_RANGE "__YSPAY_TBS_INPUT_RANGE__"
 #define YSPAY_TBS_MENUMSG "__YSPAY_TBS_MENUMSG__"
 
-typedef boost::function<void(void* /*bus_in*/, void** /*bus_out*/)> SessionSockCallBackType;
+typedef boost::function<bool(void* /*bus_in*/, void** /*bus_out*/)> SessionSockCallBackType;
 typedef std::list<void*> BusArray;
 typedef std::vector<std::string> StringArray;
 typedef std::set<int> InputRangeSet;

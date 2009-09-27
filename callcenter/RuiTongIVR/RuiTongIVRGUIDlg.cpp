@@ -440,9 +440,10 @@ bool CheckProcess(ProcessInfo& process_info)
          * Do terminate out of this method.
          * By the return value of this method.
          */
-    if ((tmNow - process_info.last_active_time) > 60 /*this->time_out*/ ||
+    if ((tmNow - process_info.last_active_time) > 120 /*this->time_out*/ ||
         !CProcessManage::IsProgramRunning(process_info.process_id, process_info.process_name))
     {
+        GLog("¼ì²â½ø³Ì³¬Ê±");
         process_info.is_active = false;
         return false;
     }

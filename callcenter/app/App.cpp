@@ -36,9 +36,6 @@ void App::WriteSharedMemory(std::string str)
 {
     using namespace boost::interprocess;
     try {
-
-        named_mutex mutex(open_only, monitor_lock_shared_memory_name.c_str());
-
         HWND hwnd = FindWindow(NULL, exe_file_name.c_str());
         if (!hwnd)
             return ;
@@ -52,6 +49,7 @@ void App::WriteSharedMemory(std::string str)
             << str
             << "\n";
         {
+            named_mutex mutex(open_only, monitor_lock_shared_memory_name.c_str());
             scoped_lock<named_mutex> lock (mutex);
             shared_memory_object shared_memory(open_only, monitor_shared_memory_name.c_str(), read_write);
             mapped_region region(shared_memory, read_write);
@@ -167,6 +165,7 @@ bool App::PlayFile( const std::string& file_names, const std::string& menu_msg, 
 
     WriteSharedMemory(menu_msg.c_str());
 	Request req("PLAY_FILE");
+
 	req.argument_map["file_list"] = file_names;
 	req.argument_map["is_start"] = "false";
 	req.argument_map["block"] = block ? "true" : "false";
@@ -175,7 +174,7 @@ bool App::PlayFile( const std::string& file_names, const std::string& menu_msg, 
 	Response resp = RecvResponse();
     if (resp.state == "USER_HANG_UP") {
 		ring_in = false;
-        return false;
+        return true;
     }
 
 	Response::ArgMap::iterator it = resp.argument_map.find("dtmf_hit");
@@ -589,16 +588,42 @@ void App::UpdateActiveFile()
     time_t tm_t;
     using namespace boost::interprocess;
 
-    named_mutex mutex(open_or_create, lock_name.c_str());
-    scoped_lock<named_mutex> sc_lock(mutex);
-    out_file.open(file_name.c_str(), std::ios_base::out | std::ios_base::trunc);
+    try {
+        named_mutex mutex(open_or_create, lock_name.c_str());
+        scoped_lock<named_mutex> sc_lock(mutex);
+        out_file.open(file_name.c_str(), std::ios_base::out | std::ios_base::trunc);
 
-    out_file << getpid() << ":";
-    out_file << time(&tm_t);
+        out_file << getpid() << ":";
+        out_file << time(&tm_t);
+    } catch (interprocess_exception& ex) {
+        logger << "interprocess_exception while App::UpdateActiveFile\n";
+        logger << ex.what() << "\n";
+    }
 }
 
 void App::SetTimeOut(int to, int to2)
 {
     time_out = to;
     time_out2 = to2;
+}
+
+bool App::DoCmd( std::string& str, std::string& menu_msg, bool flag )
+{
+    const std::string file_begin = "FILE:";
+    const std::string cmd_begin = "CMD:";
+    if (0 == str.compare(0, file_begin.length(), file_begin))
+    {
+        logger << "App::DoCmd::PlayFile.\n";
+        std::stringstream file_names;         
+        GetFileNames(file_names, str.substr(file_begin.length()));
+        return PlayFile(file_names.str(), menu_msg, flag);
+    }
+    else if (0 == str.compare(0, cmd_begin.length(), cmd_begin))
+    {
+        logger << "App::DoCmd::Interphone.\n";
+        if (str.substr(cmd_begin.length()) == "INTERPHONE")
+            Interphone();
+
+        return true;
+    }
 }
