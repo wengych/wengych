@@ -29,6 +29,7 @@ public:
 	bool Init();
 	bool PlayFile();
 	bool StopPlay();
+    bool ClearDtmf();
 	bool WaitDtmf();
 	bool HangUp();
 

@@ -190,6 +190,8 @@ bool App::PlayFile( const std::string& file_names, const std::string& menu_msg, 
 void App::StopPlay()
 {
     WriteSharedMemory("Õ£÷π≤•∑≈”Ô“ÙŒƒº˛.");
+    logger << "Õ£÷π≤•∑≈";
+
 	SendRequest(Request("STOP_PLAY"));
 	Response resp = RecvResponse();
 
@@ -209,6 +211,7 @@ std::string App::WaitUserInput( std::set<int> input_type, int en )
     encode = en;
 
     WriteSharedMemory(wait_user_input);
+    
     if (input_type.size() == 0)
         return "";
     else if (input_type.size() == 1)
@@ -405,7 +408,7 @@ std::string App::GetUserInput(std::string& user_input)
 
 std::string App::WaitNone()
 {
-    return "";
+    return ClearDtmf();
 }
 
 std::string App::WaitMenu()
@@ -428,6 +431,7 @@ std::string App::WaitMenu()
     ret = it->second;
 
     WriteSharedMemory(GetUserInput(ret)/*user_input + ret*/);
+    ClearDtmf();
     return ret;
 }
 
@@ -461,6 +465,7 @@ std::string App::WaitString()
         WriteSharedMemory(GetUserInput(ret));
     }
 
+    ClearDtmf();
     return ret;
 }
 
@@ -492,6 +497,7 @@ std::string App::WaitStringWithLen(int len)
         WriteSharedMemory(GetUserInput(ret));
     }
 
+    ClearDtmf();
     return ret;
 }
 
@@ -508,6 +514,8 @@ std::string App::WaitMenuString( std::string menu_string )
 		ret += WaitString();
 
     WriteSharedMemory(GetUserInput(ret));
+
+    ClearDtmf();
     return ret;
 }
 
@@ -523,6 +531,8 @@ std::string App::WaitMenuStringWithLen( std::string menu_string, int len )
 	ret += WaitStringWithLen(len);
 
     WriteSharedMemory(GetUserInput(ret));
+
+    ClearDtmf();
     return ret;
 }
 
@@ -556,6 +566,8 @@ std::string App::WaitStringStringWithLen( int len )
     }
 
     WriteSharedMemory(GetUserInput(ret));
+
+    ClearDtmf();
     return ret;
 }
 
@@ -571,6 +583,8 @@ std::string App::WaitMenuStringStringWithLen( std::string menu_string, int len )
     ret += WaitStringStringWithLen(len);
 
     WriteSharedMemory(GetUserInput(ret));
+
+    ClearDtmf();
     return ret;
 }
 
@@ -626,4 +640,22 @@ bool App::DoCmd( std::string& str, std::string& menu_msg, bool flag )
 
         return true;
     }
+
+    logger << "App::DoCmd::NoCmd.\n";
+    return true;
+}
+
+std::string App::ClearDtmf()
+{
+    SendRequest(Request("CLEAR_DTMF"));
+    Response resp = RecvResponse();
+    if (resp.state == "USER_HANG_UP") {
+        ring_in = false;
+        return "";
+    }
+    if (resp.state == "TIME_OUT") {
+        return "TIME_OUT";
+    }
+
+    return "";
 }

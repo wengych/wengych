@@ -37,6 +37,8 @@ public:
     void SetTimeOut(int to = 0, int to2 = 0);
     std::string WaitUserInput(std::set<int> input_type, int encode);
     std::string WaitNone();
+
+    std::string ClearDtmf();
     std::string WaitMenu();
     std::string WaitString();
     std::string WaitStringWithLen(int len);

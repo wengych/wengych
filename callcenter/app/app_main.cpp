@@ -17,7 +17,7 @@
 #include "Dict.h"
 
 
-std::ostream& logger = std::ofstream("app.log");
+std::ostream& logger = std::cout; // std::ofstream("app.log");
 const std::string config_file_name = "app_config.ini";
 
 std::string ip;

@@ -200,6 +200,8 @@ bool Channel::PlayFile()
 bool Channel::StopPlay()
 {
 	::StopPlayFile(channel_id);
+
+    logger << "Channel::StopPlay()\n";
 	return true;
 }
 
@@ -208,6 +210,22 @@ bool Channel::HangUp()
 	::HangUp(channel_id);
 
 	return true;
+}
+
+bool Channel::ClearDtmf()
+{
+    if (Sig_CheckBusy(channel_id))
+    {
+        ::HangUp(channel_id);
+        ::Sig_ResetCheck(channel_id);
+
+        resp->state = "USER_HANG_UP";
+
+        return true;
+    }
+
+    ::InitDtmfBuf(channel_id);
+    return true;
 }
 
 bool Channel::WaitDtmf()
@@ -324,6 +342,8 @@ Channel::WorkType Channel::GetWork()
 		return bind(&Channel::PlayFile, &(*this));
 	if (current_state == "WAIT_DTMF")
 		return bind(&Channel::WaitDtmf, &(*this));
+    if (current_state == "CLEAR_DTMF")
+        return bind(&Channel::ClearDtmf, &(*this));
 	if (current_state == "USER_HANG_UP")
 		return bind(&Channel::HangUp, &(*this));
     if (current_state == "INTERPHONE")
