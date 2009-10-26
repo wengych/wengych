@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" creationComplete="init()">
+<mx:Script>
+	<![CDATA[
+		import mx.controls.Alert;
+		import mx.controls.TextArea;
+		import flash.net.Socket;
+		import flash.utils.ByteArray;
+		import flash.events.SecurityErrorEvent;
+		import flash.events.IOErrorEvent;
+		import flash.events.ProgressEvent;
+		import mx.collections.ArrayCollection;
+		
+		private var jsonmsg:String="";
+		private var arr:Array;
+		private var AC:ArrayCollection;
+		public var oSocket:Socket = new Socket();
+		
+		public function init():void{
+			oSocket.addEventListener(Event.CLOSE,fooClosed);
+			oSocket.addEventListener(Event.CONNECT,fooConnected);
+			oSocket.addEventListener(IOErrorEvent.IO_ERROR,fooError);
+			oSocket.addEventListener(SecurityErrorEvent.SECURITY_ERROR,fooSecurity);
+			oSocket.addEventListener(ProgressEvent.SOCKET_DATA,fooGetData);
+		}
+		
+		public function fooClosed(e:Event):void{
+			Alert.show('连接已断开！','Disconnected');
+			msg_box.text = '';
+			panel_2.setVisible(false);
+			panel_1.setVisible(true);
+		}
+		public function fooConnected(e:Event):void{
+			text_c.setVisible(false);
+			btn_connect.enabled = true;
+			panel_1.setVisible(false);
+			panel_2.setVisible(true);
+			fooShowMsg('连接已建立！');
+			jsonmsg="";
+			arr=new Array();
+			AC=new ArrayCollection();
+		}
+		public function fooError(e:IOErrorEvent):void{
+			Alert.show('IO错误：'+e.text,'Socket connect Error');
+			text_c.text = 'Socket connect Error!';
+			btn_connect.enabled = true;
+		}
+		public function fooSecurity(e:SecurityErrorEvent):void{
+			Alert.show('安全错误：'+e.text,'Security Error');
+			text_c.text = 'Security Error!';
+			btn_connect.enabled = true;
+		}
+		public function fooGetData(e:ProgressEvent):void{
+			var aMsg:Array = [];
+			var mstr:ByteArray=new ByteArray;
+			while(oSocket.bytesAvailable){
+				oSocket.readBytes(mstr,0,oSocket.bytesAvailable);
+				//aMsg.push(mstr);
+				jsonmsg+=mstr;
+			}
+			//var sMsg:String = aMsg.join('').replace(/\r/g,'');
+			fooShowMsg("返回字串"+mstr+"\r\n");
+//			fooShowMsg("substr"+jsonmsg.substr(-2,2)+"\r\n");
+//			if(jsonmsg.substr(-2,2)=="}]")
+//			{
+//				//socket.close();
+//				trace("jsonmsg",jsonmsg);
+//				fooShowMsg(jsonmsg);
+//				arr=JSON.decode(jsonmsg)as Array;
+//				AC=new ArrayCollection(arr);
+//				Alert.show(AC[0]['alt']);
+//			}
+			
+		}
+		public function fooShowMsg(sMsg:String):void{
+			var sTemp:String = msg_box.text;
+			msg_box.text = sTemp+sMsg+'\n';
+		}
+		public function fooCommand(sMsg:String):void{
+			var bMsg:ByteArray = new ByteArray();
+			bMsg.writeMultiByte(sMsg,"utf-8");
+			oSocket.writeBytes(bMsg);
+			oSocket.flush();
+		}
+		public function fooConnect():void{
+			var sIP:String = ip_text.text;
+			var sPort:Number = Number(port_text.text);
+			var sUser:String = user_text.text;
+			var sCode:String = code_text.text;
+			if(!(sIP&&sPort)){
+				Alert.show('服务器地址和端口号必填！','Warning:');
+			}else{
+				text_c.text = 'Connecting......';
+				text_c.setVisible(true);
+				btn_connect.enabled = false;
+				oSocket.connect(sIP,sPort);
+				if(sUser) fooCommand('user '+sUser);
+				if(sCode) fooCommand('pass '+sCode);
+			}
+		}
+		public function fooDisConnect():void{
+			oSocket.close();
+			msg_box.text = '';
+			panel_2.setVisible(false);
+			panel_1.setVisible(true);
+		}
+	]]>
+</mx:Script>
+	<mx:Panel width="382" height="232" layout="absolute" title="Socket communication" horizontalCenter="0" verticalCenter="-78" id="panel_1">
+		<mx:Label x="10" y="24" text="服务器地址：*" width="95" fontSize="12" textAlign="right"/>
+		<mx:Label x="10" y="52" text="端口：*" width="95" fontSize="12" textAlign="right"/>
+		<mx:Label x="10" y="80" text="用户名：" width="95" fontSize="12" textAlign="right"/>
+		<mx:Label x="10" y="108" text="密码：" fontSize="12" width="95" textAlign="right"/>
+		<mx:Button x="123" y="158" label="连接" fontSize="12" width="116" id="btn_connect" click="fooConnect()"/>
+		<mx:TextInput x="120.5" y="24" width="170" borderStyle="inset" borderColor="#B7BABC" id="ip_text" text="192.168.0.77"/>
+		<mx:TextInput x="120.5" y="52" width="170" id="port_text" text="16920"/>
+		<mx:TextInput x="120.5" y="80" width="170" id="user_text"/>
+		<mx:TextInput x="120.5" y="108" width="170" displayAsPassword="true" id="code_text"/>
+		<mx:Text x="120" y="138" text="Connecting......" width="170.5" color="#16AD21" id="text_c" visible="false"/>
+	</mx:Panel>
+	<mx:Panel x="10" y="10" width="712" height="373" layout="absolute" title="Message box" id="panel_2" visible="false">
+		<mx:TextInput x="342" y="301" id="msg_text"/>
+		<mx:Button x="510" y="299" label="发送指令" fontSize="12" id="btn_command" click="fooCommand(msg_text.text)"/>
+		<mx:Button x="604" y="299" label="断开连接" fontSize="12" id="btn_disconnect" click="fooDisConnect()"/>
+		<mx:TextArea x="10" y="10" width="672" height="272" fontSize="12" id="msg_box" editable="false"/>
+	</mx:Panel>
+	
+</mx:Application>

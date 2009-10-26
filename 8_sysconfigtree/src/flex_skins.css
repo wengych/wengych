@@ -1,0 +1,71 @@
+
+/* 
+//------------------------------
+//  AccordionHeader
+//------------------------------
+*/
+global {
+	themeColor: #9994B1;
+	themeAlpha:1;
+}
+Label{
+   fontSize: 15;
+   color: #111111;
+}
+Button{
+   fontSize: 12;
+   color: #111111;
+}
+TextInput {
+   borderStyle: solid;
+   borderColor: #000000;
+   backgroundAlpha: 0.44;
+   letterSpacing: 0;
+   paddingLeft: 0;
+   paddingRight: 0;
+   color: #000000;
+   fontSize: 12;
+   maxChars:21;
+}
+TextArea {
+   borderStyle: solid;
+   borderColor: #000000;
+   backgroundAlpha: 0.44;
+   letterSpacing: 0;
+   paddingLeft: 0;
+   paddingRight: 0;
+   color: #000000;
+   fontSize: 12;
+}
+Alert { 
+            titleStyleName: "alertTitle"; 
+            messageStyleName: "alertMessage"; 
+            buttonStyleName: "alertButton"; 
+            dropShadowEnabled: true; 
+            shadowDistance: 5; 
+            shadowDirection: right; 
+            cornerRadius: 0; 
+            embedFonts: true; 
+            
+        } 
+  
+        .alertTitle { 
+            letterSpacing: 0; 
+            fontSize: 14; 
+            color: red; 
+        } 
+  
+        .alertMessage { 
+            letterSpacing: 0; 
+            fontSize: 14; 
+            fontWeight: bold; 
+            color: black; 
+        } 
+  
+        .alertButton { 
+            fontSize: 14; 
+            fontWeight: bold; 
+            textRollOverColor: white; 
+            color: red; 
+        } 
+

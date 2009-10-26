@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" viewSourceURL="src/index.html" creationComplete="init();"
+	paddingTop="0" paddingBottom="0" paddingLeft="0" paddingRight="0">
+	<mx:Style source="flex_skins.css" />
+    <mx:Script>
+        <![CDATA[
+        	import mx.events.*;
+        	import mx.containers.TitleWindow;
+            import mx.managers.PopUpManager;
+			import mx.controls.Alert;
+            import mx.collections.XMLListCollection;
+            import mx.managers.DragManager;
+            import mx.core.DragSource;
+            import mx.controls.List;
+            import mx.controls.DataGrid;
+            import mx.controls.listClasses.ListBase;
+            import mx.core.UIComponent;
+            import mx.collections.ArrayCollection;
+            
+			
+            private function addnode(event:Event):void
+            {
+                var nodeadd:XMLList;
+                var str:String="";
+                var newNode:XML;
+                if(contree.selectedIndex>=0){
+                	nodeadd=XMLList(contree.selectedItem);
+                	if(contree.selectedItem.localName()=="view"){
+                		str="<form value='form"+(nodeadd.children().length()).toString()+"'titlename='待定' key='id' isBranch='true'></form>";
+                		//删除节点时应该重新设定FORM号
+		                newNode = XML(str as Object);
+		                //Alert.show(nodeadd.children().length().toString());
+		                nodeadd[0].appendChild(newNode);
+	                }else if((contree.selectedItem.localName()=="form")&&(contree.selectedItem.@key=="id")){
+                		str="<properties value='form"+(nodeadd.children().length()).toString()+"'titlename='待定' key='id'></properties>";
+                		newNode = XML(str as Object);
+		                //Alert.show(nodeadd.children().length().toString());
+		                nodeadd[0].appendChild(newNode);
+	                }else{Alert.show("此处不能添加子节点！");}
+                }else{
+                	nodeadd=XMLList(dtsxml);
+                	str="<view value='view"+(contree.dataProvider.length).toString()+"'titlename='待定' key='id' isBranch='true'></view>";
+            		newNode = XML(str as Object);
+	                nodeadd[0].appendChild(newNode);
+                }
+            }
+            private function addnode2(event:Event):void
+            {
+                var nodeadd:XMLList;
+                var str:String="";
+                var newNode:XML;
+                if(usertree.selectedIndex>=0){
+                	nodeadd=XMLList(usertree.selectedItem);
+                	if(usertree.selectedItem.localName()=="view"){
+                		str="<form value='form"+(nodeadd.children().length()).toString()+"'titlename='待定' key='id' isBranch='true'></form>";
+                		//删除节点时应该重新设定FORM号
+		                newNode = XML(str as Object);
+		                //Alert.show(nodeadd.children().length().toString());
+		                nodeadd[0].appendChild(newNode);
+	                }else if((usertree.selectedItem.localName()=="form")&&(usertree.selectedItem.@key=="id")){
+                		str="<properties value='form"+(nodeadd.children().length()).toString()+"'titlename='待定' key='id'></properties>";
+                		newNode = XML(str as Object);
+		                //Alert.show(nodeadd.children().length().toString());
+		                nodeadd[0].appendChild(newNode);
+	                }else{Alert.show("此处不能添加子节点！");}
+                }else{
+                	str="<view value='view"+(usertree.dataProvider.length).toString()+"'titlename='待定' key='id' isBranch='true'></view>";
+            		userdtsxml.addItem(XML(str as Object));
+//                	nodeadd=XMLList(dtsxml2);
+//                	str="<view value='view"+(contree.dataProvider.length).toString()+"'titlename='待定' key='id' isBranch='true'></view>";
+//            		newNode = XML(str as Object);
+//	                nodeadd[0].appendChild(newNode);
+                }
+                tempstr="<views>"+userdtsxml.source.toXMLString()+"</views>";
+            }
+            private function removenode(event:Event):void
+            {
+                if(contree.selectedIndex>=0) Alert.show("是否要删除节点？-->"+contree.selectedItem.@titlename, "删除节点",3, this, removeClickHandler);
+                else {Alert.show("请选择节点！");}
+            }
+			private function removeClickHandler(event:CloseEvent):void {
+				if (event.detail==Alert.YES){
+	                var children:XMLList = XMLList(contree.selectedItem.parent()).children();
+	                for(var i:int=0; i < children.length(); i++) {
+	                    if( children[i].@titlename == XML(contree.selectedItem).@titlename ) {
+	                        delete children[i];
+	                    }
+	                }
+	   			}
+            }
+            private function removenode2(event:Event):void
+            {
+                if(usertree.selectedIndex>=0) Alert.show("是否要删除节点？-->"+usertree.selectedItem.@titlename, "删除节点",3, this, removeClickHandler2);
+                else {Alert.show("请选择节点！");}
+            }
+			private function removeClickHandler2(event:CloseEvent):void {
+				if (event.detail==Alert.YES){
+	                var children:XMLList = XMLList(usertree.selectedItem.parent()).children();
+	                for(var i:int=0; i < children.length(); i++) {
+	                    if( children[i].@titlename == XML(usertree.selectedItem).@titlename ) {
+	                        delete children[i];
+	                    }
+	                }
+	   			}
+	   			tempstr="<views>"+userdtsxml.source.toXMLString()+"</views>";
+            }
+//            private function removenode2(event:Event):void
+//            {
+//                if(usertree.selectedIndex>=0){
+//	                var children:XMLList = XMLList(usertree.selectedItem.parent()).children();
+//	                for(var i:int=0; i < children.length(); i++) {
+//	                    if( children[i].@value == XML(usertree.selectedItem).@value ) {
+//	                        delete children[i];
+//	                    }
+//	                }
+//                }else{Alert.show("请选择节点！");}
+//            }
+            private function onTreeDragComplete(event:DragEvent):void {
+            	var titlename0:String=contree.selectedItem.@titlename;
+            	var tempdtsxml:XMLListCollection = new XMLListCollection();
+            	var ixml:XML=new XML;
+            	var tempstrxml:XML=XML(tempstr);
+            	tempdtsxml.source=XMLList(tempstrxml.view);
+            	if(tempdtsxml.source==userdtsxml.source) return;//检查是否有拖拽节点，没有，退出！控制在系统树拖拽！
+                if(tempdtsxml.length>0){//
+            		if( contree.selectedItem.localName()=="view") {
+            			for each (ixml in tempdtsxml.source){
+							if(ixml.@titlename==titlename0){
+								Alert.show("视图已经存在，不能插入！");
+								userdtsxml=tempdtsxml;
+				                userdtsxml.refresh();
+				                return;
+							}
+						}
+            		}else{
+            			if((usertree.selectedIndex<0)||(usertree.selectedItem.localName()!="view")||(contree.selectedItem.@key!="id")){
+            				Alert.show("请检查是否选择目标视图，或拖拽的是否是表单！");
+							userdtsxml=tempdtsxml;
+			                userdtsxml.refresh();
+            				return; 
+            			}
+            			var newNode:XML=XML(contree.selectedItem);
+            			var nodeadd:XMLList;
+            			
+            			var titlename1:String=usertree.selectedItem.@titlename;//目标树的插入VIEW名字
+            			for each (ixml in tempdtsxml.source){//查找目标树的插入VIEW
+            				if(ixml.@titlename==titlename1){
+            					nodeadd=XMLList(ixml);
+            				}
+            			}
+            			for each (ixml in nodeadd.children()){//查找目标树的插入VIEW
+            				if(ixml.@titlename==titlename0){
+	            				Alert.show("表单已经存在，不能插入！");
+								userdtsxml=tempdtsxml;
+				                userdtsxml.refresh();
+	            				return; 
+            				}
+            			}
+            			
+            			nodeadd[0].appendChild(newNode);
+						userdtsxml=tempdtsxml;
+		                userdtsxml.refresh();
+		            }
+            	}else if( contree.selectedItem.localName()!="view"){
+					Alert.show("请先拖拽表单！");
+					userdtsxml=tempdtsxml;
+	                userdtsxml.refresh();
+	                return;
+            	}
+            	tempstr="<views>"+userdtsxml.source.toXMLString()+"</views>";//将用户树转换为字符串进行保存，不能保存为XMLList/XMLListCollection
+            }        
+          ]]>
+    </mx:Script>
+	<mx:TitleWindow title="系统配置" width="100%" height="100%" fontSize="13"
+		 paddingTop="0" paddingBottom="0" paddingLeft="0" paddingRight="0">
+		<mx:HBox width="100%" height="100%">
+			<mx:VBox width="100%" height="100%">
+				<mx:Label text="系统功能配置"/>
+				<mx:Tree id="contree" dataProvider="{sysdtsxml}" labelField="@titlename" fontSize="13" width="100%" height="100%"
+						 itemClick="itemclickEvt();" doubleClickEnabled="true" doubleClick="modtree(event);"
+						 allowMultipleSelection="true"
+						 dragEnabled="true"
+						 dragComplete="onTreeDragComplete(event)"
+						 dropEnabled="false"
+						 dragMoveEnabled="false"/>
+			</mx:VBox>
+			<mx:VBox width="100%" height="100%">
+				<mx:HBox width="100%">
+					<mx:Label text="用户功能配置"/>
+					<mx:Spacer width="100%"/>
+					<mx:ComboBox id="usermenu" color="0x323232" fontSize="13" dataProvider="{usertype}"/>
+				</mx:HBox>
+				<mx:Tree id="usertree" dataProvider="{userdtsxml}" labelField="@titlename" fontSize="13" width="100%" height="100%"
+						 itemClick="itemclickEvt2();" doubleClickEnabled="true" doubleClick="modtree2(event);"
+						 allowMultipleSelection="true" 
+						 dropEnabled="true"/>
+
+			</mx:VBox>
+		</mx:HBox>
+	</mx:TitleWindow>
+	    <mx:Script>
+        <![CDATA[
+			Alert.buttonWidth = 100;
+			Alert.yesLabel = "确定";
+			Alert.noLabel = "取消";
+
+            private var titleWindow:TitleWindow;
+            [Bindable]
+            private var dtsxml:XML =
+				<views>
+					<view key="id" titlename="交易分析" value="view0" isBranch="true">
+						<form key="id" titlename="钻取分析" value="form0" isBranch="true">
+							<properties key="type" titlename="报表类别" value="chart0"/>
+							<properties key="database" titlename="数据源" value="dz1.xml"/>
+							<properties key="valuefield" titlename="数据字段" value="value"/>
+						</form>
+						<form key="id" titlename="钻取明细" value="form1" isBranch="true">
+							<properties key="type" titlename="报表类别" value="chart1"/>
+							<properties key="database" titlename="数据源" value="dz2.xml"/>
+							<properties key="valuefield" titlename="数据字段" value="value"/>
+						</form>
+					</view>
+					<view key="id" titlename="商户分析" value="view1" isBranch="true">
+						<form key="id" titlename="商户交易" value="form0" isBranch="true">
+							<properties key="type" titlename="报表类别" value="chart0"/>
+							<properties key="database" titlename="数据源" value="dz1.xml"/>
+							<properties key="valuefield" titlename="数据字段" value="value"/>
+						</form>
+						<form key="id" titlename="雷达图" value="form1" isBranch="true">
+							<properties key="type" titlename="报表类别" value="chart1"/>
+							<properties key="database" titlename="数据源" value="dz2.xml"/>
+							<properties key="valuefield" titlename="数据字段" value="value"/>
+						</form>
+					</view>
+					<view key="id" titlename="发卡分析" value="view2" isBranch="true">
+						<form key="id" titlename="卡类分析" value="form0" isBranch="true">
+							<properties key="type" titlename="报表类别" value="chart0"/>
+							<properties key="database" titlename="数据源" value="dz1.xml"/>
+							<properties key="valuefield" titlename="数据字段" value="value"/>
+							
+						</form>
+						<form key="id" titlename="状态分析" value="form1" isBranch="true">
+							<properties key="type" titlename="报表类别" value="chart1"/>
+							<properties key="database" titlename="数据源" value="dz2.xml"/>
+							<properties key="valuefield" titlename="数据字段" value="value"/>
+						</form>
+						<form key="name" titlename="视图属性" value="form2"/>
+						
+					</view>
+				</views>;
+            [Bindable]
+            private var dtsxml2:XML =
+				<views>
+				</views>;
+
+			[Bindable]
+            private var sysdtsxml:XMLListCollection = new XMLListCollection(dtsxml.view);
+			[Bindable]
+            private var userdtsxml:XMLListCollection = new XMLListCollection(dtsxml2.view);
+			private var tempstr:String="";
+			private var usertype:ArrayCollection = new ArrayCollection(
+				[ {label:"SUPERUSER", data:1}, 
+				{label:"高级用户", data:2}, 
+				{label:"普通用户", data:3} ]);
+			private function addindex(event:Event):void
+            {
+				Alert.show(contree.dataProvider.length.toString());
+            }
+            private function init():void{
+				var expandMenu:ContextMenu=new ContextMenu();
+				expandMenu.hideBuiltInItems();
+				var menumodtree:ContextMenuItem=new ContextMenuItem("系统－修改节点");
+				menumodtree.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, modtree);
+				expandMenu.customItems.push(menumodtree);
+
+				var menuaddnode:ContextMenuItem=new ContextMenuItem("系统－添加节点");
+				menuaddnode.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, addnode);
+				expandMenu.customItems.push(menuaddnode);
+
+				var menuremovenode:ContextMenuItem=new ContextMenuItem("系统－删除节点");
+				menuremovenode.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,removenode);
+				expandMenu.customItems.push(menuremovenode);
+				
+				var menunoselect:ContextMenuItem=new ContextMenuItem("清除选择");
+				menunoselect.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,noselect);
+				expandMenu.customItems.push(menunoselect);
+				contree.contextMenu=expandMenu;
+				
+				var expandMenu2:ContextMenu=new ContextMenu();
+				expandMenu2.hideBuiltInItems();
+				var menumodtree2:ContextMenuItem=new ContextMenuItem("用户－修改节点");
+				menumodtree2.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, modtree2);
+				expandMenu2.customItems.push(menumodtree2);
+
+				var menuaddnode2:ContextMenuItem=new ContextMenuItem("用户－添加节点");
+				menuaddnode2.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, addnode2);
+				expandMenu2.customItems.push(menuaddnode2);
+
+				var menuremovenode2:ContextMenuItem=new ContextMenuItem("用户－删除节点");
+				menuremovenode2.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,removenode2);
+				expandMenu2.customItems.push(menuremovenode2);
+				
+//				var menunoselect:ContextMenuItem=new ContextMenuItem("保存");
+//				menunoselect.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,noselect);
+//				expandMenu.customItems.push(menunoselect);
+				usertree.contextMenu=expandMenu2;
+            }
+            private function noselect(event:Event):void
+            {
+            	contree.selectedItem=null;
+            }
+            private function modtree(event:Event):void
+            {
+                if(contree.selectedIndex>=0){
+                	titleWindow = PopUpManager.createPopUp(this, modifytree1, true) as TitleWindow;
+                	PopUpManager.centerPopUp(titleWindow);
+                }else{Alert.show("请选择节点！");}
+            }
+            private function modtree2(event:Event):void
+            {
+                 if(usertree.selectedIndex>=0){
+                	titleWindow = PopUpManager.createPopUp(this, modifytree2, true) as TitleWindow;
+                	PopUpManager.centerPopUp(titleWindow);
+                	tempstr="<views>"+userdtsxml.source.toXMLString()+"</views>";
+                }else{Alert.show("请选择节点！");}
+            }
+            public function modtree22():void{
+            	tempstr="<views>"+userdtsxml.source.toXMLString()+"</views>";
+            }
+            private function itemclickEvt():void {  
+                var selectedNode:Object=contree.selectedItem;
+                if (contree.dataDescriptor.isBranch(selectedNode)) {//指示此节点是否为非终止节点的布尔值
+                	contree.expandItem(selectedNode,!contree.isItemOpen(selectedNode),true,true);   
+                }                 
+            }     
+            private function itemclickEvt2():void {  
+                var selectedNode:Object=usertree.selectedItem;
+                if (usertree.dataDescriptor.isBranch(selectedNode)) {//指示此节点是否为非终止节点的布尔值
+                	usertree.expandItem(selectedNode,!usertree.isItemOpen(selectedNode),true,true);   
+                }                 
+            }     
+          ]]>
+    </mx:Script>
+</mx:Application>

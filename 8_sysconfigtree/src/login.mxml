@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
+        title="用户登陆"
+        layout="vertical"
+        width="780"
+        height="450"
+        titleStyleName="titleText"
+        backgroundColor="#99994b1"
+        backgroundAlpha="1.0"
+        borderColor="white"
+        borderAlpha="1.0"
+        cornerRadius="0"
+        dropShadowEnabled="false"
+        creationComplete="init();">
+
+    <mx:Script>
+        <![CDATA[
+            import mx.controls.Alert;
+            import mx.events.CloseEvent;
+            import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.managers.CursorManager;
+			
+			import flash.net.Socket;
+			import flash.utils.ByteArray;
+			import flash.events.SecurityErrorEvent;
+			import flash.events.IOErrorEvent;
+			import flash.events.ProgressEvent;
+			import com.adobe.serialization.json.*;
+			import mx.collections.ArrayCollection;
+			
+			private var socket:Socket=new Socket();
+			private var tempstr:String="";
+			private var receivestr:String="";
+			private var jsonstr:String="";
+			private var ac1:ArrayCollection=new ArrayCollection;
+			private var ac2:ArrayCollection=new ArrayCollection;
+			
+			private function gologin():void{
+				var tempstr0:String="{\"version\":\"1.0\",\"type\":\"request\",\"reqflag\":false,\"reqtype\":\"json\",\"respflag\":false,\"resptype\":\"json\",\"active\":\"YSProxyDtpOperatorCheckPassword\"}";
+				var tempstr1:String="{\"USERNAME\":[\""+username.text+"\"],\"PASSWORD\":[\""+passwd.text+"\"]}";
+				tempstr=parentApplication.formatsendmsg(tempstr0)+parentApplication.formatsendmsg(tempstr1);
+				ta.text+="\n\n发送字串\n"+tempstr+"\n";
+				getConnect();
+			}
+			private function cancleclick():void{
+					PopUpManager.removePopUp(this);
+			}
+			private function init():void{
+				socket.addEventListener(ProgressEvent.SOCKET_DATA,funreceive);
+				socket.addEventListener(Event.CONNECT,funConnect);
+				socket.addEventListener(Event.CLOSE,funClose);
+				socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR,funSecurity);
+				socket.addEventListener(IOErrorEvent.IO_ERROR,funIOError);
+			}
+        ]]>
+    </mx:Script>
+
+    <mx:Style>
+        .titleText {
+            fontSize: 15px;
+            fontWeight:bold;
+        }
+        .headingText {
+            paddingTop: 10px;
+            paddingBottom: 10px;
+            fontSize: 13px;
+        }
+    </mx:Style>
+    <mx:HBox width="100%" height="100%">
+		<mx:VBox width="50%" height="100%" horizontalAlign="center">
+			<mx:HBox width="50%">
+				<mx:Label text="用户名：" fontSize="12"/>
+				<mx:Spacer width="100%"/>
+				<mx:TextInput id="username" width="100"  fontSize="12" text="USERNAME"/>
+			</mx:HBox>
+			<mx:HBox width="50%">
+				<mx:Label text="密　码：" fontSize="12"/>
+				<mx:Spacer width="100%"/>
+				<mx:TextInput id="passwd" width="100"  fontSize="12" displayAsPassword="true" text="PASSWORD"/>
+			</mx:HBox>
+			<mx:HBox width="100%" horizontalAlign="center">
+				<mx:Button label="登陆" fontSize="12" click="gologin()"/>
+				<mx:Button label="close" fontSize="12" click="cancleclick()"/>
+			</mx:HBox>
+		</mx:VBox>
+		<mx:VBox width="50%" height="100%" horizontalAlign="center">
+			<mx:HBox width="100%" horizontalAlign="center">
+				<mx:Label text="服务器地址：" fontSize="12" textAlign="right"/>
+				<mx:TextInput width="120" id="ip_text" text="192.168.0.77"/>
+				<mx:Label text="端口：" width="55" fontSize="12" textAlign="right"/>
+				<mx:TextInput width="60" id="port_text" text="16920"/>
+				<mx:Spacer width="20%"/>
+				<mx:Button label="更换SOCKET主机" click="chgsocket();"/>
+			</mx:HBox>
+			<mx:TextArea id="ta" width="100%" height="100%"/>
+		</mx:VBox>
+    </mx:HBox>
+	<mx:Script>
+		<![CDATA[
+			private function chgsocket():void {
+				if(ip_text.text=="192.168.0.77"){ip_text.text="192.168.0.201";port_text.text="6900";}
+				else {ip_text.text="192.168.0.77";port_text.text="16920";}
+			}
+			internal function getConnect():void{
+				var sIP:String = ip_text.text;
+				var sPort:Number = Number(port_text.text);
+				if(!(sIP&&sPort)){
+					Alert.show('服务器地址和端口号必填！','Warning:');
+				}else{
+					ta.text+= 'Connecting......\n';
+					socket.connect(sIP,sPort);
+				}
+			}
+			internal function funreceive(event:ProgressEvent):void
+			{
+				var mstr:ByteArray=new ByteArray;
+				while(socket.bytesAvailable){
+					socket.readBytes(mstr,0,socket.bytesAvailable);
+				}
+				ta.text+="返回字串\n"+mstr+"\r\n";
+				receivestr+=mstr;
+				if(receivestr.substr(-2,2)=="]}") {ta.text+="\n字串接收完毕\n";passorno();socket.close();}
+				
+			}
+            internal function passorno():void
+			{
+				var length:int=int(receivestr.substr(0,1));
+				jsonstr=receivestr.substr(1+length,int(receivestr.substr(1,length)));
+				jsonstr="["+jsonstr+"]";
+				var arr:Array=JSON.decode(jsonstr)as Array;
+				ac1=new ArrayCollection(arr);
+				receivestr=receivestr.substring(1+length+int(receivestr.substr(1,length)),receivestr.length);//取剩余字串
+				
+				length=int(receivestr.substr(0,1));
+				jsonstr=receivestr.substr(1+length,int(receivestr.substr(1,length)));
+				jsonstr="["+jsonstr+"]";
+				arr=JSON.decode(jsonstr)as Array;
+				ac2=new ArrayCollection(arr);
+				
+
+				if((ac1[0]["callrtn"]==0)&&(ac2[0]["__DICT_USER_RTN"][0]==0)){
+					parentApplication.editxml_text.text=ac2[0]["__DICT_IN"][0];
+//					parentApplication.disxml();
+					PopUpManager.removePopUp(this);
+				}else{
+					Alert.show("用户名、密码错误，请重新输入！");
+				}
+			}
+			internal function funConnect(event:Event):void
+			{
+				ta.text+="\n连接已建立\n";
+				receivestr="";
+				socket.writeMultiByte(tempstr,"CN-GB");
+				socket.flush();
+			}
+			internal function funClose(event:Event):void
+			{
+				ta.text+="\n连接已关闭\n";
+			}
+			internal function funSecurity(e:SecurityErrorEvent):void{
+				Alert.show('安全错误：'+e.text,'Security Error');
+				ta.text+= 'Security Error!';
+			}
+			internal function funIOError(e:IOErrorEvent):void{
+				Alert.show('IO错误：'+e.text,'Socket connect Error');
+				ta.text+= 'Socket connect Error!';
+			}
+		]]>
+	</mx:Script>
+	
+
+</mx:TitleWindow>
