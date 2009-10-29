@@ -9,6 +9,7 @@
 <sourceAttachmentPath/>
 </compiler>
 <applications>
+<application path="ServiceTest.mxml"/>
 <application path="basictree2_r1.mxml"/>
 <application path="websock.mxml"/>
 <application path="basictree2.mxml"/>
@@ -20,6 +21,7 @@
 <application path="basictree.mxml"/>
 <application path="configtest.mxml"/>
 <application path="xj.mxml"/>
+<application path="test.mxml"/>
 </applications>
 <modules/>
 <buildCSSFiles/>

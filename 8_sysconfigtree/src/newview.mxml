@@ -2,19 +2,20 @@
 <mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
         title="测试"
         layout="vertical"
-        width="780"
-        height="450"
+        width="980"
+        height="600"
         titleStyleName="titleText"
         backgroundColor="#99994b1"
         backgroundAlpha="1.0"
         borderColor="white"
         borderAlpha="1.0"
-        cornerRadius="0"
+        cornerRadius="0" close="{PopUpManager.removePopUp(this);}"
         dropShadowEnabled="false"
         creationComplete="init();">
 	<mx:Style source="flex_skins.css"/>
     <mx:Script>
         <![CDATA[
+        	import mx.controls.DataGrid;
             import mx.controls.Alert;
             import mx.events.CloseEvent;
             import mx.managers.PopUpManager;
@@ -36,12 +37,21 @@
 			private var jsonstr:String="";
 			private var ac1:ArrayCollection=new ArrayCollection;
 			private var ac2:ArrayCollection=new ArrayCollection;
-
+			private var dgac:ArrayCollection=new ArrayCollection;
+			
 			private var lb:Label;
 			private var bt:Button;
+			private var dg:DataGrid;
 			private var tx:Object = new Array() ;
+			private var txnum:int=0;//输入项数目
+			
+			private var tempstr0:String="";
+			private var tempstr1:String="";
+			private var viewlen:int=0;
+			private var cols:Array;
+				
 
-			private function cancleclick():void{
+			private function cancleclick(event:MouseEvent):void{
 					PopUpManager.removePopUp(this);
 			}
 			private function init():void{
@@ -51,8 +61,8 @@
 				socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR,funSecurity);
 				socket.addEventListener(IOErrorEvent.IO_ERROR,funIOError);
 				
-				var tempstr0:String="{version:\"1.0\",type:\"request\",reqflag:false,reqtype:\"json\",respflag:false,resptype:\"json\",active:\"YSProxyDtpDTSConfigSelect\"}";
-				var tempstr1:String="{\"__DICT_IN\":[\""+parentApplication.editxml_text.text+"\"]}";
+				tempstr0="{version:\"1.0\",type:\"request\",reqflag:false,reqtype:\"json\",respflag:false,resptype:\"json\",active:\"YSProxyDtpDTSConfigSelect\"}";
+				tempstr1="{\"__DICT_IN\":[\""+parentApplication.editxml_text.text+"\"]}";
 				tempstr=parentApplication.formatsendmsg(tempstr0)+parentApplication.formatsendmsg(tempstr1);
 				ta.text+="\n\n发送字串\n"+tempstr+"\n";
 				getConnect();
@@ -60,12 +70,22 @@
         ]]>
     </mx:Script>
     <mx:HBox width="100%" height="100%">
-		<mx:Canvas id="login" width="100%" height="100%"/>
+    	<mx:VBox width="50%" height="100%">
+    		<mx:Panel id="win_in" width="100%" height="50%" horizontalAlign="center" verticalAlign="middle"/>
+    		<mx:Panel id="win_out" width="100%" height="50%" textAlign="right" horizontalAlign="center"/>
+    		<mx:HBox id="state" width="100%">
+    			<mx:Label text="返回码：" fontSize="12"/>
+    			<mx:TextInput id="returncode" width="200"/>	
+    			<mx:Label text="返回信息：" fontSize="12" textAlign="right"/>
+    			<mx:TextInput id="returninfo" width="200"/>	
+    		</mx:HBox>
+       	</mx:VBox>
+		
 		<mx:TextArea id="ta" width="50%" height="100%"/>
 	</mx:HBox>
-	<mx:Button label="close" fontSize="12" click="cancleclick()" horizontalCenter="0"/>
 	<mx:Script>
 		<![CDATA[
+			import mx.controls.dataGridClasses.DataGridColumn;
 			import mx.controls.TextInput;
 			import mx.controls.Label;
 			import mx.controls.Button;
@@ -88,7 +108,7 @@
 				}
 				ta.text+="返回字串\n"+mstr+"\r\n";
 				receivestr+=mstr;
-				if((receivestr.substr(-4,4)=="</L>")||(receivestr.substr(-2,2)=="?>")) {
+				if((receivestr.substr(-4,4)=="</L>")||(receivestr.substr(-2,2)=="}0")||(receivestr.substr(-2,2)=="]}")) {
 					ta.text+="\n字串接收完毕\n";
 					socket.close();
 					if((receivestr.substr(-4,4)=="</L>")){
@@ -96,11 +116,53 @@
 							receivestr=receivestr.substring(1,receivestr.length);
 						}
 						makeview();
-					}else if(receivestr.substr(-2,2)=="?>"){
+					}else if(receivestr.substr(-2,2)=="}0"){
 						Alert.show('DTS号错误！','Warning:');
+					}else if(receivestr.substr(-2,2)=="]}"){
+						passorno();
 					}
 				}
+			}
+            internal function passorno():void
+			{
+				var length:int=int(receivestr.substr(0,1));
+				jsonstr=receivestr.substr(1+length,int(receivestr.substr(1,length)));
+				jsonstr="["+jsonstr+"]";
+				var arr:Array=JSON.decode(jsonstr)as Array;
+				ac1=new ArrayCollection(arr);
+				receivestr=receivestr.substring(1+length+int(receivestr.substr(1,length)),receivestr.length);//取剩余字串
 				
+				length=int(receivestr.substr(0,1));
+				jsonstr=receivestr.substr(1+length,int(receivestr.substr(1,length)));
+				jsonstr="["+jsonstr+"]";
+				arr=JSON.decode(jsonstr)as Array;
+				ac2=new ArrayCollection(arr);
+				if(ac1[0]["callrtn"]!=0){
+					returncode.text="callrtn:"+ac1[0]["callrtn"].toString();
+					returninfo.text="系统调用错误！";
+				}else if(ac2[0]["__DICT_USER_RTN"][0]!=0){
+					returncode.text="USER_RTN:"+ac2[0]["__DICT_USER_RTN"][0].toString();
+					returninfo.text=ac2[0]["__DICT_USER_RTNMSG"][0];
+				}else if((ac1[0]["callrtn"]==0)&&(ac2[0]["__DICT_USER_RTN"][0]==0)){
+					returncode.text="OK";
+					returninfo.text="系统调用成功！";
+					var i:int=0;
+					trace(ac2[0]["TRANSNAME"].length.toString());
+					for each(var temstr:String in ac2[0]["TRANSNAME"]){
+						var a:Object=new Object;
+						for(var j:int=0;j<cols.length;j++){
+							a[cols[j]["dataField"]]=ac2[0][cols[j]["dataField"]][i];
+						}
+						dgac.addItem(a);
+						dgac.refresh();
+						i++;
+					}
+				}
+//				for(var i:int=txnum;i<viewlen;i++){
+//						if(tx[i] == null) continue;
+//						if(ac2[0][tx[i].id] == null ) tx[i].text = "";
+//						else tx[i].text=ac2[0][tx[i].id][0];
+//				}
 			}
             internal function makeview():void
 			{
@@ -108,87 +170,191 @@
 				var viewlist:XMLList=XMLList(viewxml.L.L);
 				var viewcoll:XMLListCollection=new XMLListCollection;
 				viewcoll.source=viewlist;
-				var viewlen:int=viewcoll.length;
-				var tempstr0:String="{\"";
+				viewlen=viewcoll.length;
 				
 				for(var i:int=0; i < viewlen; i++)
 				{
 	                var children:XMLList = viewcoll[i].children();
-	                for(var j:int=0; j < children.length(); j++) {
-	                    trace(children[j].@KEY);
-	                    
-						if(children[j].@KEY.toUpperCase()=="LABEL"){
-							lb = new Label();
-							lb.id="lb"+i.toString();
-							lb.x=50;
-							lb.y=50+i*30;
-							for each(var txml:XML in children[j].children())
-							{
-							    trace(txml.@KEY);
-							    if(txml.@KEY.toUpperCase()=="TEXT"){
-							    	lb.text =txml.@VALUE;
-							    }
+//	                trace(viewcoll[i].parent().@KEYNAME);
+	                if(viewcoll[i].parent().@VALUE=="windows IN"){
+	                	var hbin:HBox=new HBox();
+		                for(var j:int=0; j < children.length(); j++) {
+		                    trace(children[j].@KEY);
+		                    if(children[j].@KEY.toUpperCase()=="LABEL"){
+								lb = new Label();
+								lb.id="lb"+i.toString();
+								lb.x=50;
+								lb.y=50+i*25;
+								for each(var txml:XML in children[j].children())
+								{
+								    trace(txml.@KEY);
+								    if(txml.@KEY.toUpperCase()=="TEXT"){
+								    	lb.text =txml.@VALUE;
+								    }
+								}
+								hbin.addChild(lb);
 							}
-							login.addChild(lb);
+							else if(children[j].@KEY.toUpperCase()=="TEXTINPUT"){
+								tx[i] = new TextInput;
+								txnum++;
+								tx[i].x=150;
+								tx[i].width=180;
+								tx[i].y=50+i*25;
+								for each(var txml:XML in children[j].children())
+								{
+								    trace(txml.@KEY);
+								    if(txml.@KEY.toUpperCase()=="LENGTH"){
+								    	tx[i].maxChars=int(txml.@VALUE);
+								    }
+								    if((txml.@KEY.toUpperCase()=="DISPLAYASPASSWORD")&&(txml.@VALUE=="1")){
+								    	tx[i].displayAsPassword=true;
+								    }
+								    if(txml.@KEY.toUpperCase()=="HOST_DICT_NAME"){
+								    	tx[i].id=txml.@VALUE;
+								    }
+								}
+								hbin.addChild(tx[i]);
+							}
+							else if(children[j].@KEY.toUpperCase()=="BUTTON"){
+								bt=new Button();
+								bt.id="Button"+i.toString();
+								bt.x=150;
+								bt.y=100+i*25;
+								for each(var txml:XML in children[j].children())
+								{
+								    trace(txml.@KEY);
+								    if(txml.@KEY.toUpperCase()=="LABEL"){
+								    	bt.label=txml.@VALUE;
+								    }
+								    if(txml.@KEY.toLowerCase()=="version"){
+								    	tempstr0="{\"version\":\""+txml.@VALUE+"\",\"";
+								    }
+								    if(txml.@KEY.toLowerCase()=="type"){
+								    	tempstr0+="type\":\""+txml.@VALUE+"\",\"";
+								    }
+								    if(txml.@KEY.toLowerCase()=="reqflag"){
+								    	tempstr0+="reqflag\":"+txml.@VALUE+",\"";
+								    }
+								    if(txml.@KEY.toLowerCase()=="reqtype"){
+								    	tempstr0+="reqtype\":\""+txml.@VALUE+"\",\"";
+								    }
+								    if(txml.@KEY.toLowerCase()=="respflag"){
+								    	tempstr0+="respflag\":"+txml.@VALUE+",\"";
+								    }
+								    if(txml.@KEY.toLowerCase()=="resptype"){
+								    	tempstr0+="resptype\":\""+txml.@VALUE+"\",\"";
+								    }
+								    if(txml.@KEY.toLowerCase()=="active"){
+								    	tempstr0+="active\":\""+txml.@VALUE+"\"}";
+								    }
+								}
+								trace("tempstr0",tempstr0);
+								bt.addEventListener(MouseEvent.CLICK,clicktx);
+								hbin.addChild(bt);
+								
+							}
+							if(children[j].@KEY.toUpperCase()!="LABEL")win_in.addChild(hbin);
 						}
-						else if(children[j].@KEY.toUpperCase()=="TEXTINPUT"){
-							tx[i] = new TextInput;
-							tx[i].x=150;
-							tx[i].y=50+i*30;
-							for each(var txml:XML in children[j].children())
-							{
-							    trace(txml.@KEY);
-							    if(txml.@KEY.toUpperCase()=="LENGTH"){
-							    	tx[i].maxChars=int(txml.@VALUE);
-							    }
-							    if((txml.@KEY.toUpperCase()=="DISPLAYASPASSWORD")&&(txml.@VALUE=="1")){
-							    	tx[i].displayAsPassword=true;
-							    }
-							    if(txml.@KEY.toUpperCase()=="HOST_DICT_NAME"){
-							    	tx[i].id=txml.@VALUE;
-							    }
+						
+	                }else if(viewcoll[i].parent().@VALUE=="windows OUT"){
+		                for(var j:int=0; j < children.length(); j++) {
+		                    trace(children[j].@KEY);
+		                    
+							if(children[j].@KEY.toUpperCase()=="LABEL"){
+								lb = new Label();
+								lb.id="lb"+i.toString();
+								lb.x=50;
+								lb.y=20+i*25;
+								for each(var txml:XML in children[j].children())
+								{
+								    trace(txml.@KEY);
+								    if(txml.@KEY.toUpperCase()=="TEXT"){
+								    	lb.text =txml.@VALUE;
+								    }
+								}
+								win_out.addChild(lb);
 							}
-							login.addChild(tx[i]);
-						}
-						else if(children[j].@KEY.toUpperCase()=="BUTTON"){
-							bt=new Button();
-							bt.id="Button"+i.toString();
-							bt.x=150;
-							bt.y=100+i*30;
-							for each(var txml:XML in children[j].children())
-							{
-							    trace(txml.@KEY);
-							    if(txml.@KEY.toUpperCase()=="LABEL"){
-							    	bt.label=txml.@VALUE;
-							    }
-							    if(txml.@KEY.toLowerCase()=="version"){
-							    	tempstr0+="version\""+txml.@VALUE;
-							    }
+							else if(children[j].@KEY.toUpperCase()=="TEXTINPUT"){
+								tx[i] = new TextInput;
+								tx[i].x=150;
+								tx[i].width=180;
+								tx[i].y=20+i*25;
+								for each(var txml:XML in children[j].children())
+								{
+								    trace(txml.@KEY);
+								    if(txml.@KEY.toUpperCase()=="LENGTH"){
+								    	tx[i].maxChars=int(txml.@VALUE);
+								    }
+								    if((txml.@KEY.toUpperCase()=="DISPLAYASPASSWORD")&&(txml.@VALUE=="1")){
+								    	tx[i].displayAsPassword=true;
+								    }
+								    if(txml.@KEY.toUpperCase()=="HOST_DICT_NAME"){
+								    	tx[i].id=txml.@VALUE;
+								    }
+								}
+								win_out.addChild(tx[i]);
 							}
-/*							
-"{\"version\":\"1.0\",\"type\":\"request\",\"reqflag\":false,\"reqtype\":\"json\",\"respflag\":false,\"resptype\":\"json\",\"active\":\"YSProxyDtpOperatorCheckPassword\"}";
-version		version" VALUE="1.0"/>
-type		type" VALUE="request"/>		
-reqflag		reqflag" VALUE="[bool]true"/>
-reqtype		reqtype" VALUE="json2userbus"/>
-respflag		respflag" VALUE="[bool]true"/>
-resptype		resptype" VALUE="json"/>
-active		active" VALUE="YSAccountMX"/>
-							
-							
-							
-							
-							
-							*/
-							bt.addEventListener(MouseEvent.CLICK,clicktx);
-							login.addChild(bt);
+							else if(children[j].@KEY.toUpperCase()=="BUTTON"){
+								bt=new Button();
+								bt.id="Button"+i.toString();
+								bt.x=150;
+								bt.y=70+i*25;
+								for each(var txml:XML in children[j].children())
+								{
+								    trace(txml.@KEY);
+								    if(txml.@KEY.toUpperCase()=="LABEL"){
+								    	bt.label=txml.@VALUE;
+								    }
+								}
+								trace("tempstr0",tempstr0);
+								bt.addEventListener(MouseEvent.CLICK,cancleclick);
+								win_out.addChild(bt);
+							}
+							else if(children[j].@KEY.toUpperCase()=="DATAGRID"){
+								dg=new DataGrid();
+								dg.id="DATAGRID";
+								dg.dataProvider=dgac;
+								cols = new Array();
+								for each(var txml:XML in children[j].children())
+								{
+									var column:DataGridColumn=new DataGridColumn();
+									for each(var txml2:XML in txml.children()){
+										
+										if(txml2.@KEY.toLowerCase()=="headertext"){
+											column.headerText=txml2.@VALUE;
+										}else if(txml2.@KEY.toLowerCase()=="datafield"){
+											column.dataField=txml2.@VALUE;
+										}else if(txml2.@KEY.toLowerCase()=="width"){
+											column.width=int(txml2.@VALUE);
+										}
+										
+  									}
+  									cols.push(column);
+//								    trace(txml.@KEY);
+//								    if(txml.@KEY.toUpperCase()=="DATAGRIDCOLUMN"){
+//								    	trace(txml.child("A").@KEY);
+//								    }
+								}
+								dg.columns = cols;
+								win_out.addChild(dg);
+							}
 						}
 	                }
 				}
-				
+				tx[0].text="7689190110100223932";
+				tx[1].text="20090101";
+				tx[2].text="20091001";
 			}
 			internal function clicktx(event:MouseEvent):void{
-				Alert.show(tx[0].id+"-----"+tx[1].id);
+//				Alert.show(tx[0].id+"-----"+tx[1].id);
+				tempstr1="{";
+				for(var i:int=0;i<txnum;i++){
+					tempstr1+="\""+tx[i].id+"\":[\""+tx[i].text+"\"],"
+				}
+				tempstr1=tempstr1.substr(0,tempstr1.length-1)+"}";
+				tempstr=parentApplication.formatsendmsg(tempstr0)+parentApplication.formatsendmsg(tempstr1);
+				ta.text+="\n\n发送字串\n"+tempstr+"\n";
+				getConnect();
 			}
 			internal function funConnect(event:Event):void
 			{

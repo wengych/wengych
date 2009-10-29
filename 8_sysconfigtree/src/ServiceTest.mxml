@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute"
+    creationComplete="init();">
+    <mx:Script>
+        <![CDATA[
+        import mx.collections.ArrayCollection;
+        import com.yspay.ServiceCall;
+        import com.yspay.SocketCompleteEvent;
+        
+        private var service:ServiceCall;
+        private var arr_sock_recv:ByteArray = new ByteArray();
+        private function init():void
+        {
+            arr_sock_recv.writeMultiByte('init', 'CN-GB');
+            var acl:ArrayCollection;
+            var req_head:String = '{version:"1.0",type:"request",reqflag:true,reqtype:"json2userbus",respflag:true,resptype:"json",active:"YSCAppSysServ2"}';
+            var req_body:String = '{"__DICT_IN":["YSCAppSysServ2"]}';
+            if (service == null)
+                service = new ServiceCall();
+            
+            this.addEventListener(SocketCompleteEvent.OPERATION_COMPLETE, DataReady);
+            
+            service.SetServerInfo("192.168.0.77", 16920);
+            service.SetCompleteHandler(req_head, req_body, this);
+            
+            service.do_service_call();
+        }
+        
+        private function DataReady(event:SocketCompleteEvent):void
+        {
+            trace("DataReady:", event.resultData);
+            
+            ta.text = event.resultData;
+        }
+        ]]>
+    </mx:Script>
+    <mx:TextArea x="162" y="123" width="402" height="352" id="ta"/>
+</mx:Application>

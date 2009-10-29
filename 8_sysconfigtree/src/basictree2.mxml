@@ -29,9 +29,11 @@
 			private var tempstr:String="";
 			private var receivestr:String="";
 			private var initflag:Boolean=true;
-			private var isdelete:Boolean=false;
+			private var issavedelete:Boolean=false;
 			private var mstr:ByteArray=new ByteArray;
-			
+			private var totallength:int=999999;
+			private var selectedindex:int=-1;
+				
 			
 			private function creationCompleteHandler():void 
 			{
@@ -79,14 +81,16 @@
 			private var dtsxml:XML =<L/>;
 
 			[Bindable]
-			private var sysdtsxml:XMLListCollection = new XMLListCollection(dtsxml.L);
+			private var sysdtsxml:XMLListCollection = new XMLListCollection(dtsxml.*);
 			[Bindable]
-			private var userdtsxml:XMLListCollection = new XMLListCollection(dtsxml2.L);
+			private var userdtsxml:XMLListCollection = new XMLListCollection(dtsxml2.*);
 			private function onTreeDragComplete(event:DragEvent):void {showtext();}
 			private function showtext():void {
 				dtsxml2.@KEYNAME=headkeyname.text;
 				dtsxml2.@VALUE=headvalue.text;
 				ta.text=dtsxml2.toXMLString();
+//				userdtsxml.source=XMLList(dtsxml2.*);
+//				userdtsxml.refresh();
 //				ta.text+="\n--dtsxml2.@KEYNAME:"+dtsxml2.@KEYNAME+"\n--dtsxml2.@VALUE:"+dtsxml2.@VALUE+"\n";
 			}
 			private function removenode(event:Event):void{
@@ -98,7 +102,7 @@
 			}
 			private function removeClickHandler(event:CloseEvent):void {
 				if (event.detail==Alert.YES){
-					isdelete=true;
+					issavedelete=true;
 					var tempstr0:String="{version:\"1.0\",type:\"request\",reqflag:false,reqtype:\"json\",respflag:false,resptype:\"json\",active:\"YSProxyDtpDTSConfigDelete\"}";
 					var tempstr1:String="{\"__DICT_IN\":[\""+systree.selectedItem.@VALUE+"\"]}";
 					tempstr=formatsendmsg(tempstr0)+formatsendmsg(tempstr1);
@@ -108,20 +112,19 @@
 			}
 			private function removenode2(event:Event):void
 			{
-				if(usertree.selectedIndex>=0) Alert.show("是否要删除节点？-->"+usertree.selectedItem.@KEYNAME, "删除节点",3, this, removeClickHandler2);
-				else {Alert.show("请选择节点！");}
-			}
-			private function removeClickHandler2(event:CloseEvent):void {
-				if (event.detail==Alert.YES){
-					var children:XMLList = XMLList(usertree.selectedItem.parent()).children();
+				if(usertree.selectedIndex>=0) {
+					var children:XMLList = XMLList(usertree.selectedItem.parent().children());
 					for(var i:int=0; i < children.length(); i++) {
 						if( children[i].@KEYNAME == XML(usertree.selectedItem).@KEYNAME ) {
 							delete children[i];
 						}
 					}
-				}
-				usertree.dataProvider=dtsxml2.L;
-				showtext();
+				dtsxml2.@KEYNAME=headkeyname.text;
+				dtsxml2.@VALUE=headvalue.text;
+				ta.text=dtsxml2.toXMLString();
+				userdtsxml.source=XMLList(dtsxml2.*);
+				userdtsxml.refresh();
+				}else {Alert.show("请选择节点！");}
 			}
 			private function saveconfig(event:Event):void
 			{
@@ -129,6 +132,7 @@
 			}
 			private function saveconfigHandler(event:CloseEvent):void {
 				if (event.detail==Alert.YES){
+					issavedelete=true;
 					dtsxml2.@KEYNAME=headkeyname.text;
 					dtsxml2.@VALUE=headvalue.text;
 					var tempstr0:String="{version:\"1.0\",type:\"request\",reqflag:false,reqtype:\"xml\",respflag:false,resptype:\"json\",active:\"YSProxyDtpDTSConfigInsert\",reqmemo:\" \",application:\"MyApp\",username:\"admin\"}";
@@ -175,24 +179,14 @@
 				if(ip_text.text=="192.168.0.77"){ip_text.text="192.168.0.201";port_text.text="6900";}
 				else {ip_text.text="192.168.0.77";port_text.text="16920";}
 			}
-			private function modclick():void{
-                var nodeadd:XMLList=XMLList(usertree.selectedItem);
-                var str:String="";
-                var newNode:XML;
-				usertree.selectedItem.@KEYNAME=KEYNAMEtext.text;
-                usertree.selectedItem.@KEY=keytext.text;
-                usertree.selectedItem.@VALUE=valuetext.text;
-                usertree.invalidateList();
-                usertree.invalidateDisplayList();
-                showtext();
-			}
 			private function cleartree():void{
-				dtsxml2=<L KEY="config" KEYNAME="字段定义1" VALUE="field"/>;
+//				dtsxml2=<L KEY="config" KEYNAME="字段定义1" VALUE="field"/>;
 				dtsxml2.@KEYNAME=headkeyname.text;
 				dtsxml2.@VALUE=headvalue.text;
+				userdtsxml.source=XMLList(dtsxml2.*);
+				while (userdtsxml.length>0) {userdtsxml.removeAll();}
 				ta.text=dtsxml2.toXMLString();
-				userdtsxml.source=XMLList(dtsxml2.L);
-				userdtsxml.refresh();
+//				userdtsxml.refresh();
 			}
 		]]>
 	</mx:Script>
@@ -236,22 +230,23 @@
 				<mx:Tree labelField="@KEYNAME" dataProvider="{userdtsxml}"
 						 id="usertree" width="100%" height="80%"
 						 allowMultipleSelection="true"                
-						 dragEnabled="true"
+						 dragEnabled="true" click="{selectedindex=usertree.selectedIndex;}"
 						 dragComplete="onTreeDragComplete(event)"
 						 dropEnabled="true"/>
 				<mx:HBox width="100%" horizontalAlign="left">
 					<mx:Label text="标题：" fontSize="12"/>
-					<mx:TextInput id="KEYNAMEtext" width="150"  fontSize="12" text="{usertree.selectedItem.@KEYNAME}"/>
-					<mx:Button label="修改" fontSize="12" click="modclick()"/>
+					<mx:TextInput id="KEYNAMEtext" width="150"  fontSize="12" text="{usertree.selectedItem.@KEYNAME}"
+						change="{if(usertree.selectedIndex==selectedindex) {usertree.selectedItem.@KEYNAME=KEYNAMEtext.text;showtext();}}"/>
 				</mx:HBox>
 				<mx:HBox width="100%" horizontalAlign="left">
 					<mx:Label text="键名：" fontSize="12"/>
-					<mx:TextInput id="keytext" width="150"  fontSize="12" text="{usertree.selectedItem.@KEY}"/>
+					<mx:TextInput id="keytext" width="150"  fontSize="12" text="{usertree.selectedItem.@KEY}" 
+						change="{if(usertree.selectedIndex==selectedindex) {usertree.selectedItem.@KEY=keytext.text;showtext();}}"/>
 				</mx:HBox>
 				<mx:HBox width="100%" horizontalAlign="left">
 					<mx:Label text="键值：" fontSize="12"/>
-					<mx:TextInput id="valuetext" width="170" fontSize="12" text="{usertree.selectedItem.@VALUE}"/>
-					
+					<mx:TextInput id="valuetext" width="170" fontSize="12" text="{usertree.selectedItem.@VALUE}" 
+						change="{if(usertree.selectedIndex==selectedindex) {usertree.selectedItem.@VALUE=valuetext.text;showtext();}}"/>
 				</mx:HBox>
 			</mx:VBox>
 			<mx:VBox width="50%" height="100%">
@@ -293,24 +288,43 @@
 				while(socket.bytesAvailable){
 					socket.readBytes(tempmstr,0,socket.bytesAvailable);
 				}
-				mstr.writeBytes(tempmstr);
+				mstr.writeBytes(tempmstr,0,tempmstr.length);
 				ta.text+="返回字串\n"+tempmstr+"\r\n";
-				trace("tempmstr",tempmstr.length);
-				trace("tempmstr",tempmstr[0]);
-				trace("tempmstr",tempmstr[1]);
-				trace("mstr",mstr.length);
-				trace("mstr",mstr[0]);
-				trace("mstr",mstr[1]);
+//				trace("tempmstr",tempmstr.length);
+//				trace("tempmstr",tempmstr[0]);
+//				trace("tempmstr",tempmstr[1]);
+//				trace("mstr",mstr.length);
+//				trace("mstr",mstr[0]); change="{Alert.show('kkk');}"
+//				trace("mstr",mstr[1]);
 				receivestr="";
-				receivestr+=tempmstr;
-				if((receivestr.substr(-2,2)=="]}")||(receivestr.substr(-4,4)=="</L>")||(receivestr.substr(-4,4)=="ews>")
-				||(receivestr.substr(-4,4)=="fig>")||(receivestr.substr(-2,2)=="}0")||(receivestr.substr(-2,2)=="?>")) {
+				receivestr+=mstr;
+				var lengleng:int=0;
+				var leng:int=0;
+				var lengleng1:int=0;
+				var leng1:int=0;
+				lengleng=int(receivestr.substr(0,1));
+				leng=int(receivestr.substr(1,lengleng));
+				if(receivestr.length>(leng+1+lengleng)){
+					lengleng1=int(receivestr.substr(1+lengleng+leng,1));
+					leng1=int(receivestr.substr(2+lengleng+leng,lengleng1));
+					totallength=2+lengleng+leng+lengleng1+leng1;
+				}
+//				if((receivestr.substr(-2,2)=="]}")||(receivestr.substr(-4,4)=="</L>")||(receivestr.substr(-4,4)=="ews>")
+//				||(receivestr.substr(-4,4)=="fig>")||(receivestr.substr(-2,2)=="}0")||(receivestr.substr(-2,2)=="?>")) {
+				if(mstr.length>=totallength){
 					receivestr="";
 					receivestr+=mstr;
-					ta.text+="**************所有返回字串**************\n"+receivestr+"\r\n";
+					ta.text+="*****MSTR*****\n"+mstr+"\r\n";
 					ta.text+="\n字串接收完毕\n";
+					ta.text+="*********************返回字串－－末尾200********************\n"+receivestr.substr(-200,200)+"\r\n";
+					while ((receivestr.substr(-2,2)!="}0")&&(receivestr.substr(-1,1)!=">")&&(receivestr.substr(-2,2)!="]}")){
+						receivestr=receivestr.substring(0,receivestr.length-1);
+					}
+					ta.text+="*********************调整后－－末尾200********************\n"+receivestr.substr(-200,200)+"\r\n";
+					ta.text+="\n调整完毕\n";
 					mstr=new ByteArray;
 					socket.close();
+					totallength=999999;
 					if((initflag)&&(receivestr.substr(-4,4)=="</L>")){
 						initflag=false;
 						while (receivestr.substr(0,6)!="<L KEY"){
@@ -338,8 +352,8 @@
 					}else if(receivestr.substr(-2,2)=="?>"){
 						Alert.show('DTS号错误！','Warning:');
 					}
-					if(isdelete){
-						isdelete=false;
+					if(issavedelete){
+						issavedelete=false;
 						if(receivestr.substr(-4,4)=="[0]}"){
 							editxml_text.text="";
 							editxml();

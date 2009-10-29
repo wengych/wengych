@@ -27,6 +27,14 @@ TextInput {
    fontSize: 12;
    maxChars:21;
 }
+DataGrid{
+	headerStyleName: "dataGridHeader";
+	fontSize:13;
+}
+.dataGridHeader
+{
+	fontSize:13;
+}
 TextArea {
    borderStyle: solid;
    borderColor: #000000;

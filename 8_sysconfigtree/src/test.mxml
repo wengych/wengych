@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute"
+    creationComplete="init();">
+    <mx:Script>
+        <![CDATA[
+            private var str:String
+            private function init():void
+            {
+                str = 'test';
+                trace(str);
+                
+                lb_text.text = " aaa'";
+            } 
+        ]]>
+    </mx:Script>
+    <mx:Label x="267" y="173" id="lb_text"/>
+</mx:Application>
