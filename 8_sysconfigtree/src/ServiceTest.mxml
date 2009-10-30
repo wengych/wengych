@@ -5,7 +5,7 @@
         <![CDATA[
         import mx.collections.ArrayCollection;
         import com.yspay.ServiceCall;
-        import com.yspay.SocketCompleteEvent;
+        import com.yspay.ServiceCallCompleteEvent;
         
         private var service:ServiceCall;
         private var arr_sock_recv:ByteArray = new ByteArray();
@@ -18,7 +18,7 @@
             if (service == null)
                 service = new ServiceCall();
             
-            this.addEventListener(SocketCompleteEvent.OPERATION_COMPLETE, DataReady);
+            this.addEventListener(ServiceCallCompleteEvent.OPERATION_COMPLETE, DataReady);
             
             service.SetServerInfo("192.168.0.77", 16920);
             service.SetCompleteHandler(req_head, req_body, this);
@@ -26,11 +26,12 @@
             service.do_service_call();
         }
         
-        private function DataReady(event:SocketCompleteEvent):void
+        private function DataReady(event:ServiceCallCompleteEvent):void
         {
-            trace("DataReady:", event.resultData);
+            trace("DataReady:", event.ResponseHead);
+            trace("DataReady:", event.ResponseBody);
             
-            ta.text = event.resultData;
+            ta.text = event.ResponseHead + "\n" + event.ResponseBody;
         }
         ]]>
     </mx:Script>

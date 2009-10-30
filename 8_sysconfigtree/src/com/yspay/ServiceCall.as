@@ -17,9 +17,12 @@ package com.yspay
         private var _serverPort:int;
         // private var arr_sock_recv:ByteArray;
         private var _strRequest:String;
-        private var _isSocketFirstPackage:Boolean = true;
-        private var _currentPackage:String;
-        private var _currentPackageLenth:int = 0;
+        private var _isGetPackageLen:Boolean = true;
+        private var _isGetPackageHead:Boolean = true;
+        private var _currentPackage:ByteArray = new ByteArray();
+        private var _currentPackageLength:int = 0;
+        private var _responseHead:String;
+        private var _responseBody:String;
         private var _charSet:String = "CN-GB";
         private var _sockCompEventListener:EventDispatcher;
         
@@ -33,7 +36,7 @@ package com.yspay
             _serverPort = port;
         }
         
-        private function FormatSendMsg(msg:String):String{
+        public function FormatSendMsg(msg:String):String{
             var m:ByteArray = new ByteArray();
             m.writeMultiByte(msg, _charSet);
             var msglen:String = m.length.toString();
@@ -59,30 +62,65 @@ package com.yspay
             _socket.connect(_serverIp, _serverPort);
         }
         
-        internal function socket_recv_data(event:ProgressEvent):void
+        private function GetPackage():String
         {
-            if (this._isSocketFirstPackage == true &&
+            if (this._isGetPackageLen == true &&
                 _socket.bytesAvailable > 0)
             {
                 var len_of_len:String = _socket.readMultiByte(1, _charSet);
-                this._currentPackageLenth = 
+                this._currentPackageLength = 
                     int(_socket.readMultiByte(int(len_of_len), _charSet));
                 
-                trace ("接收数据长度:", _currentPackageLenth);
-                this._isSocketFirstPackage = false;
+                trace ("接收数据长度:", _currentPackageLength);
+                this._isGetPackageLen = false;
+                
             }
-            if (this._isSocketFirstPackage == false &&
+            if (this._isGetPackageLen == false &&
                 _socket.bytesAvailable > 0)
             {
-                _currentPackage =
-                    _socket.readMultiByte(_currentPackageLenth, _charSet);
+                _socket.readBytes(_currentPackage, 0, _currentPackageLength);
                 
-                trace ("接收数据内容:", _currentPackage);
-                this._isSocketFirstPackage = true;
-                this._socket.close();
+                trace ("接收数据内容:", _currentPackage.toString());
+                this._isGetPackageLen = true;
                 
-                this._sockCompEventListener.dispatchEvent(new SocketCompleteEvent(_currentPackage));
+                // this._sockCompEventListener.dispatchEvent(new SocketCompleteEvent(_currentPackage));
             }
+            
+            var strRtn:String =  _currentPackage.readMultiByte(_currentPackage.bytesAvailable, _charSet);
+            _currentPackage.length = 0;
+            
+            return strRtn;
+        }
+        private function GetResponseHead():void
+        {
+            _responseHead = GetPackage();
+            
+            if (_responseHead.length > 0)
+                this._isGetPackageHead = false;
+        }
+        
+        private function GetResponseBody():void
+        {
+            _responseBody = GetPackage();
+        }
+        internal function socket_recv_data(event:ProgressEvent):void
+        {
+            if (this._isGetPackageHead == true &&
+                _socket.bytesAvailable > 0)
+            {
+                GetResponseHead();
+            }
+            if (this._isGetPackageHead == false &&
+                _socket.bytesAvailable > 0)
+            {
+                GetResponseBody();
+                this._isGetPackageHead = true;
+                _socket.close();
+                
+                this._sockCompEventListener.dispatchEvent(
+                    new ServiceCallCompleteEvent(this._responseHead, this._responseBody));
+            }
+            
         }
         
         internal function socket_connected(event:Event):void
