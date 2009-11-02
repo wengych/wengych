@@ -21,6 +21,7 @@
 			
 			import com.yspay.ServiceCall;
 			import com.yspay.ServiceCallCompleteEvent;
+			import com.yspay.DBSDTSObject.DtsRequest;
 			
 			import flash.net.Socket;
 			import flash.utils.ByteArray;
@@ -28,6 +29,7 @@
 			import flash.events.IOErrorEvent;
 			import flash.events.ProgressEvent;
 			import com.adobe.serialization.json.*;
+			
 			private var socket:Socket=new Socket();
 			private var tempstr:String="";
 			private var receivestr:String="";
@@ -88,7 +90,7 @@
 			    ta.text += "\n接收数据包体:\n";
 			    ta.text += event.ResponseBody;
                 
-                var arr:Array = JSON.decode("[" + event.ResponseHead + "]") as Array;
+                // var arr:Array = JSON.decode("[" + event.ResponseHead + "]") as Array;
                 
                 dtsxml=XML(event.ResponseBody);
                 sysdtsxml.source=XMLList(dtsxml.L);
@@ -180,13 +182,18 @@
 				return(msg);
 			}
 			private function editxml():void {
-				initflag=true;
-				var tempstr0:String="{version:\"1.0\",type:\"request\",reqflag:false,reqtype:\"json\",respflag:false,resptype:\"json\",active:\"YSDBSDTSObjectConfigSelect\"}";
-				var tempstr1:String="{\"__DICT_IN\":[\""+editxml_text.text+"\"]}";
-				tempstr=formatsendmsg(tempstr0)+formatsendmsg(tempstr1);
-				ta.text+="\n\n发送字串\n"+tempstr+"\n";
-				// getConnect();
-				_serviceCall.do_service_call(tempstr0, tempstr1);
+			    var service_call:ServiceCall = new ServiceCall();
+                var userbus:Object = new Object();
+                if (editxml_text.text.length == 0)
+                    userbus['"__DICT_IN"'] = ['ALL'];
+                else
+                    userbus['"__DICT_IN"'] = [editxml_text.text];
+				var dtsCfgSel:DtsRequest = new DtsRequest(JSON.encode(userbus));
+				dtsCfgSel.SetHead('true', '"json2userbus"', 'true', '"xml2"', '"YSDBSDTSObjectConfigSelect"');
+				
+				service_call.SetCompleteHandler(this);
+				service_call.SetServerInfo(ip_text.text, int(port_text.text));
+				service_call.do_service_call(dtsCfgSel.RequestHead, dtsCfgSel.RequestBody);
 			}
 			public function disxml():void {
 				var tempstr0:String="{version:\"1.0\",type:\"request\",reqflag:false,reqtype:\"json\",respflag:false,resptype:\"json\",active:\"YSDBSDTSObjectSelect\"}";
@@ -202,7 +209,6 @@
 					PopUpManager.centerPopUp(titleWindow);
 //                	tempstr="<views>"+userdtsxml.source.toXMLString()+"</views>";
 				}else{Alert.show("请输入DTS号！");}
-
 			}
 			
 			private function chgsocket():void {

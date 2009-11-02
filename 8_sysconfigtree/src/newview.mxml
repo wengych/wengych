@@ -32,6 +32,10 @@
 			import mx.collections.ArrayCollection;
 			import mx.formatters.DateFormatter;//时间数据格式化
 			
+			import com.yspay.ServiceCall;
+			import com.yspay.ServiceCallCompleteEvent;
+			import com.yspay.DBSDTSObject.DtsRequest;
+			
 			private var socket:Socket=new Socket();
 			private var tempstr:String="";
 			private var receivestr:String="";
@@ -59,20 +63,32 @@
 					PopUpManager.removePopUp(this);
 			}
 			private function init():void{
-				socket.addEventListener(ProgressEvent.SOCKET_DATA,funreceive);
-				socket.addEventListener(Event.CONNECT,funConnect);
-				socket.addEventListener(Event.CLOSE,funClose);
-				socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR,funSecurity);
-				socket.addEventListener(IOErrorEvent.IO_ERROR,funIOError);
+				//socket.addEventListener(ProgressEvent.SOCKET_DATA,funreceive);
+				//socket.addEventListener(Event.CONNECT,funConnect);
+				//socket.addEventListener(Event.CLOSE,funClose);
+				//socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR,funSecurity);
+				//socket.addEventListener(IOErrorEvent.IO_ERROR,funIOError);
 				
-				tempstr0="{version:\"1.0\",type:\"request\",reqflag:false,reqtype:\"json\",respflag:false,resptype:\"json\",active:\"YSProxyDtpDTSConfigSelect\"}";
-				tempstr1="{\"__DICT_IN\":[\""+parentApplication.editxml_text.text+"\"]}";
-				tempstr=parentApplication.formatsendmsg(tempstr0)+parentApplication.formatsendmsg(tempstr1);
-				ta.text+="\n\n发送字串\n"+tempstr+"\n";
-				getConnect();
+				//tempstr0="{version:\"1.0\",type:\"request\",reqflag:false,reqtype:\"json\",respflag:false,resptype:\"json\",active:\"YSProxyDtpDTSConfigSelect\"}";
+				//tempstr1="{\"__DICT_IN\":[\""+parentApplication.editxml_text.text+"\"]}";
+				// tempstr=parentApplication.formatsendmsg(tempstr0)+parentApplication.formatsendmsg(tempstr1);
+				// ta.text+="\n\n发送字串\n"+tempstr+"\n";
+				// getConnect();
+				
+				this.addEventListener(ServiceCallCompleteEvent.OPERATION_COMPLETE, DataReady);
+				var dtsCfgSel:DtsRequest = new DtsRequest(parentApplication.editxml_text.text);
+				var service_call:ServiceCall = new ServiceCall();
+				service_call.SetCompleteHandler(this);
+				service_call.SetServerInfo(parentApplication.ip_text.text,
+				    int(parentApplication.port_text.text));
+				service_call.do_service_call(dtsCfgSel.RequestHead, dtsCfgSel.RequestBody);
 				
                 dateFormatter = new DateFormatter();
 				dateFormatter.formatString = "YYYYMMDD";//时间数据格式化
+			}
+			private function DataReady(event:ServiceCallCompleteEvent):void
+			{
+			    
 			}
         ]]>
     </mx:Script>

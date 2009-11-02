@@ -23,8 +23,8 @@ package com.yspay
         private var _currentPackage:ByteArray = new ByteArray();
         private var _currentLengthOfLength:int = 0;
         private var _currentPackageLength:int = 0;
-        private var _responseHead:String;
-        private var _responseBody:String;
+        private var _responseHead:ByteArray;
+        private var _responseBody:ByteArray;
         private var _charSet:String = "CN-GB";
         private var _sockCompEventListener:EventDispatcher;
         
@@ -64,9 +64,12 @@ package com.yspay
             _socket.connect(_serverIp, _serverPort);
         }
         
-        private function GetPackage():String
+        private function GetPackage():ByteArray
         {
-            var strRtn:String = "";
+            var rtn:ByteArray = new ByteArray;
+            
+            // 取第一个字节
+            // 串长度的长度
             if (this._isGetLenOfLen == true &&
                 _socket.bytesAvailable > 0)
             {
@@ -76,6 +79,10 @@ package com.yspay
                 this._isGetLenOfLen = false;
                 this._isGetPackageLen = true;
             }
+            
+            // 根据第一个字节判断
+            // 读取指定字接数
+            // 串长度
             if (this._isGetPackageLen == true &&
                 _socket.bytesAvailable >= this._currentLengthOfLength)
             {
@@ -84,8 +91,9 @@ package com.yspay
                 
                 trace ("接收数据长度:", _currentPackageLength);
                 this._isGetPackageLen = false;
-                
             }
+            
+            // 根据串长度读取字节数
             if (this._isGetPackageLen == false &&
                 _socket.bytesAvailable >= this._currentPackageLength)
             {
@@ -94,12 +102,13 @@ package com.yspay
                 this._isGetLenOfLen = true;
             }
             
-            if (_currentPackage.length == _currentPackageLength)
+            if (_currentPackage.length > 0 ||
+                _currentPackageLength == 0)
             {
-                strRtn =  _currentPackage.readMultiByte(_currentPackage.bytesAvailable, _charSet);
+                _currentPackage.readBytes(rtn, 0, _currentPackage.bytesAvailable);
                 _currentPackage.length = 0;
             }
-            return strRtn;
+            return rtn;
         }
         private function GetResponseHead():void
         {
@@ -113,7 +122,7 @@ package com.yspay
         {
             _responseBody = GetPackage();
             
-            if (_responseBody.length == _currentPackageLength)
+            if (_responseBody.length > 0)
                 _bGetPackageFinish = true;
         }
         internal function socket_recv_data(event:ProgressEvent):void
@@ -137,7 +146,9 @@ package com.yspay
                     _socket.close();
                     
                     this._sockCompEventListener.dispatchEvent(
-                        new ServiceCallCompleteEvent(this._responseHead, this._responseBody));
+                        new ServiceCallCompleteEvent(
+                            this._responseHead.readMultiByte(this._responseHead.length, _charSet),
+                            this._responseBody));
                 }
             }
         }

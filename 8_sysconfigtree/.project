@@ -27,6 +27,16 @@
 			<location>D:/AppServ/www/tree</location>
 		</link>
 		<link>
+			<name>bin-release5</name>
+			<type>2</type>
+			<location>D:/Develop/Apache/htdocs</location>
+		</link>
+		<link>
+			<name>bin-release6</name>
+			<type>2</type>
+			<location>D:/workspace/wwwRoot</location>
+		</link>
+		<link>
 			<name>bin-release2</name>
 			<type>2</type>
 			<location>D:/AppServ/www/tree</location>
