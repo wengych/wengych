@@ -11,8 +11,6 @@
         private var arr_sock_recv:ByteArray = new ByteArray();
         private function init():void
         {
-            arr_sock_recv.writeMultiByte('init', 'CN-GB');
-            var acl:ArrayCollection;
             var req_head:String = '{version:"1.0",type:"request",reqflag:true,reqtype:"json2userbus",respflag:true,resptype:"json",active:"YSCAppSysServ2"}';
             var req_body:String = '{"__DICT_IN":["YSCAppSysServ2"]}';
             if (service == null)
@@ -21,9 +19,9 @@
             this.addEventListener(ServiceCallCompleteEvent.OPERATION_COMPLETE, DataReady);
             
             service.SetServerInfo("192.168.0.77", 16920);
-            service.SetCompleteHandler(req_head, req_body, this);
+            service.SetCompleteHandler(this);
             
-            service.do_service_call();
+            service.do_service_call(req_head, req_body);
         }
         
         private function DataReady(event:ServiceCallCompleteEvent):void

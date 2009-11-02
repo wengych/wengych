@@ -35,6 +35,11 @@ DataGrid{
 {
 	fontSize:13;
 }
+DateField
+{
+	fontSize:12; 
+}
+
 TextArea {
    borderStyle: solid;
    borderColor: #000000;

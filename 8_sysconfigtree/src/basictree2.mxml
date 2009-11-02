@@ -19,6 +19,9 @@
 			import mx.core.UIComponent;
 			import mx.collections.ArrayCollection;
 			
+			import com.yspay.ServiceCall;
+			import com.yspay.ServiceCallCompleteEvent;
+			
 			import flash.net.Socket;
 			import flash.utils.ByteArray;
 			import flash.events.SecurityErrorEvent;
@@ -33,6 +36,7 @@
 			private var mstr:ByteArray=new ByteArray;
 			private var totallength:int=999999;
 			private var selectedindex:int=-1;
+			private var _serviceCall:ServiceCall = new ServiceCall();
 				
 			
 			private function creationCompleteHandler():void 
@@ -61,11 +65,35 @@
 				usertree.contextMenu=expandMenu2;
 				showtext();
 				
-				socket.addEventListener(ProgressEvent.SOCKET_DATA,funreceive);
-				socket.addEventListener(Event.CONNECT,funConnect);
-				socket.addEventListener(Event.CLOSE,funClose);
-				socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR,funSecurity);
-				socket.addEventListener(IOErrorEvent.IO_ERROR,funIOError);
+				// socket.addEventListener(ProgressEvent.SOCKET_DATA,funreceive);
+				// socket.addEventListener(Event.CONNECT,funConnect);
+				// socket.addEventListener(Event.CLOSE,funClose);
+				// socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR,funSecurity);
+				// socket.addEventListener(IOErrorEvent.IO_ERROR,funIOError);
+				
+				
+				this.addEventListener(ServiceCallCompleteEvent.OPERATION_COMPLETE, DataReady);
+				
+				_serviceCall.SetServerInfo(ip_text.text, int(port_text.text));
+				_serviceCall.SetCompleteHandler(this);
+			}
+			
+			private function DataReady(event:ServiceCallCompleteEvent):void
+			{
+			    trace ("DataReady:head:", event.ResponseHead);
+			    trace ("DataReady:body:", event.ResponseBody);
+			    
+			    ta.text += "\n接收数据包头:\n";
+			    ta.text += event.ResponseHead;
+			    ta.text += "\n接收数据包体:\n";
+			    ta.text += event.ResponseBody;
+                
+                var arr:Array = JSON.decode("[" + event.ResponseHead + "]") as Array;
+                
+                dtsxml=XML(event.ResponseBody);
+                sysdtsxml.source=XMLList(dtsxml.L);
+                sysdtsxml.refresh();
+                
 			}
 			Alert.buttonWidth = 100;
 			Alert.yesLabel = "确定";
@@ -103,7 +131,7 @@
 			private function removeClickHandler(event:CloseEvent):void {
 				if (event.detail==Alert.YES){
 					issavedelete=true;
-					var tempstr0:String="{version:\"1.0\",type:\"request\",reqflag:false,reqtype:\"json\",respflag:false,resptype:\"json\",active:\"YSProxyDtpDTSConfigDelete\"}";
+					var tempstr0:String="{version:\"1.0\",type:\"request\",reqflag:false,reqtype:\"json\",respflag:false,resptype:\"json\",active:\"YSDBSDTSObjectConfigDelete\"}";
 					var tempstr1:String="{\"__DICT_IN\":[\""+systree.selectedItem.@VALUE+"\"]}";
 					tempstr=formatsendmsg(tempstr0)+formatsendmsg(tempstr1);
 					ta.text+="\n\n发送字串\n"+tempstr+"\n";
@@ -153,18 +181,20 @@
 			}
 			private function editxml():void {
 				initflag=true;
-				var tempstr0:String="{version:\"1.0\",type:\"request\",reqflag:false,reqtype:\"json\",respflag:false,resptype:\"json\",active:\"YSProxyDtpDTSConfigSelect\"}";
+				var tempstr0:String="{version:\"1.0\",type:\"request\",reqflag:false,reqtype:\"json\",respflag:false,resptype:\"json\",active:\"YSDBSDTSObjectConfigSelect\"}";
 				var tempstr1:String="{\"__DICT_IN\":[\""+editxml_text.text+"\"]}";
 				tempstr=formatsendmsg(tempstr0)+formatsendmsg(tempstr1);
 				ta.text+="\n\n发送字串\n"+tempstr+"\n";
-				getConnect();
+				// getConnect();
+				_serviceCall.do_service_call(tempstr0, tempstr1);
 			}
 			public function disxml():void {
-				var tempstr0:String="{version:\"1.0\",type:\"request\",reqflag:false,reqtype:\"json\",respflag:false,resptype:\"json\",active:\"YSProxyDtpDTSSelect\"}";
+				var tempstr0:String="{version:\"1.0\",type:\"request\",reqflag:false,reqtype:\"json\",respflag:false,resptype:\"json\",active:\"YSDBSDTSObjectSelect\"}";
 				var tempstr1:String="{\"__DICT_IN\":[\""+editxml_text.text+"\"]}";
 				tempstr=formatsendmsg(tempstr0)+formatsendmsg(tempstr1);
 				ta.text+="\n\n发送字串\n"+tempstr+"\n";
-				getConnect();
+				// getConnect();
+				_serviceCall.do_service_call(tempstr0, tempstr1);
 			}
 			public function newwin():void {
 				if(editxml_text.text!=""){
