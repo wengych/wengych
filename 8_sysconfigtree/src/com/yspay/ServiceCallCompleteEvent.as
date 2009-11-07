@@ -16,7 +16,7 @@ package com.yspay
             _respBody = resp_body;
             
             trace ("ServiceCallCompleteEvent:_respHead:", _respHead);
-            trace ("ServiceCallCompleteEvent:_respHead:", _respBody);
+            // trace ("ServiceCallCompleteEvent:_respBody:", _respBody);
         }
         public function get ResponseHead():String {  
             return _respHead;  

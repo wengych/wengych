@@ -1,29 +1,33 @@
 package com.yspay.DBSDTSObject
 {
     import flash.utils.ByteArray;
+    import com.adobe.serialization.json.*;
     
-    public class DtsObject
+    public class DtsObject extends Object
     {
-        protected var _headObj:Object;
         protected var _body:ByteArray;
         
         public function DtsObject()
         {
-            _headObj = new Object();
         }
         
-        public function SetHead(_reqFlag:String, _reqType:String, _respFlag:String, _respType:String, _active:String):void
+        public function AddHead(_key:String, _value:String):void
         {
-            _headObj["reqflag"]  = _reqFlag;
-            _headObj["reqtype"]  = _reqType;
-            _headObj["respflag"] = _respFlag;
-            _headObj["resptype"] = _respType;
-            _headObj["active"]   = _active;
         }
         
-        public function SetBody(body:ByteArray):void
+        public function set Body(body:ByteArray):void
         {
             _body = body;
+        }
+        
+        public function get Body():ByteArray
+        {
+            return _body;
+        }
+        
+        public function get Head():String
+        {
+            return JSON.encode(this);
         }
     }
 }

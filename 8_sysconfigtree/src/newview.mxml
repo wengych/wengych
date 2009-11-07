@@ -34,7 +34,7 @@
 			
 			import com.yspay.ServiceCall;
 			import com.yspay.ServiceCallCompleteEvent;
-			import com.yspay.DBSDTSObject.DtsRequest;
+			import com.yspay.DBSDTSObject.DtsObject;
 			
 			private var socket:Socket=new Socket();
 			private var tempstr:String="";
@@ -76,12 +76,13 @@
 				// getConnect();
 				
 				this.addEventListener(ServiceCallCompleteEvent.OPERATION_COMPLETE, DataReady);
-				var dtsCfgSel:DtsRequest = new DtsRequest(parentApplication.editxml_text.text);
+				// var dtsCfgSel:DtsRequest = new DtsRequest(parentApplication.editxml_text.text);
+				var dtsCfgSel:DtsObject = new DtsObject();
 				var service_call:ServiceCall = new ServiceCall();
-				service_call.SetCompleteHandler(this);
+				service_call.SetCompleteEventHandler(this);
 				service_call.SetServerInfo(parentApplication.ip_text.text,
 				    int(parentApplication.port_text.text));
-				service_call.do_service_call(dtsCfgSel.RequestHead, dtsCfgSel.RequestBody);
+				service_call.do_service_call(dtsCfgSel.Head, dtsCfgSel.Body);
 				
                 dateFormatter = new DateFormatter();
 				dateFormatter.formatString = "YYYYMMDD";//时间数据格式化

@@ -21,9 +21,11 @@
 			
 			import com.yspay.ServiceCall;
 			import com.yspay.ServiceCallCompleteEvent;
-			import com.yspay.DBSDTSObject.DtsRequest;
+			import com.yspay.DBSDTSObject.DtsObject;
 			
 			import flash.net.Socket;
+			import flash.net.URLLoader;
+			import flash.net.URLLoaderDataFormat;
 			import flash.utils.ByteArray;
 			import flash.events.SecurityErrorEvent;
 			import flash.events.IOErrorEvent;
@@ -38,10 +40,63 @@
 			private var mstr:ByteArray=new ByteArray;
 			private var totallength:int=999999;
 			private var selectedindex:int=-1;
-			private var _serviceCall:ServiceCall = new ServiceCall();
-				
+			private var _serviceCall:ServiceCall;
+			private var _config:XML;
+			private var _urlLoader:URLLoader;
+            private var _charSet:String = 'CN-GB';
 			
-			private function creationCompleteHandler():void 
+			private function creationCompleteHandler():void
+			{
+			    _urlLoader = new URLLoader();
+			    _urlLoader.dataFormat = URLLoaderDataFormat.TEXT;
+			    _urlLoader.addEventListener(Event.COMPLETE, UrlLoadComplete);
+			    var strUrl:String = "http://192.168.0.41/ServiceConfig/config.xml";
+			    // _urlLoader.load(new URLRequest(strUrl));
+			    
+			    // trace ("basictree2::creationCompleteHandler::strUrl\n\t", strUrl);
+			    GetService('field');
+			    init();
+			}
+			private function GetService(service_type:String):void
+			{
+			    var req_head_obj:Object = new Object;
+			    var req_body_obj:Object = new Object;
+			    
+			    req_head_obj['version'] = '1.0';
+			    req_head_obj['type'] = 'request';
+			    req_head_obj['reqflag'] = true;
+			    req_head_obj['reqtype'] = 'json2userbus';
+			    req_head_obj['respflag'] = true;
+			    req_head_obj['resptype'] = 'json';
+			    req_head_obj['active'] = 'YSDBSDTSObjectList';
+			    
+			    req_body_obj['YSDICT_DB_TB_DTSINFO_TYPE'] = [service_type];
+			    req_body_obj['YSDICT_DB_TB_DTSINFO_APPNAME'] = ['MyApp'];
+			    req_body_obj['YSDICT_DB_TB_STARTPOS'] = [0];
+			    req_body_obj['YSDICT_DB_TB_ENDPOS'] = [1000];
+			    
+			    var req_head:String = JSON.encode(req_head_obj);
+			    var req_body_string:String = JSON.encode(req_body_obj);
+			    var req_body:ByteArray = new ByteArray;
+			    req_body.writeMultiByte(req_body_string, _charSet);
+			    
+			    this._serviceCall = new ServiceCall();
+                _serviceCall.SetServerInfo("192.168.0.77", 16920);
+                _serviceCall.SetCompleteEventHandler(this);
+                _serviceCall.do_service_call(req_head, req_body);
+                
+                ta.text += "发送请求:\n请求头:\n";
+                ta.text += req_head;
+                ta.text += "\n请求体:\n"
+                ta.text += req_body_string;
+			}
+			private function UrlLoadComplete(event:Event):void
+			{
+			    // trace ("basictree2::UrlLoadComplete::event.target.data\n", event.target.data);
+//			    _config = new XML(event.target.data);
+			    
+			}
+			private function init():void
 			{
 				titleWindow = PopUpManager.createPopUp(this, login, true) as TitleWindow;
 				PopUpManager.centerPopUp(titleWindow);
@@ -75,26 +130,54 @@
 				
 				
 				this.addEventListener(ServiceCallCompleteEvent.OPERATION_COMPLETE, DataReady);
-				
-				_serviceCall.SetServerInfo(ip_text.text, int(port_text.text));
-				_serviceCall.SetCompleteHandler(this);
 			}
 			
 			private function DataReady(event:ServiceCallCompleteEvent):void
 			{
 			    trace ("DataReady:head:", event.ResponseHead);
-			    trace ("DataReady:body:", event.ResponseBody);
+			    // trace ("DataReady:body:", event.ResponseBody);
 			    
 			    ta.text += "\n接收数据包头:\n";
 			    ta.text += event.ResponseHead;
-			    ta.text += "\n接收数据包体:\n";
-			    ta.text += event.ResponseBody;
                 
-                // var arr:Array = JSON.decode("[" + event.ResponseHead + "]") as Array;
+                var obj:Object = JSON.decode(event.ResponseHead) as Object;
                 
-                dtsxml=XML(event.ResponseBody);
-                sysdtsxml.source=XMLList(dtsxml.L);
-                sysdtsxml.refresh();
+                if ( obj['active'] == 'YSDBSDTSObjectList' )
+                {
+                    trace ('YSDBSDTSOjbectList');
+                    var req_body_string:String = event.ResponseBody.readMultiByte(event.ResponseBody.length, 'CN-GB');
+                    var req_head:Object = JSON.decode(event.ResponseHead) as Object;
+                    var req_body:Object = JSON.decode(req_body_string) as Object;
+                    
+                    
+                    ta.text += "\n接收数据包体:\n";
+                    ta.text += req_body_string;
+                    ta.text += "\n\n";
+                }
+                else if ( obj['active'] == 'YSDBSDTSObjectConfigSelect' &&
+                    (obj['resptype'] == 'xml' ||
+                     obj['resptype'] == 'xml2'))
+                {
+                    var xml_string:String = event.ResponseBody.readMultiByte(event.ResponseBody.length, 'CN-GB');
+                    trace ("xml_string:", xml_string);
+                    dtsxml=XML(xml_string);
+                    sysdtsxml.source=XMLList(dtsxml.L);
+                    sysdtsxml.refresh();
+                    
+                    
+                    ta.text += "\n接收数据包体:\n";
+                    ta.text += xml_string;
+                    ta.text += "\n\n";
+                }
+                else if ( obj['active'] == 'YSDBSDTSObjectConfigDelete' ||
+                          obj['active'] == 'YSDBSDTSObjectConfigInsert')
+                {
+                    ta.text += "\n接收数据包体:\n";
+                    ta.text += event.ResponseBody;
+                    ta.text += '\n';
+                    
+                    UpdateDtsTree('ALL');
+                }
                 
 			}
 			Alert.buttonWidth = 100;
@@ -115,6 +198,15 @@
 			[Bindable]
 			private var userdtsxml:XMLListCollection = new XMLListCollection(dtsxml2.*);
 			private function onTreeDragComplete(event:DragEvent):void {showtext();}
+            private function cleartree():void{
+//              dtsxml2=<L KEY="config" KEYNAME="字段定义1" VALUE="field"/>;
+                dtsxml2.@KEYNAME=headkeyname.text;
+                dtsxml2.@VALUE=headvalue.text;
+                userdtsxml.source=XMLList(dtsxml2.*);
+                while (userdtsxml.length>0) {userdtsxml.removeAll();}
+                ta.text=dtsxml2.toXMLString();
+//              userdtsxml.refresh();
+            }
 			private function showtext():void {
 				dtsxml2.@KEYNAME=headkeyname.text;
 				dtsxml2.@VALUE=headvalue.text;
@@ -132,12 +224,30 @@
 			}
 			private function removeClickHandler(event:CloseEvent):void {
 				if (event.detail==Alert.YES){
-					issavedelete=true;
-					var tempstr0:String="{version:\"1.0\",type:\"request\",reqflag:false,reqtype:\"json\",respflag:false,resptype:\"json\",active:\"YSDBSDTSObjectConfigDelete\"}";
-					var tempstr1:String="{\"__DICT_IN\":[\""+systree.selectedItem.@VALUE+"\"]}";
-					tempstr=formatsendmsg(tempstr0)+formatsendmsg(tempstr1);
-					ta.text+="\n\n发送字串\n"+tempstr+"\n";
-					getConnect();
+                    var req_head_obj:Object = new Object();
+                    req_head_obj['version'] = '1.0';
+                    req_head_obj['type'] = 'request';
+                    req_head_obj['reqflag'] = true;
+                    req_head_obj['reqtype'] = 'json2userbus';
+                    req_head_obj['respflag'] = true;
+                    req_head_obj['resptype'] = 'json';
+                    req_head_obj['active'] = 'YSDBSDTSObjectConfigDelete';
+                    var req_head:String = JSON.encode(req_head_obj);
+                    
+                    var userbus:Object = new Object();
+                    userbus['__DICT_IN'] = [String(systree.selectedItem.@VALUE)];
+                    var req_body:ByteArray = new ByteArray();
+                    req_body.writeMultiByte(JSON.encode(userbus), _charSet);
+                    
+                    _serviceCall = new ServiceCall();
+                    _serviceCall.SetServerInfo(ip_text.text, int(port_text.text));
+                    _serviceCall.SetCompleteEventHandler(this);
+                    _serviceCall.do_service_call(req_head, req_body);
+                    
+                    ta.text += "发送请求:\n请求头:\n";
+                    ta.text += req_head;
+                    ta.text += "\n请求体:\n"
+                    ta.text += JSON.encode(userbus);
 				}
 			}
 			private function removenode2(event:Event):void
@@ -162,15 +272,44 @@
 			}
 			private function saveconfigHandler(event:CloseEvent):void {
 				if (event.detail==Alert.YES){
-					issavedelete=true;
-					dtsxml2.@KEYNAME=headkeyname.text;
-					dtsxml2.@VALUE=headvalue.text;
-					var tempstr0:String="{version:\"1.0\",type:\"request\",reqflag:false,reqtype:\"xml\",respflag:false,resptype:\"json\",active:\"YSProxyDtpDTSConfigInsert\",reqmemo:\" \",application:\"MyApp\",username:\"admin\"}";
-					var tempstr1:String="<?xml version=\"1.0\" encoding=\"gbk\" ?>"+dtsxml2.toXMLString();
-					tempstr=formatsendmsg(tempstr0)+formatsendmsg(tempstr1);
-					ta.text+="\n\n发送字串\n"+tempstr+"\n";
-					getConnect();
+                    var req_head:Object = new Object();
+                    req_head['version'] = '1.0';
+                    req_head['type'] = 'request';
+                    req_head['reqflag'] = true;
+                    req_head['reqtype'] = 'xml2';
+                    req_head['respflag'] = true;
+                    req_head['resptype'] = 'json';
+                    req_head['active'] = 'YSDBSDTSObjectConfigInsert';
+                    
+//                  <L TYPE="filed" NAME="余额" VER="20091103123456" ISUSED="1" APPNAME="MyApp" CUSER="admin">
+                    var insert_xml:XML =
+                        new XML('<L TYPE="type" NAME="name" VER="ver" ISUSED="1" APPNAME="MyApp" CUSER="admin" />');
+                    insert_xml.@TYPE = headvalue.text;
+                    insert_xml.@NAME = headkeyname.text;
+                    insert_xml.@VER = headversion.text;
+                    if (head_isused.toggle == true)
+                        insert_xml.@ISUSED = '1';
+                    else
+                        insert_xml.@ISUSED = '0';
+                    insert_xml.appendChild(dtsxml2);
+                    
+                    // var strReqBody:String = '<?xml version="1.0" encoding="gbk" ?>';
+                    // strReqBody += '<L TYPE="filed" NAME="余额" VER="20091103123456" ISUSED="1" APPNAME="MyApp" CUSER="admin">';
+                    // strReqBody += dtsxml2.toXMLString();
+                    // strReqBody += '</L>';
+                    var req_body:ByteArray = new ByteArray();
+                    var req_body_string:String = '<?xml version="1.0" encoding="gbk" ?>\n';
+                    req_body_string += insert_xml.toXMLString();
+                    req_body.writeMultiByte(req_body_string, _charSet);
+                    
+					_serviceCall = new ServiceCall();
+					_serviceCall.SetServerInfo(ip_text.text, int(port_text.text));
+                    _serviceCall.SetCompleteEventHandler(this);
+					_serviceCall.do_service_call(JSON.encode(req_head), req_body);
 					
+                    ta.text += "\n发送请求:\n请求头:\n";
+                    ta.text += JSON.encode(req_head);
+                    ta.text += "\n请求体:\n" + req_body_string;
 				}
 			}
 			internal function formatsendmsg(msg:String):String{
@@ -181,27 +320,55 @@
 				msg=msglenlen+msglen+msg;
 				return(msg);
 			}
+			private function UpdateDtsTree(dictIn:String):void
+			{
+			    var userbus:Object = new Object();
+			    userbus['__DICT_IN'] = [dictIn];
+			    var req_body:ByteArray = new ByteArray();
+			    req_body.writeMultiByte(JSON.encode(userbus), _charSet);
+			    var req_head:Object = new Object();
+			    req_head['version'] = '1.0';
+			    req_head['type'] = 'request';
+			    req_head['reqflag'] = true;
+			    req_head['reqtype'] = 'json2userbus';
+			    req_head['respflag'] = true;
+			    req_head['resptype'] = 'xml2';
+			    req_head['active'] = 'YSDBSDTSObjectConfigSelect';
+                // dtsCfgSel.SetHead('true', '"json2userbus"', 'true', '"xml2"', '"YSDBSDTSObjectConfigSelect"');
+                
+                _serviceCall = new ServiceCall();
+                _serviceCall.SetServerInfo(ip_text.text, int(port_text.text));
+                _serviceCall.SetCompleteEventHandler(this);
+                _serviceCall.do_service_call(JSON.encode(req_head), req_body);
+                
+                ta.text += "发送请求:\n请求头:\n";
+                ta.text += JSON.encode(req_head);
+                ta.text += "\n请求体:\n" + JSON.encode(userbus);
+			}
 			private function editxml():void {
-			    var service_call:ServiceCall = new ServiceCall();
-                var userbus:Object = new Object();
                 if (editxml_text.text.length == 0)
-                    userbus['"__DICT_IN"'] = ['ALL'];
+                    UpdateDtsTree('ALL');
                 else
-                    userbus['"__DICT_IN"'] = [editxml_text.text];
-				var dtsCfgSel:DtsRequest = new DtsRequest(JSON.encode(userbus));
-				dtsCfgSel.SetHead('true', '"json2userbus"', 'true', '"xml2"', '"YSDBSDTSObjectConfigSelect"');
+                    UpdateDtsTree(editxml_text.text);
 				
-				service_call.SetCompleteHandler(this);
-				service_call.SetServerInfo(ip_text.text, int(port_text.text));
-				service_call.do_service_call(dtsCfgSel.RequestHead, dtsCfgSel.RequestBody);
 			}
 			public function disxml():void {
-				var tempstr0:String="{version:\"1.0\",type:\"request\",reqflag:false,reqtype:\"json\",respflag:false,resptype:\"json\",active:\"YSDBSDTSObjectSelect\"}";
-				var tempstr1:String="{\"__DICT_IN\":[\""+editxml_text.text+"\"]}";
-				tempstr=formatsendmsg(tempstr0)+formatsendmsg(tempstr1);
-				ta.text+="\n\n发送字串\n"+tempstr+"\n";
-				// getConnect();
-				_serviceCall.do_service_call(tempstr0, tempstr1);
+				var userbus:Object = new Object();
+				if (editxml_text.text.length == 0)
+				    userbus['__DICT_IN'] = ['ALL'];
+				else
+				    userbus['__DICT_IN'] = [editxml_text.text];
+				
+				var dtsSel:DtsObject = new DtsObject();
+				// dtsSel.SetHead('true', 'json', 'true', 'json', 'YSDBSDTSObjectSelect');
+				
+				_serviceCall = new ServiceCall();
+				_serviceCall.SetServerInfo(ip_text.text, int(port_text.text));
+                _serviceCall.SetCompleteEventHandler(this);
+				_serviceCall.do_service_call(dtsSel.Head, dtsSel.Body);
+				
+                ta.text += "发送请求:\n请求头:\n";
+                ta.text += dtsSel.Head;
 			}
 			public function newwin():void {
 				if(editxml_text.text!=""){
@@ -214,15 +381,6 @@
 			private function chgsocket():void {
 				if(ip_text.text=="192.168.0.77"){ip_text.text="192.168.0.201";port_text.text="6900";}
 				else {ip_text.text="192.168.0.77";port_text.text="16920";}
-			}
-			private function cleartree():void{
-//				dtsxml2=<L KEY="config" KEYNAME="字段定义1" VALUE="field"/>;
-				dtsxml2.@KEYNAME=headkeyname.text;
-				dtsxml2.@VALUE=headvalue.text;
-				userdtsxml.source=XMLList(dtsxml2.*);
-				while (userdtsxml.length>0) {userdtsxml.removeAll();}
-				ta.text=dtsxml2.toXMLString();
-//				userdtsxml.refresh();
 			}
 		]]>
 	</mx:Script>
@@ -257,8 +415,16 @@
 					<mx:Label text="标题：" fontSize="12"/>
 					<mx:TextInput id="headkeyname" width="150" fontSize="12" text="字段定义1"/>
 				</mx:HBox>
+                <mx:HBox>
+                    <mx:Label text="版本: " fontSize="12" />
+                    <mx:TextInput id="headversion" width="150" fontSize="12" text="1.0" />
+                </mx:HBox>
+                <mx:HBox>
+                    <mx:Label text="是否使用: " fontSize="12" />
+                    <mx:CheckBox id="head_isused"/>
+                </mx:HBox>
 				<mx:HBox width="100%" horizontalAlign="left">
-					<mx:Label text="键值：" fontSize="12"/>
+					<mx:Label text="TYPE：" fontSize="12"/>
 					<mx:TextInput id="headvalue" width="150" fontSize="12" text="field"/>
 					<mx:Spacer width="100%"/>
 					<mx:Button label="清空树" fontSize="12" click="cleartree()"/>
@@ -419,5 +585,4 @@
 			}
 		]]>
 	</mx:Script>
-	
 </mx:Application>
