@@ -1,229 +1,225 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" creationComplete="creationCompleteHandler();"
-	 initialize="flash.system.System.useCodePage=true">
-	<mx:Style source="flex_skins.css" />
-	<mx:Script>
-		<![CDATA[
-			import mx.events.*;
-			import mx.containers.TitleWindow;
-			import mx.managers.PopUpManager;
-			import mx.controls.Alert;
-			import mx.collections.XMLListCollection;
-			import mx.managers.DragManager;
-			import mx.events.DragEvent;
-			import mx.core.DragSource;
-			import mx.controls.List;
-			import mx.controls.DataGrid;
-			import mx.controls.listClasses.ListBase;
-			import mx.core.UIComponent;
-			import mx.collections.ArrayCollection;
-			
-			import com.yspay.ServiceCall;
-			import com.yspay.ServiceCallCompleteEvent;
-			import com.yspay.DBSDTSObject.DtsObject;
-			
-			import flash.net.Socket;
-			import flash.net.URLLoader;
-			import flash.net.URLLoaderDataFormat;
-			import flash.utils.ByteArray;
-			import flash.events.SecurityErrorEvent;
-			import flash.events.IOErrorEvent;
-			import flash.events.ProgressEvent;
-			import com.adobe.serialization.json.*;
-			
-			private var socket:Socket=new Socket();
-			private var tempstr:String="";
-			private var receivestr:String="";
-			private var initflag:Boolean=true;
-			private var issavedelete:Boolean=false;
-			private var mstr:ByteArray=new ByteArray;
-			private var totallength:int=999999;
-			private var selectedindex:int=-1;
-			private var _serviceCall:ServiceCall;
-			private var _config:XML;
-			private var _urlLoader:URLLoader;
-            private var _charSet:String = 'CN-GB';
-			
-			private function creationCompleteHandler():void
-			{
-			    _urlLoader = new URLLoader();
-			    _urlLoader.dataFormat = URLLoaderDataFormat.TEXT;
-			    _urlLoader.addEventListener(Event.COMPLETE, UrlLoadComplete);
-			    var strUrl:String = "http://192.168.0.41/ServiceConfig/config.xml";
-			    // _urlLoader.load(new URLRequest(strUrl));
-			    
-			    // trace ("basictree2::creationCompleteHandler::strUrl\n\t", strUrl);
-			    GetService('field');
-			    init();
-			}
-			private function GetService(service_type:String):void
-			{
-			    var req_head_obj:Object = new Object;
-			    var req_body_obj:Object = new Object;
-			    
-			    req_head_obj['version'] = '1.0';
-			    req_head_obj['type'] = 'request';
-			    req_head_obj['reqflag'] = true;
-			    req_head_obj['reqtype'] = 'json2userbus';
-			    req_head_obj['respflag'] = true;
-			    req_head_obj['resptype'] = 'json';
-			    req_head_obj['active'] = 'YSDBSDTSObjectList';
-			    
-			    req_body_obj['YSDICT_DB_TB_DTSINFO_TYPE'] = [service_type];
-			    req_body_obj['YSDICT_DB_TB_DTSINFO_APPNAME'] = ['MyApp'];
-			    req_body_obj['YSDICT_DB_TB_STARTPOS'] = [0];
-			    req_body_obj['YSDICT_DB_TB_ENDPOS'] = [1000];
-			    
-			    var req_head:String = JSON.encode(req_head_obj);
-			    var req_body_string:String = JSON.encode(req_body_obj);
-			    var req_body:ByteArray = new ByteArray;
-			    req_body.writeMultiByte(req_body_string, _charSet);
-			    
-			    this._serviceCall = new ServiceCall();
-                _serviceCall.SetServerInfo("192.168.0.77", 16920);
-                _serviceCall.SetCompleteEventHandler(this);
-                _serviceCall.do_service_call(req_head, req_body);
-                
-                ta.text += "发送请求:\n请求头:\n";
-                ta.text += req_head;
-                ta.text += "\n请求体:\n"
-                ta.text += req_body_string;
-			}
-			private function UrlLoadComplete(event:Event):void
-			{
-			    // trace ("basictree2::UrlLoadComplete::event.target.data\n", event.target.data);
+<yspay:BasicTree xmlns:mx="http://www.adobe.com/2006/mxml"
+                 xmlns:yspay="com.yspay.*"
+                 width="100%"
+                 height="100%"
+                 creationComplete="creationCompleteHandler();"
+                 initialize="flash.system.System.useCodePage=true">
+    <mx:Style source="flex_skins.css"/>
+    <mx:Script>
+        <![CDATA[
+            import mx.events.*;
+            import mx.containers.TitleWindow;
+            import mx.managers.PopUpManager;
+            import mx.controls.Alert;
+            import mx.collections.XMLListCollection;
+            import mx.managers.DragManager;
+            import mx.events.DragEvent;
+            import mx.core.DragSource;
+            import mx.controls.List;
+            import mx.controls.DataGrid;
+            import mx.controls.listClasses.ListBase;
+            import mx.core.UIComponent;
+            import mx.collections.ArrayCollection;
+
+            import com.yspay.ServiceCall;
+            import com.yspay.ServiceCallCompleteEvent;
+            import com.yspay.DBSDTSObject.DtsObject;
+
+            import flash.net.Socket;
+            import flash.net.URLLoader;
+            import flash.net.URLLoaderDataFormat;
+            import flash.utils.ByteArray;
+            import flash.events.SecurityErrorEvent;
+            import flash.events.IOErrorEvent;
+            import flash.events.ProgressEvent;
+            import com.adobe.serialization.json.*;
+
+            private var socket:Socket = new Socket();
+            private var tempstr:String = "";
+            private var receivestr:String = "";
+            private var initflag:Boolean = true;
+            private var issavedelete:Boolean = false;
+            private var mstr:ByteArray = new ByteArray;
+            private var totallength:int = 999999;
+            private var selectedindex:int = -1;
+            private var _config:XML;
+            private var _urlLoader:URLLoader;
+
+            private function creationCompleteHandler():void
+            {
+                _urlLoader = new URLLoader();
+                _urlLoader.dataFormat = URLLoaderDataFormat.TEXT;
+                _urlLoader.addEventListener(Event.COMPLETE, UrlLoadComplete);
+                var strUrl:String = "http://192.168.0.41/ServiceConfig/config.xml";
+                // _urlLoader.load(new URLRequest(strUrl));
+
+                // trace ("basictree2::creationCompleteHandler::strUrl\n\t", strUrl);
+                GetService('field');
+                ta.text += _log;
+                init();
+            }
+
+
+            private function UrlLoadComplete(event:Event):void
+            {
+                // trace ("basictree2::UrlLoadComplete::event.target.data\n", event.target.data);
 //			    _config = new XML(event.target.data);
-			    
-			}
-			private function init():void
-			{
-				titleWindow = PopUpManager.createPopUp(this, login, true) as TitleWindow;
-				PopUpManager.centerPopUp(titleWindow);
+
+            }
+
+            private function init():void
+            {
+                titleWindow = PopUpManager.createPopUp(this, login, true) as TitleWindow;
+                PopUpManager.centerPopUp(titleWindow);
 
 
-				var expandMenu:ContextMenu=new ContextMenu();
-				expandMenu.hideBuiltInItems();
-				var menumodtree:ContextMenuItem=new ContextMenuItem("删除节点");
-				menumodtree.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, removenode);
-				expandMenu.customItems.push(menumodtree);
-				systree.contextMenu=expandMenu;
-				
-				var expandMenu2:ContextMenu=new ContextMenu();
-				expandMenu2.hideBuiltInItems();
-				var menuremovenode2:ContextMenuItem=new ContextMenuItem("删除节点");
-				menuremovenode2.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,removenode2);
-				expandMenu2.customItems.push(menuremovenode2);
+                var expandMenu:ContextMenu = new ContextMenu();
+                expandMenu.hideBuiltInItems();
+                var menumodtree:ContextMenuItem = new ContextMenuItem("删除节点");
+                menumodtree.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, removenode);
+                expandMenu.customItems.push(menumodtree);
+                systree.contextMenu = expandMenu;
 
-				var menuremovenode2:ContextMenuItem=new ContextMenuItem("保存用户配置");
-				menuremovenode2.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,saveconfig);
-				expandMenu2.customItems.push(menuremovenode2);
+                var expandMenu2:ContextMenu = new ContextMenu();
+                expandMenu2.hideBuiltInItems();
+                var menuremovenode2:ContextMenuItem = new ContextMenuItem("删除节点");
+                menuremovenode2.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, removenode2);
+                expandMenu2.customItems.push(menuremovenode2);
 
-				usertree.contextMenu=expandMenu2;
-				showtext();
-				
-				// socket.addEventListener(ProgressEvent.SOCKET_DATA,funreceive);
-				// socket.addEventListener(Event.CONNECT,funConnect);
-				// socket.addEventListener(Event.CLOSE,funClose);
-				// socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR,funSecurity);
-				// socket.addEventListener(IOErrorEvent.IO_ERROR,funIOError);
-				
-				
-				this.addEventListener(ServiceCallCompleteEvent.OPERATION_COMPLETE, DataReady);
-			}
-			
-			private function DataReady(event:ServiceCallCompleteEvent):void
-			{
-			    trace ("DataReady:head:", event.ResponseHead);
-			    // trace ("DataReady:body:", event.ResponseBody);
-			    
-			    ta.text += "\n接收数据包头:\n";
-			    ta.text += event.ResponseHead;
-                
+                menuremovenode2 = new ContextMenuItem("保存用户配置");
+                menuremovenode2.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, saveconfig);
+                expandMenu2.customItems.push(menuremovenode2);
+
+                usertree.contextMenu = expandMenu2;
+                showtext();
+
+                // socket.addEventListener(ProgressEvent.SOCKET_DATA,funreceive);
+                // socket.addEventListener(Event.CONNECT,funConnect);
+                // socket.addEventListener(Event.CLOSE,funClose);
+                // socket.addEventListener(SecurityErrorEvent.SECURITY_ERROR,funSecurity);
+                // socket.addEventListener(IOErrorEvent.IO_ERROR,funIOError);
+
+
+                this.addEventListener(ServiceCallCompleteEvent.OPERATION_COMPLETE, DataReady);
+            }
+
+            private function DataReady(event:ServiceCallCompleteEvent):void
+            {
+                trace("DataReady:head:", event.ResponseHead);
+                // trace ("DataReady:body:", event.ResponseBody);
+
+                ta.text += "\n接收数据包头:\n";
+                ta.text += event.ResponseHead;
+
                 var obj:Object = JSON.decode(event.ResponseHead) as Object;
-                
-                if ( obj['active'] == 'YSDBSDTSObjectList' )
+
+                if (obj['active'] == 'YSDBSDTSObjectList')
                 {
-                    trace ('YSDBSDTSOjbectList');
+                    trace('YSDBSDTSOjbectList');
                     var req_body_string:String = event.ResponseBody.readMultiByte(event.ResponseBody.length, 'CN-GB');
                     var req_head:Object = JSON.decode(event.ResponseHead) as Object;
                     var req_body:Object = JSON.decode(req_body_string) as Object;
-                    
-                    
+
+
                     ta.text += "\n接收数据包体:\n";
                     ta.text += req_body_string;
                     ta.text += "\n\n";
                 }
-                else if ( obj['active'] == 'YSDBSDTSObjectConfigSelect' &&
-                    (obj['resptype'] == 'xml' ||
-                     obj['resptype'] == 'xml2'))
+                else if (obj['active'] == 'YSDBSDTSObjectConfigSelect' && (obj['resptype'] == 'xml' || obj['resptype'] == 'xml2'))
                 {
                     var xml_string:String = event.ResponseBody.readMultiByte(event.ResponseBody.length, 'CN-GB');
-                    trace ("xml_string:", xml_string);
-                    dtsxml=XML(xml_string);
-                    sysdtsxml.source=XMLList(dtsxml.L);
+                    trace("xml_string:", xml_string);
+                    dtsxml = XML(xml_string);
+                    sysdtsxml.source = XMLList(dtsxml.L);
                     sysdtsxml.refresh();
-                    
-                    
+
+
                     ta.text += "\n接收数据包体:\n";
                     ta.text += xml_string;
                     ta.text += "\n\n";
                 }
-                else if ( obj['active'] == 'YSDBSDTSObjectConfigDelete' ||
-                          obj['active'] == 'YSDBSDTSObjectConfigInsert')
+                else if (obj['active'] == 'YSDBSDTSObjectConfigDelete' || obj['active'] == 'YSDBSDTSObjectConfigInsert')
                 {
                     ta.text += "\n接收数据包体:\n";
                     ta.text += event.ResponseBody;
                     ta.text += '\n';
-                    
+
                     UpdateDtsTree('ALL');
                 }
-                
-			}
-			Alert.buttonWidth = 100;
-			Alert.yesLabel = "确定";
-			Alert.noLabel = "取消";
 
-			private var titleWindow:TitleWindow;
-			private var dtsxml2:XML =<L KEY="config" KEYNAME="字段定义1" VALUE="field"/>;
-			private var dtsxml3:XML =
-				<L KEY="config" KEYNAME="字段定义1" VALUE="field">
-					<L KEY="待定" KEYNAME="待定" VALUE=""><A KEY="待定属性" KEYNAME="待定属性" VALUE=""/></L>
-				</L>;
-			[Bindable]
-			private var dtsxml:XML =<L/>;
+            }
+            Alert.buttonWidth = 100;
+            Alert.yesLabel = "确定";
+            Alert.noLabel = "取消";
 
-			[Bindable]
-			private var sysdtsxml:XMLListCollection = new XMLListCollection(dtsxml.*);
-			[Bindable]
-			private var userdtsxml:XMLListCollection = new XMLListCollection(dtsxml2.*);
-			private function onTreeDragComplete(event:DragEvent):void {showtext();}
-            private function cleartree():void{
+            private var titleWindow:TitleWindow;
+            private var dtsxml2:XML = <L KEY="config" KEYNAME="字段定义1" VALUE="field"/>;
+            private var dtsxml3:XML = <L KEY="config" KEYNAME="字段定义1" VALUE="field">
+                    <L KEY="待定" KEYNAME="待定" VALUE=""><A KEY="待定属性" KEYNAME="待定属性" VALUE=""/></L>
+                </L>;
+            [Bindable]
+            private var dtsxml:XML = <L/>;
+
+            [Bindable]
+            private var sysdtsxml:XMLListCollection = new XMLListCollection(dtsxml.*);
+            [Bindable]
+            private var userdtsxml:XMLListCollection = new XMLListCollection(dtsxml2.*);
+
+            private function onTreeDragComplete(event:DragEvent):void
+            {
+                showtext();
+            }
+
+            private function cleartree():void
+            {
 //              dtsxml2=<L KEY="config" KEYNAME="字段定义1" VALUE="field"/>;
-                dtsxml2.@KEYNAME=headkeyname.text;
-                dtsxml2.@VALUE=headvalue.text;
-                userdtsxml.source=XMLList(dtsxml2.*);
-                while (userdtsxml.length>0) {userdtsxml.removeAll();}
-                ta.text=dtsxml2.toXMLString();
+                dtsxml2.@KEYNAME = headkeyname.text;
+                dtsxml2.@VALUE = headvalue.text;
+                userdtsxml.source = XMLList(dtsxml2.*);
+                while (userdtsxml.length > 0)
+                {
+                    userdtsxml.removeAll();
+                }
+                ta.text = dtsxml2.toXMLString();
 //              userdtsxml.refresh();
             }
-			private function showtext():void {
-				dtsxml2.@KEYNAME=headkeyname.text;
-				dtsxml2.@VALUE=headvalue.text;
-				ta.text=dtsxml2.toXMLString();
+
+            private function showtext():void
+            {
+                dtsxml2.@KEYNAME = headkeyname.text;
+                dtsxml2.@VALUE = headvalue.text;
+                ta.text = dtsxml2.toXMLString();
 //				userdtsxml.source=XMLList(dtsxml2.*);
 //				userdtsxml.refresh();
 //				ta.text+="\n--dtsxml2.@KEYNAME:"+dtsxml2.@KEYNAME+"\n--dtsxml2.@VALUE:"+dtsxml2.@VALUE+"\n";
-			}
-			private function removenode(event:Event):void{
-				if(systree.selectedIndex>=0){
-					if(systree.selectedItem.@KEY=="DTS"){
-						Alert.show("是否要删除节点？-->"+systree.selectedItem.@KEYNAME, "删除节点",3, this, removeClickHandler);
-					}else{Alert.show("请选择DTS节点！");}
-				}else {Alert.show("请选择节点！");}
-			}
-			private function removeClickHandler(event:CloseEvent):void {
-				if (event.detail==Alert.YES){
+            }
+
+            private function removenode(event:Event):void
+            {
+                if (systree.selectedIndex >= 0)
+                {
+                    if (systree.selectedItem.@KEY == "DTS")
+                    {
+                        Alert.show("是否要删除节点？-->" + systree.selectedItem.@KEYNAME, "删除节点", 3, this, removeClickHandler);
+                    }
+                    else
+                    {
+                        Alert.show("请选择DTS节点！");
+                    }
+                }
+                else
+                {
+                    Alert.show("请选择节点！");
+                }
+            }
+
+            private function removeClickHandler(event:CloseEvent):void
+            {
+                if (event.detail == Alert.YES)
+                {
+                	
                     var req_head_obj:Object = new Object();
                     req_head_obj['version'] = '1.0';
                     req_head_obj['type'] = 'request';
@@ -233,45 +229,57 @@
                     req_head_obj['resptype'] = 'json';
                     req_head_obj['active'] = 'YSDBSDTSObjectConfigDelete';
                     var req_head:String = JSON.encode(req_head_obj);
-                    
+
                     var userbus:Object = new Object();
                     userbus['__DICT_IN'] = [String(systree.selectedItem.@VALUE)];
                     var req_body:ByteArray = new ByteArray();
                     req_body.writeMultiByte(JSON.encode(userbus), _charSet);
-                    
+
                     _serviceCall = new ServiceCall();
                     _serviceCall.SetServerInfo(ip_text.text, int(port_text.text));
                     _serviceCall.SetCompleteEventHandler(this);
                     _serviceCall.do_service_call(req_head, req_body);
-                    
+
                     ta.text += "发送请求:\n请求头:\n";
                     ta.text += req_head;
                     ta.text += "\n请求体:\n"
                     ta.text += JSON.encode(userbus);
-				}
-			}
-			private function removenode2(event:Event):void
-			{
-				if(usertree.selectedIndex>=0) {
-					var children:XMLList = XMLList(usertree.selectedItem.parent().children());
-					for(var i:int=0; i < children.length(); i++) {
-						if( children[i].@KEYNAME == XML(usertree.selectedItem).@KEYNAME ) {
-							delete children[i];
-						}
-					}
-				dtsxml2.@KEYNAME=headkeyname.text;
-				dtsxml2.@VALUE=headvalue.text;
-				ta.text=dtsxml2.toXMLString();
-				userdtsxml.source=XMLList(dtsxml2.*);
-				userdtsxml.refresh();
-				}else {Alert.show("请选择节点！");}
-			}
-			private function saveconfig(event:Event):void
-			{
-				Alert.show("是否要保存配置？", "保存配置",3, this, saveconfigHandler);
-			}
-			private function saveconfigHandler(event:CloseEvent):void {
-				if (event.detail==Alert.YES){
+                }
+            }
+
+            private function removenode2(event:Event):void
+            {
+                if (usertree.selectedIndex >= 0)
+                {
+                    var children:XMLList = XMLList(usertree.selectedItem.parent().children());
+                    for (var i:int = 0; i < children.length(); i++)
+                    {
+                        if (children[i].@KEYNAME == XML(usertree.selectedItem).@KEYNAME)
+                        {
+                            delete children[i];
+                        }
+                    }
+                    dtsxml2.@KEYNAME = headkeyname.text;
+                    dtsxml2.@VALUE = headvalue.text;
+                    ta.text = dtsxml2.toXMLString();
+                    userdtsxml.source = XMLList(dtsxml2.*);
+                    userdtsxml.refresh();
+                }
+                else
+                {
+                    Alert.show("请选择节点！");
+                }
+            }
+
+            private function saveconfig(event:Event):void
+            {
+                Alert.show("是否要保存配置？", "保存配置", 3, this, saveconfigHandler);
+            }
+
+            private function saveconfigHandler(event:CloseEvent):void
+            {
+                if (event.detail == Alert.YES)
+                {
                     var req_head:Object = new Object();
                     req_head['version'] = '1.0';
                     req_head['type'] = 'request';
@@ -280,10 +288,9 @@
                     req_head['respflag'] = true;
                     req_head['resptype'] = 'json';
                     req_head['active'] = 'YSDBSDTSObjectConfigInsert';
-                    
+
 //                  <L TYPE="filed" NAME="余额" VER="20091103123456" ISUSED="1" APPNAME="MyApp" CUSER="admin">
-                    var insert_xml:XML =
-                        new XML('<L TYPE="type" NAME="name" VER="ver" ISUSED="1" APPNAME="MyApp" CUSER="admin" />');
+                    var insert_xml:XML = new XML('<L TYPE="type" NAME="name" VER="ver" ISUSED="1" APPNAME="MyApp" CUSER="admin" />');
                     insert_xml.@TYPE = headvalue.text;
                     insert_xml.@NAME = headkeyname.text;
                     insert_xml.@VER = headversion.text;
@@ -292,7 +299,7 @@
                     else
                         insert_xml.@ISUSED = '0';
                     insert_xml.appendChild(dtsxml2);
-                    
+
                     // var strReqBody:String = '<?xml version="1.0" encoding="gbk" ?>';
                     // strReqBody += '<L TYPE="filed" NAME="余额" VER="20091103123456" ISUSED="1" APPNAME="MyApp" CUSER="admin">';
                     // strReqBody += dtsxml2.toXMLString();
@@ -301,288 +308,279 @@
                     var req_body_string:String = '<?xml version="1.0" encoding="gbk" ?>\n';
                     req_body_string += insert_xml.toXMLString();
                     req_body.writeMultiByte(req_body_string, _charSet);
-                    
-					_serviceCall = new ServiceCall();
-					_serviceCall.SetServerInfo(ip_text.text, int(port_text.text));
+
+                    _serviceCall = new ServiceCall();
+                    _serviceCall.SetServerInfo(ip_text.text, int(port_text.text));
                     _serviceCall.SetCompleteEventHandler(this);
-					_serviceCall.do_service_call(JSON.encode(req_head), req_body);
-					
+                    _serviceCall.do_service_call(JSON.encode(req_head), req_body);
+
                     ta.text += "\n发送请求:\n请求头:\n";
                     ta.text += JSON.encode(req_head);
                     ta.text += "\n请求体:\n" + req_body_string;
-				}
-			}
-			internal function formatsendmsg(msg:String):String{
-				var m:ByteArray=new ByteArray();
-				m.writeMultiByte(msg, "GB_CN");
-				var msglen:String=m.length.toString();
-				var msglenlen:String=msglen.length.toString();
-				msg=msglenlen+msglen+msg;
-				return(msg);
-			}
-			private function UpdateDtsTree(dictIn:String):void
-			{
-			    var userbus:Object = new Object();
-			    userbus['__DICT_IN'] = [dictIn];
-			    var req_body:ByteArray = new ByteArray();
-			    req_body.writeMultiByte(JSON.encode(userbus), _charSet);
-			    var req_head:Object = new Object();
-			    req_head['version'] = '1.0';
-			    req_head['type'] = 'request';
-			    req_head['reqflag'] = true;
-			    req_head['reqtype'] = 'json2userbus';
-			    req_head['respflag'] = true;
-			    req_head['resptype'] = 'xml2';
-			    req_head['active'] = 'YSDBSDTSObjectConfigSelect';
+                }
+            }
+
+            internal function formatsendmsg(msg:String):String
+            {
+                var m:ByteArray = new ByteArray();
+                m.writeMultiByte(msg, "GB_CN");
+                var msglen:String = m.length.toString();
+                var msglenlen:String = msglen.length.toString();
+                msg = msglenlen + msglen + msg;
+                return (msg);
+            }
+
+            private function UpdateDtsTree(dictIn:String):void
+            {
+                var userbus:Object = new Object();
+                userbus['__DICT_IN'] = [dictIn];
+                var req_body:ByteArray = new ByteArray();
+                req_body.writeMultiByte(JSON.encode(userbus), _charSet);
+                var req_head:Object = new Object();
+                req_head['version'] = '1.0';
+                req_head['type'] = 'request';
+                req_head['reqflag'] = true;
+                req_head['reqtype'] = 'json2userbus';
+                req_head['respflag'] = true;
+                req_head['resptype'] = 'xml2';
+                req_head['active'] = 'YSDBSDTSObjectConfigSelect';
                 // dtsCfgSel.SetHead('true', '"json2userbus"', 'true', '"xml2"', '"YSDBSDTSObjectConfigSelect"');
-                
+
                 _serviceCall = new ServiceCall();
                 _serviceCall.SetServerInfo(ip_text.text, int(port_text.text));
                 _serviceCall.SetCompleteEventHandler(this);
                 _serviceCall.do_service_call(JSON.encode(req_head), req_body);
-                
+
                 ta.text += "发送请求:\n请求头:\n";
                 ta.text += JSON.encode(req_head);
                 ta.text += "\n请求体:\n" + JSON.encode(userbus);
-			}
-			private function editxml():void {
+            }
+
+            private function editxml():void
+            {
                 if (editxml_text.text.length == 0)
                     UpdateDtsTree('ALL');
                 else
                     UpdateDtsTree(editxml_text.text);
-				
-			}
-			public function disxml():void {
-				var userbus:Object = new Object();
-				if (editxml_text.text.length == 0)
-				    userbus['__DICT_IN'] = ['ALL'];
-				else
-				    userbus['__DICT_IN'] = [editxml_text.text];
-				
-				var dtsSel:DtsObject = new DtsObject();
-				// dtsSel.SetHead('true', 'json', 'true', 'json', 'YSDBSDTSObjectSelect');
-				
-				_serviceCall = new ServiceCall();
-				_serviceCall.SetServerInfo(ip_text.text, int(port_text.text));
+
+            }
+
+            public function disxml():void
+            {
+                var userbus:Object = new Object();
+                if (editxml_text.text.length == 0)
+                    userbus['__DICT_IN'] = ['ALL'];
+                else
+                    userbus['__DICT_IN'] = [editxml_text.text];
+
+                var dtsSel:DtsObject = new DtsObject();
+                // dtsSel.SetHead('true', 'json', 'true', 'json', 'YSDBSDTSObjectSelect');
+
+                _serviceCall = new ServiceCall();
+                _serviceCall.SetServerInfo(ip_text.text, int(port_text.text));
                 _serviceCall.SetCompleteEventHandler(this);
-				_serviceCall.do_service_call(dtsSel.Head, dtsSel.Body);
-				
+                _serviceCall.do_service_call(dtsSel.Head, dtsSel.Body);
+
                 ta.text += "发送请求:\n请求头:\n";
                 ta.text += dtsSel.Head;
-			}
-			public function newwin():void {
-				if(editxml_text.text!=""){
-					titleWindow = PopUpManager.createPopUp(this, newview, true) as TitleWindow;
-					PopUpManager.centerPopUp(titleWindow);
+            }
+
+            public function newwin():void
+            {
+                if (editxml_text.text != "")
+                {
+                    titleWindow = PopUpManager.createPopUp(this, newview, true) as TitleWindow;
+                    PopUpManager.centerPopUp(titleWindow);
 //                	tempstr="<views>"+userdtsxml.source.toXMLString()+"</views>";
-				}else{Alert.show("请输入DTS号！");}
-			}
-			
-			private function chgsocket():void {
-				if(ip_text.text=="192.168.0.77"){ip_text.text="192.168.0.201";port_text.text="6900";}
-				else {ip_text.text="192.168.0.77";port_text.text="16920";}
-			}
-		]]>
-	</mx:Script>
-	<mx:TitleWindow title="系统配置" width="100%" height="100%" fontSize="13">
-		<mx:HBox  width="100%" height="100%">
-			<mx:VBox width="25%" height="100%">
-				<mx:Label text="source"/>
-				<mx:Tree  labelField="@KEYNAME" dataProvider="{sysdtsxml}"
-						 id="systree" width="100%" height="90%" 
-						 allowMultipleSelection="true"                
-						 dragEnabled="true"
-						 dragComplete="onTreeDragComplete(event)"
-						 dropEnabled="false"
-						 dragMoveEnabled="false"
-						 doubleClickEnabled="true" 
-						 doubleClick="{if(systree.selectedItem.@KEY=='DTS') editxml_text.text=systree.selectedItem.@VALUE;}"/>
-				<mx:HBox width="100%" horizontalAlign="left">
-					<mx:Label text="标题：" fontSize="12"/>
-					<mx:TextInput width="150"  fontSize="12" text="{systree.selectedItem.@KEYNAME}"/>
-				</mx:HBox>
-				<mx:HBox width="100%" horizontalAlign="left">
-					<mx:Label text="键名：" fontSize="12"/>
-					<mx:TextInput width="150"  fontSize="12" text="{systree.selectedItem.@KEY}"/>
-				</mx:HBox>
-				<mx:HBox width="100%" horizontalAlign="left">
-					<mx:Label text="键值：" fontSize="12"/>
-					<mx:TextInput width="170" fontSize="12" text="{systree.selectedItem.@VALUE}"/>
-				</mx:HBox>
-			</mx:VBox>
-			<mx:VBox width="25%" height="100%">
-				<mx:HBox width="100%" horizontalAlign="left">
-					<mx:Label text="标题：" fontSize="12"/>
-					<mx:TextInput id="headkeyname" width="150" fontSize="12" text="字段定义1"/>
-				</mx:HBox>
-                <mx:HBox>
-                    <mx:Label text="版本: " fontSize="12" />
-                    <mx:TextInput id="headversion" width="150" fontSize="12" text="1.0" />
+                }
+                else
+                {
+                    Alert.show("请输入DTS号！");
+                }
+            }
+
+            private function chgsocket():void
+            {
+                if (ip_text.text == "192.168.0.77")
+                {
+                    ip_text.text = "192.168.0.201";
+                    port_text.text = "6900";
+                }
+                else
+                {
+                    ip_text.text = "192.168.0.77";
+                    port_text.text = "16920";
+                }
+            }
+        ]]>
+    </mx:Script>
+    <mx:TitleWindow title="系统配置"
+                    width="100%"
+                    height="100%"
+                    fontSize="13">
+        <mx:HBox width="100%"
+                 height="100%">
+            <mx:VBox width="25%"
+                     height="100%">
+                <mx:Label text="source"/>
+                <mx:Tree labelField="@KEYNAME"
+                         dataProvider="{sysdtsxml}"
+                         id="systree"
+                         width="100%"
+                         height="90%"
+                         allowMultipleSelection="true"
+                         dragEnabled="true"
+                         dragComplete="onTreeDragComplete(event)"
+                         dropEnabled="false"
+                         dragMoveEnabled="false"
+                         doubleClickEnabled="true"
+                         doubleClick="{if(systree.selectedItem.@KEY=='DTS') editxml_text.text=systree.selectedItem.@VALUE;}"/>
+                <mx:HBox width="100%"
+                         horizontalAlign="left">
+                    <mx:Label text="标题："
+                              fontSize="12"/>
+                    <mx:TextInput width="150"
+                                  fontSize="12"
+                                  text="{systree.selectedItem.@KEYNAME}"/>
+                </mx:HBox>
+                <mx:HBox width="100%"
+                         horizontalAlign="left">
+                    <mx:Label text="键名："
+                              fontSize="12"/>
+                    <mx:TextInput width="150"
+                                  fontSize="12"
+                                  text="{systree.selectedItem.@KEY}"/>
+                </mx:HBox>
+                <mx:HBox width="100%"
+                         horizontalAlign="left">
+                    <mx:Label text="键值："
+                              fontSize="12"/>
+                    <mx:TextInput width="170"
+                                  fontSize="12"
+                                  text="{systree.selectedItem.@VALUE}"/>
+                </mx:HBox>
+            </mx:VBox>
+            <mx:VBox width="25%"
+                     height="100%">
+                <mx:HBox width="100%"
+                         horizontalAlign="left">
+                    <mx:Label text="标题："
+                              fontSize="12"/>
+                    <mx:TextInput id="headkeyname"
+                                  width="150"
+                                  fontSize="12"
+                                  text="字段定义1"/>
                 </mx:HBox>
                 <mx:HBox>
-                    <mx:Label text="是否使用: " fontSize="12" />
+                    <mx:Label text="版本: "
+                              fontSize="12"/>
+                    <mx:TextInput id="headversion"
+                                  width="150"
+                                  fontSize="12"
+                                  text="1.0"/>
+                </mx:HBox>
+                <mx:HBox>
+                    <mx:Label text="是否使用: "
+                              fontSize="12"/>
                     <mx:CheckBox id="head_isused"/>
                 </mx:HBox>
-				<mx:HBox width="100%" horizontalAlign="left">
-					<mx:Label text="TYPE：" fontSize="12"/>
-					<mx:TextInput id="headvalue" width="150" fontSize="12" text="field"/>
-					<mx:Spacer width="100%"/>
-					<mx:Button label="清空树" fontSize="12" click="cleartree()"/>
-				</mx:HBox>
-				<mx:Tree labelField="@KEYNAME" dataProvider="{userdtsxml}"
-						 id="usertree" width="100%" height="80%"
-						 allowMultipleSelection="true"                
-						 dragEnabled="true" click="{selectedindex=usertree.selectedIndex;}"
-						 dragComplete="onTreeDragComplete(event)"
-						 dropEnabled="true"/>
-				<mx:HBox width="100%" horizontalAlign="left">
-					<mx:Label text="标题：" fontSize="12"/>
-					<mx:TextInput id="KEYNAMEtext" width="150"  fontSize="12" text="{usertree.selectedItem.@KEYNAME}"
-						change="{if(usertree.selectedIndex==selectedindex) {usertree.selectedItem.@KEYNAME=KEYNAMEtext.text;showtext();}}"/>
-				</mx:HBox>
-				<mx:HBox width="100%" horizontalAlign="left">
-					<mx:Label text="键名：" fontSize="12"/>
-					<mx:TextInput id="keytext" width="150"  fontSize="12" text="{usertree.selectedItem.@KEY}" 
-						change="{if(usertree.selectedIndex==selectedindex) {usertree.selectedItem.@KEY=keytext.text;showtext();}}"/>
-				</mx:HBox>
-				<mx:HBox width="100%" horizontalAlign="left">
-					<mx:Label text="键值：" fontSize="12"/>
-					<mx:TextInput id="valuetext" width="170" fontSize="12" text="{usertree.selectedItem.@VALUE}" 
-						change="{if(usertree.selectedIndex==selectedindex) {usertree.selectedItem.@VALUE=valuetext.text;showtext();}}"/>
-				</mx:HBox>
-			</mx:VBox>
-			<mx:VBox width="50%" height="100%">
-				<mx:HBox width="100%" horizontalAlign="center">
-					<mx:Label text="IP：" fontSize="12" textAlign="right"/>
-					<mx:TextInput width="100" id="ip_text" text="192.168.0.77"/>
-					<mx:Label text="端口：" width="55" fontSize="12" textAlign="right"/>
-					<mx:TextInput width="60" id="port_text" text="16920"/>
-					<mx:Spacer width="10%"/>
-					<mx:Button label="更换" click="chgsocket();"/>
-				</mx:HBox>
-				<mx:HBox borderStyle="solid" width="100%" color="0x323232" horizontalAlign="left">
-		            <mx:Button label="ALL" click="{editxml_text.text='';editxml();}"/>
-		            <mx:Label text="DTS：" fontSize="12"/>
-		            <mx:TextInput width="170" id="editxml_text" text=""/>
-		            <mx:Button label="编辑" click="editxml();"/>
-		            <mx:Button label="页面" click="disxml();"/>
-		            <mx:Button label="生成" click="newwin();"/>
-		        </mx:HBox>
-		        <mx:TextArea id="ta" width="100%" height="100%"/>
-			</mx:VBox>
-		</mx:HBox>
-	</mx:TitleWindow>
-	<mx:Script>
-		<![CDATA[
-			internal function getConnect():void{
-				var sIP:String = ip_text.text;
-				var sPort:Number = Number(port_text.text);
-				if(!(sIP&&sPort)){
-					Alert.show('服务器地址和端口号必填！','Warning:');
-				}else{
-					ta.text+= 'Connecting......\n';
-					socket.connect(sIP,sPort);
-				}
-			}
-			internal function funreceive(event:ProgressEvent):void
-			{
-				var tempmstr:ByteArray=new ByteArray;
-				while(socket.bytesAvailable){
-					socket.readBytes(tempmstr,0,socket.bytesAvailable);
-				}
-				mstr.writeBytes(tempmstr,0,tempmstr.length);
-				ta.text+="返回字串\n"+tempmstr+"\r\n";
-//				trace("tempmstr",tempmstr.length);
-//				trace("tempmstr",tempmstr[0]);
-//				trace("tempmstr",tempmstr[1]);
-//				trace("mstr",mstr.length);
-//				trace("mstr",mstr[0]); change="{Alert.show('kkk');}"
-//				trace("mstr",mstr[1]);
-				receivestr="";
-				receivestr+=mstr;
-				var lengleng:int=0;
-				var leng:int=0;
-				var lengleng1:int=0;
-				var leng1:int=0;
-				lengleng=int(receivestr.substr(0,1));
-				leng=int(receivestr.substr(1,lengleng));
-				if(receivestr.length>(leng+1+lengleng)){
-					lengleng1=int(receivestr.substr(1+lengleng+leng,1));
-					leng1=int(receivestr.substr(2+lengleng+leng,lengleng1));
-					totallength=2+lengleng+leng+lengleng1+leng1;
-				}
-//				if((receivestr.substr(-2,2)=="]}")||(receivestr.substr(-4,4)=="</L>")||(receivestr.substr(-4,4)=="ews>")
-//				||(receivestr.substr(-4,4)=="fig>")||(receivestr.substr(-2,2)=="}0")||(receivestr.substr(-2,2)=="?>")) {
-				if(mstr.length>=totallength){
-					receivestr="";
-					receivestr+=mstr;
-					ta.text+="*****MSTR*****\n"+mstr+"\r\n";
-					ta.text+="\n字串接收完毕\n";
-					ta.text+="*********************返回字串－－末尾200********************\n"+receivestr.substr(-200,200)+"\r\n";
-					while ((receivestr.substr(-2,2)!="}0")&&(receivestr.substr(-1,1)!=">")&&(receivestr.substr(-2,2)!="]}")){
-						receivestr=receivestr.substring(0,receivestr.length-1);
-					}
-					ta.text+="*********************调整后－－末尾200********************\n"+receivestr.substr(-200,200)+"\r\n";
-					ta.text+="\n调整完毕\n";
-					mstr=new ByteArray;
-					socket.close();
-					totallength=999999;
-					if((initflag)&&(receivestr.substr(-4,4)=="</L>")){
-						initflag=false;
-						while (receivestr.substr(0,6)!="<L KEY"){
-							receivestr=receivestr.substring(1,receivestr.length);
-						}
-						trace(receivestr);
-						dtsxml=XML(receivestr);
-						sysdtsxml.source=XMLList(dtsxml.L);
-						sysdtsxml.refresh();
-					}
-					if(receivestr.substr(-4,4)=="ews>"){
-						while (receivestr.substr(0,6)!="<views"){
-							receivestr=receivestr.substring(1,receivestr.length);
-						}
-						ta.text=receivestr;
-					}else if(receivestr.substr(-4,4)=="fig>"){
-						while (receivestr.substr(0,6)!="<confi"){
-							receivestr=receivestr.substring(1,receivestr.length);
-						}
-						ta.text=receivestr;
-					}else if(receivestr.substr(-1,1)=="0"){
-						dtsxml=dtsxml3;
-						sysdtsxml.source=XMLList(dtsxml.L);
-						sysdtsxml.refresh();
-					}else if(receivestr.substr(-2,2)=="?>"){
-						Alert.show('DTS号错误！','Warning:');
-					}
-					if(issavedelete){
-						issavedelete=false;
-						if(receivestr.substr(-4,4)=="[0]}"){
-							editxml_text.text="";
-							editxml();
-						}else{Alert.show('删除错误！','Warning:');}
-					}
-				}
-			}
-            internal function funConnect(event:Event):void
-			{
-				ta.text+="\n连接已建立\n";
-				receivestr="";
-				socket.writeMultiByte(tempstr,"CN-GB");
-				socket.flush();
-			}
-			internal function funClose(event:Event):void
-			{
-				ta.text+="\n连接已关闭\n";
-//				socket.close();
-			}
-			internal function funSecurity(e:SecurityErrorEvent):void{
-				Alert.show('安全错误：'+e.text,'Security Error');
-				ta.text+= 'Security Error!';
-			}
-			internal function funIOError(e:IOErrorEvent):void{
-				Alert.show('IO错误：'+e.text,'Socket connect Error');
-				ta.text+= 'Socket connect Error!';
-			}
-		]]>
-	</mx:Script>
-</mx:Application>
+                <mx:HBox width="100%"
+                         horizontalAlign="left">
+                    <mx:Label text="TYPE："
+                              fontSize="12"/>
+                    <mx:TextInput id="headvalue"
+                                  width="150"
+                                  fontSize="12"
+                                  text="field"/>
+                    <mx:Spacer width="100%"/>
+                    <mx:Button label="清空树"
+                               fontSize="12"
+                               click="cleartree()"/>
+                </mx:HBox>
+                <mx:Tree labelField="@KEYNAME"
+                         dataProvider="{userdtsxml}"
+                         id="usertree"
+                         width="100%"
+                         height="80%"
+                         allowMultipleSelection="true"
+                         dragEnabled="true"
+                         click="{selectedindex=usertree.selectedIndex;}"
+                         dragComplete="onTreeDragComplete(event)"
+                         dropEnabled="true"/>
+                <mx:HBox width="100%"
+                         horizontalAlign="left">
+                    <mx:Label text="标题："
+                              fontSize="12"/>
+                    <mx:TextInput id="KEYNAMEtext"
+                                  width="150"
+                                  fontSize="12"
+                                  text="{usertree.selectedItem.@KEYNAME}"
+                                  change="{if(usertree.selectedIndex==selectedindex) {usertree.selectedItem.@KEYNAME=KEYNAMEtext.text;showtext();}}"/>
+                </mx:HBox>
+                <mx:HBox width="100%"
+                         horizontalAlign="left">
+                    <mx:Label text="键名："
+                              fontSize="12"/>
+                    <mx:TextInput id="keytext"
+                                  width="150"
+                                  fontSize="12"
+                                  text="{usertree.selectedItem.@KEY}"
+                                  change="{if(usertree.selectedIndex==selectedindex) {usertree.selectedItem.@KEY=keytext.text;showtext();}}"/>
+                </mx:HBox>
+                <mx:HBox width="100%"
+                         horizontalAlign="left">
+                    <mx:Label text="键值："
+                              fontSize="12"/>
+                    <mx:TextInput id="valuetext"
+                                  width="170"
+                                  fontSize="12"
+                                  text="{usertree.selectedItem.@VALUE}"
+                                  change="{if(usertree.selectedIndex==selectedindex) {usertree.selectedItem.@VALUE=valuetext.text;showtext();}}"/>
+                </mx:HBox>
+            </mx:VBox>
+            <mx:VBox width="50%"
+                     height="100%">
+                <mx:HBox width="100%"
+                         horizontalAlign="center">
+                    <mx:Label text="IP："
+                              fontSize="12"
+                              textAlign="right"/>
+                    <mx:TextInput width="100"
+                                  id="ip_text"
+                                  text="192.168.0.77"/>
+                    <mx:Label text="端口："
+                              width="55"
+                              fontSize="12"
+                              textAlign="right"/>
+                    <mx:TextInput width="60"
+                                  id="port_text"
+                                  text="16920"/>
+                    <mx:Spacer width="10%"/>
+                    <mx:Button label="更换"
+                               click="chgsocket();"/>
+                </mx:HBox>
+                <mx:HBox borderStyle="solid"
+                         width="100%"
+                         color="0x323232"
+                         horizontalAlign="left">
+                    <mx:Button label="ALL"
+                               click="{editxml_text.text='';editxml();}"/>
+                    <mx:Label text="DTS："
+                              fontSize="12"/>
+                    <mx:TextInput width="170"
+                                  id="editxml_text"
+                                  text=""/>
+                    <mx:Button label="编辑"
+                               click="editxml();"/>
+                    <mx:Button label="页面"
+                               click="disxml();"/>
+                    <mx:Button label="生成"
+                               click="newwin();"/>
+                </mx:HBox>
+                <mx:TextArea id="ta"
+                             width="100%"
+                             height="100%"/>
+            </mx:VBox>
+        </mx:HBox>
+    </mx:TitleWindow>
+</yspay:BasicTree>

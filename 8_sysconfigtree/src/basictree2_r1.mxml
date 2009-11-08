@@ -40,7 +40,7 @@
 				menuremovenode2.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,removenode2);
 				expandMenu2.customItems.push(menuremovenode2);
 
-				var menuremovenode2:ContextMenuItem=new ContextMenuItem("保存用户配置");
+				menuremovenode2=new ContextMenuItem("保存用户配置");
 				menuremovenode2.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,saveconfig);
 				expandMenu2.customItems.push(menuremovenode2);
 				

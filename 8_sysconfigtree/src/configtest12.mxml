@@ -426,7 +426,7 @@
 				dts.push(temparr);
 				
 				var ax:Array=Array(x.children());				
-				for each ( var s in ax[0])
+				for each ( var s:XML in ax[0])
 					{
 						doxml(dtsno,s,dts,dtsinfo);
 //						trace(s);

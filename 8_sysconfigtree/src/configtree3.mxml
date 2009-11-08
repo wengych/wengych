@@ -300,7 +300,7 @@
 			private var caption:String="";
 			private var isinit:Boolean;
 			private var levelfiterstr:String="";
-			private var dtsnum = 100000;
+			private var dtsnum:int = 100000;
 
 			private function addindex(event:Event):void
             {
@@ -422,7 +422,7 @@
 				dts.push(temparr);
 				
 				var ax:Array=Array(x.children());				
-				for each ( var s in ax[0])
+				for each ( var s:XML in ax[0])
 					doxml(dtsno,s,dts,dtsinfo,2);
 				return;
 			
