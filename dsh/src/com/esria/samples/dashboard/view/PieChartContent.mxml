@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ Displays a PieChart with drill-down functionality.
+ For the demo, random data is generated for the drill-down.
+-->
+<PodContentBase
+	xmlns="com.esria.samples.dashboard.view.*"
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:effects="qs.charts.effects.*"
+	xmlns:renderers="qs.charts.renderers.*"
+	width="100%" height="100%">
+	<mx:Script>
+		<![CDATA[
+			import mx.charts.events.ChartItemEvent;
+			import mx.charts.HitData;
+			import mx.charts.series.items.PieSeriesItem;
+			import mx.collections.ArrayCollection;
+			import mx.rpc.events.ResultEvent;
+			
+			// The original data provider used for drillUp.
+			private var initialDataProvider:ArrayCollection;
+			[Bindable]
+			private var dataProvider:ArrayCollection;
+			
+			// Chart drill down variables. Users can only drill down
+			// one level then click the chart to drill up.
+			// Note, the majority of the drill down code including all of the classes in the "qs" package
+			// are from Ely Greenfield's blog, http://www.quietlyscheming.com/blog/charts/chart-drilldown-animations/.
+			private var drillToIndex:Number;
+			
+			override protected function onResultHttpService(e:ResultEvent):void
+			{
+				var a:Array = xmlListToObjectArray(e.result.item);
+				var ac:ArrayCollection = new ArrayCollection(a);
+				initialDataProvider = ac;
+				dataProvider = ac;
+				
+				pieChart.addEventListener(ChartItemEvent.ITEM_CLICK, drillDown);
+			}
+			
+			private function pieChartDataTipFunction(o:HitData):String
+			{
+				var a:Array = properties.@dataTipUnitLabel.split("*");
+				var s:String = o.item[properties.@dataTipLabelField] + "\n";
+				s += a[0] + o.item[properties.@valueField] + a[1] + "\n";
+				s += Math.round(PieSeriesItem(o.chartItem).percentValue) + "%";
+				return s;
+			}
+			
+			// Creates random drill down data.
+			// Assumes initial data is by geographical region and breaks down the region into sub-regions.
+			public function createDrillDownData(data:Object):ArrayCollection
+			{
+				var ac:ArrayCollection = new ArrayCollection();
+				var total:Number = data[properties.@valueField];
+				var regions:Array;
+				
+				if (data.region == "North America")
+					regions = ["East", "Central", "West"];
+				else if (data.region == "South America")
+					regions = ["Andean", "Guianas", "Southern Cone", "Brazil"];
+				else if (data.region == "EMEA")
+					regions = ["Europe", "Middle East", "Africa"];
+				else if (data.region == "APAC")
+					regions = ["China", "Japan", "Australia", "Vietnam"];
+				
+				var len:Number = regions.length;
+				var randomPercents:Array = new Array();
+				var totalPercents:Number = 0;
+				var value:Number;
+				// Generate an Array of random numbers that will be used to create percentages of the totals in the next loop.
+				for (var i:Number = 0; i < len; i ++)
+				{
+					value = Math.max(.1, Math.random());// Make sure the number is not zero.
+					randomPercents.push(value);
+					totalPercents += value;
+				}
+				
+				for (i = 0; i < len; i ++)
+				{
+					var o:Object = new Object();
+					value = (randomPercents[i] / totalPercents) * total;
+					o[properties.@valueField] = Math.round(value * 10) / 10;
+					o[properties.@categoryField] = regions[i];
+					ac.addItem(o);
+				}
+				
+				return ac;
+			}
+			
+			public function drillDown(e:ChartItemEvent):void
+			{
+				pieChart.showDataTips = false;
+				drillToIndex = e.hitData.chartItem.index
+				drillDownEffect.drillFromIndex = drillToIndex;
+				pieSeries.setStyle("showDataEffect", drillDownEffect);
+				dataProvider = createDrillDownData(Object(e.hitData.chartItem.item)); 
+				
+				pieChart.removeEventListener(ChartItemEvent.ITEM_CLICK, drillDown);
+				pieChart.addEventListener(MouseEvent.CLICK, drillUp);
+			}
+			
+			public function drillUp(e:MouseEvent):void
+			{
+				pieChart.showDataTips = false;
+				drillUpEffect.drillToIndex = drillToIndex;
+				pieSeries.setStyle("showDataEffect", drillUpEffect);
+				dataProvider = initialDataProvider; 
+				
+				pieChart.addEventListener(ChartItemEvent.ITEM_CLICK, drillDown);
+				pieChart.removeEventListener(MouseEvent.CLICK, drillUp);
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<effects:DrillDownEffect id="drillDownEffect" duration="1500" effectEnd="pieChart.showDataTips=true" />
+    <effects:DrillUpEffect id="drillUpEffect" duration="1500" effectEnd="pieChart.showDataTips=true"/>
+	
+	<mx:PieChart
+		id="pieChart"
+		width="100%" height="100%"
+		dataProvider="{dataProvider}"
+		dataTipFunction="pieChartDataTipFunction"
+		showDataTips="true">
+		<mx:series>
+			<mx:PieSeries
+				id="pieSeries"
+				field="{properties.@valueField}"
+				labelPosition="callout">
+				<mx:itemRenderer>
+					<mx:Component>
+						<renderers:RollOverWedgeItemRenderer />
+					</mx:Component>
+				</mx:itemRenderer>
+			</mx:PieSeries>
+		</mx:series>
+	</mx:PieChart>
+</PodContentBase>

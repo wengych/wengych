@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" 
+				layout="vertical" creationComplete="initApp()" >
+      <mx:Script>
+     <![CDATA[
+		 import mx.core.FlexSprite;
+		 import mx.effects.easing.Bounce;
+		 import mx.controls.Alert;        
+		 import com.flexspy.*;
+		
+		 public function initApp():void
+		 {
+		 	var test:ByteArray = new ByteArray;
+		 	
+		 	//clear(test);
+		 	//test.clear();
+		 	//test.compress();
+		 	
+		 	FlexSpy.registerKey(new KeySequence(123, true, false, false));
+		    FlexSpy.registerJS();
+		    this.btnFlexSpy.setFocus();
+		     
+		 	var xmlstring:String = 
+"\<view id=\"view0\" label=\"Sales\"\> " + 
+	"\<pod  id=\"pod00\" type=\"chart\" title=\"Yearly Revenue\" " + 
+	"dataSource=\"data/revenue.xml\" selectedViewIndex=\"1\" valueField=\"value\" categoryField=\"month\" " + 
+	"dataTipUnitLabel=\"\$\*\M\" dataTipLabelField=\"month\"/\> " + 
+	"\<canvas aa=\"10\" /\>" +
+"\</view>";
+
+			//myText.text += xmlstring;
+			var viewXMLList:XMLList = new XMLList(xmlstring);	
+			var i:int = 0;
+			
+			a(i);
+			trace (i);
+			
+//			trace ( viewXMLList.length());
+//			
+//			for ( i = 0; i < viewXMLList.length(); i++)
+//			{
+//				var xml2:XMLList = viewXMLList[i].@*;
+//				for (var j:int = 0; j < xml2.length(); j++)
+//				{
+//					myText.text += "xml2<"+j.toString()+"> :" ;
+//					myText.text += "name = "+xml2[j].name();
+//					myText.text += "    value = "+xml2[j].toString()+ "\n";
+//					    //trace(typeof(xml2[j]));    // xml
+//					    //trace(xml2[i].nodeKind()); // attribute
+//					    //trace(xml2[i].name());     // id and color
+//				} 
+//			}
+//			for ( i = 0 ; i < viewXMLList.children().length() ; i++ )
+//			{
+//				myText.text += i.toString();
+//				myText.text += "\n";
+//				myText.text += viewXMLList.children()[i].toXMLString();
+//				myText.text += "\n";
+//				
+//				var xml1:XMLList = viewXMLList.children()[i].@*;
+//				for (j = 0; j < xml1.length(); j++)
+//				{
+//					myText.text += "xml1<"+j.toString()+"> :" ;
+//					myText.text += "name = "+xml1[j].name();
+//					myText.text += "    -----    value = "+xml1[j].toString()+ "\n";
+//					    //trace(typeof(xml2[j]));    // xml
+//					    //trace(xml2[i].nodeKind()); // attribute
+//					    //trace(xml2[i].name());     // id and color
+//				} 
+//			}
+			
+			
+			//myText.text+="viewXMLList:\n";
+			//myText.text+=viewXMLList.toString();		     
+		     
+		 }
+		 internal function a(i:int):void
+			{
+	  		i=1;
+	 	 }
+		     
+		 public function debug():void
+		 {
+		     FlexSpy.show();
+		 }
+            
+    ]]>
+   </mx:Script>
+   <mx:LinkButton x="512" y="53" id="btnFlexSpy" label="LinkButton" click="debug()"/>
+   <mx:TextArea width="50%" height="100%" id="myText"/>
+</mx:Application>

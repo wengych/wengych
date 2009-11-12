@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="onCreationComplete()"
+	horizontalScrollPolicy="off" verticalScrollPolicy="off">
+	<mx:Script>
+		<![CDATA[
+			import mx.events.ColorPickerEvent;
+			import mx.containers.Box;
+
+			public override function set data(value:Object):void {
+				super.data = value;
+			}
+			
+			private function onCreationComplete(): void {
+			}
+			
+			private function onClickEditButton(): void {
+				ComponentProperties(owner.parent).editCell(this, 1);
+			}
+		]]>
+	</mx:Script>
+	<mx:Label id="valueLabel" text="{data.displayValue}" minWidth="0" left="2" top="0" right="15" bottom="0" />
+	<mx:Image id="editButton" source="@Embed('../assets/Edit.png')" width="9" height="9" click="onClickEditButton()" visible="{data.editable}" right="4" top="2" />
+</mx:Canvas>

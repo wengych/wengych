@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="onCreationComplete()"
+	horizontalScrollPolicy="off" verticalScrollPolicy="off">
+	<mx:Script>
+		<![CDATA[
+			import mx.events.ColorPickerEvent;
+			import mx.containers.Box;
+			public override function set data(value:Object):void {
+				super.data = value;
+				updateButtonStates(PropertyEditorItem(data));
+			}
+			
+			private function onCreationComplete(): void {
+				updateButtonStates(PropertyEditorItem(data));
+			}
+			
+			private function updateButtonStates(item: PropertyEditorItem): void {
+				if (editButton == null || colorPicker == null)
+					return; // child controls not created yet.
+					
+				if (item != null && item.editable) {
+					if (item != null && item.format == "Color" && item.type != "Array") {
+						colorPicker.visible = true;
+						colorPicker.selectedColor = uint(item.value);
+						valueLabel.setStyle("left", 22);
+					} else {
+						colorPicker.visible = false;
+						valueLabel.setStyle("left", 2);
+					}
+				} else {
+					colorPicker.visible = false;
+					valueLabel.setStyle("left", 2);
+				}
+			}
+			
+			private function onSelectedColorChange(): void {
+				var item: PropertyEditorItem = PropertyEditorItem(data);
+				item.value = colorPicker.selectedColor;
+
+				// Update label
+				valueLabel.text = data.displayValue;
+
+				// Update underlying style
+				ComponentStyles(owner.parent).updateStyleValue(item.name, item.value);
+			}
+			
+			private function onClickEditButton(): void {
+				var item: PropertyEditorItem = PropertyEditorItem(data);
+				if (colorPicker != null && colorPicker.visible) {
+					colorPicker.open();
+				} else {
+					ComponentStyles(owner.parent).editCell();
+				}
+			}
+		]]>
+	</mx:Script>
+	<mx:ColorPicker id="colorPicker" width="16" height="16" change="onSelectedColorChange()" left="4" top="0" />
+	<mx:Label id="valueLabel" text="{data.displayValue}" minWidth="0" left="2" top="0" right="15" bottom="0" />
+	<mx:Image id="editButton" source="@Embed('../assets/Edit.png')" width="9" height="9" click="onClickEditButton()" visible="{data.editable}" right="4" top="2" />
+</mx:Canvas>

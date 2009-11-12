@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<DynamicWindowImpl xmlns="com.yspay.*"
+<yspay:DynamicWindowImpl xmlns:yspay="com.yspay.*"
         xmlns:mx="http://www.adobe.com/2006/mxml"
         title="测试"
         layout="vertical"
@@ -15,8 +15,8 @@
         creationComplete="init();">
     <mx:HBox width="100%" height="100%">
         <mx:VBox width="50%" height="100%">
-            <mx:Panel id="win_in" width="100%" height="50%" horizontalAlign="center" verticalAlign="middle"/>
-            <mx:Panel id="win_out" width="100%" height="50%" textAlign="right" horizontalAlign="center"/>
+            <mx:Panel id="windows_in" width="100%" height="50%" horizontalAlign="center" verticalAlign="middle"/>
+            <mx:Panel id="windows_out" width="100%" height="50%" textAlign="right" horizontalAlign="center"/>
             <mx:HBox id="state" width="100%">
                 <mx:Label text="返回码：" fontSize="12"/>
                 <mx:TextInput id="returncode" width="200"/> 
@@ -32,4 +32,4 @@
             
         ]]>
     </mx:Script>
-</DynamicWindowImpl>
+</yspay:DynamicWindowImpl>

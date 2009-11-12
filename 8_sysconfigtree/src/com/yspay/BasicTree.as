@@ -30,8 +30,8 @@ package com.yspay
         
         protected var dynamicWindow:DynamicWindowImpl;
         protected var loginWindow:TitleWindow;
-        public var systree:Tree;
-        public var usertree:Tree;
+        [Bindable] public var systree:Tree;
+        [Bindable] public var usertree:Tree;
         public var ta:TextArea;
         public var ip_text:TextInput;
         public var port_text:TextInput;
@@ -293,8 +293,20 @@ package com.yspay
             }
             else if (obj['active'] == 'YSDBSDTSObjectSelect')
             {
+                var xml_string:String = event.ResponseBody.readMultiByte(event.ResponseBody.length, 'CN-GB');
+                
+                var disp_xml:XML = XML(xml_string);
+                
+//                if (do_disp_xml)
+                    ;
+//                else
+                    ;
+                // dynamicWindow = new DynamicWindow(disp_xml);
+                // dynamicWindow = PopUpManager.createPopUp(this, DynamicWindow, true) as DynamicWindowImpl;
+                // PopUpManager.centerPopUp(dynamicWindow);
+                
                 ta.text += "\n接收数据包体:\n";
-                ta.text += event.ResponseBody;
+                ta.text += disp_xml.toXMLString();
                 ta.text += '\n';
             }
         }
@@ -351,43 +363,42 @@ package com.yspay
         
         protected function disxml():void
         {
-            var userbus:Object = new Object();
-            if (editxml_text.text.length == 0)
-                userbus['__DICT_IN'] = ['ALL'];
-            else
-                userbus['__DICT_IN'] = [editxml_text.text];
-            var req_body:ByteArray = new ByteArray;
-            req_body.writeMultiByte(JSON.encode(userbus), _charSet);
-            
-            var req_head:Object = new Object;
-            req_head['version'] = '1.0';
-            req_head['type'] = 'request';
-            req_head['reqflag'] = true;
-            req_head['reqtype'] = 'json2userbus';
-            req_head['respflag'] = true;
-            req_head['resptype'] = 'xml2';
-            req_head['active'] = 'YSDBSDTSObjectSelect';
-
-            // var dtsSel:DtsObject = new DtsObject();
-            // dtsSel.SetHead('true', 'json', 'true', 'json', 'YSDBSDTSObjectSelect');
-
-            _serviceCall = new ServiceCall();
-            _serviceCall.SetServerInfo(ip_text.text, int(port_text.text));
-            _serviceCall.SetCompleteEventHandler(this);
-            _serviceCall.do_service_call(JSON.encode(req_head), req_body);
-
-            ta.text += "发送请求:\n请求头:\n";
-            ta.text += JSON.encode(req_head);
-            ta.text += '\n请求体:\n';
-            ta.text += JSON.encode(userbus) + '\n';
+//            do_disp_xml = true;
         }
 
         protected function newwin():void
         {
             if (editxml_text.text != "")
             {
-                dynamicWindow = PopUpManager.createPopUp(this, DynamicWindow, true) as DynamicWindowImpl;
-                PopUpManager.centerPopUp(dynamicWindow);
+                var userbus:Object = new Object();
+                userbus['__DICT_IN'] = [editxml_text.text];
+                var req_body:ByteArray = new ByteArray;
+                req_body.writeMultiByte(JSON.encode(userbus), _charSet);
+            
+                var req_head:Object = new Object;
+                req_head['version'] = '1.0';
+                req_head['type'] = 'request';
+                req_head['reqflag'] = true;
+                req_head['reqtype'] = 'json2userbus';
+                req_head['respflag'] = true;
+                req_head['resptype'] = 'xml2';
+                req_head['active'] = 'YSDBSDTSObjectSelect';
+
+                // var dtsSel:DtsObject = new DtsObject();
+                // dtsSel.SetHead('true', 'json', 'true', 'json', 'YSDBSDTSObjectSelect');
+
+                _serviceCall = new ServiceCall();
+                _serviceCall.SetServerInfo(ip_text.text, int(port_text.text));
+                _serviceCall.SetCompleteEventHandler(this);
+                _serviceCall.do_service_call(JSON.encode(req_head), req_body);
+
+                ta.text += "发送请求:\n请求头:\n";
+                ta.text += JSON.encode(req_head);
+                ta.text += '\n请求体:\n';
+                ta.text += JSON.encode(userbus) + '\n';
+
+                // dynamicWindow = PopUpManager.createPopUp(this, DynamicWindow, true) as DynamicWindowImpl;
+                // PopUpManager.centerPopUp(dynamicWindow);
                 // tempstr="<views>"+userdtsxml.source.toXMLString()+"</views>";
             }
             else

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" 
+				layout="vertical" creationComplete="initApp()" >
+      <mx:Script>
+     <![CDATA[
+		 import mx.core.FlexSprite;
+		 import mx.effects.easing.Bounce;
+		 import mx.controls.Alert;        
+		
+		 public function initApp():void
+		 {
+			var i:int = 0;
+			var s:String = "123";
+			
+			i = int(s);
+			myText.text+=i + "\n";
+		 }
+
+		 internal function a(i:int):void{
+	  		i=1;
+	 	 }
+    ]]>
+   </mx:Script>
+   <mx:TextArea width="50%" height="100%" id="myText"/>
+</mx:Application>
