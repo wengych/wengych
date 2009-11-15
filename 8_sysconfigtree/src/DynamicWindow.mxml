@@ -14,15 +14,8 @@
         dropShadowEnabled="false"
         creationComplete="init();">
     <mx:HBox width="100%" height="100%">
-        <mx:VBox width="50%" height="100%">
-            <mx:Panel id="windows_in" width="100%" height="50%" horizontalAlign="center" verticalAlign="middle"/>
-            <mx:Panel id="windows_out" width="100%" height="50%" textAlign="right" horizontalAlign="center"/>
-            <mx:HBox id="state" width="100%">
-                <mx:Label text="返回码：" fontSize="12"/>
-                <mx:TextInput id="returncode" width="200"/> 
-                <mx:Label text="返回信息：" fontSize="12" textAlign="right"/>
-                <mx:TextInput id="returninfo" width="200"/> 
-            </mx:HBox>
+        <mx:VBox width="50%" height="100%" id="windows_vbox">
+            
         </mx:VBox>
         <mx:TextArea id="ta" width="50%" height="100%"/>
     </mx:HBox>

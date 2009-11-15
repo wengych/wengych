@@ -51,8 +51,8 @@ package com.yspay
         
 		protected function init():void
         {
-            loginWindow = PopUpManager.createPopUp(this, login, true) as TitleWindow;
-            PopUpManager.centerPopUp(loginWindow);
+            // loginWindow = PopUpManager.createPopUp(this, login, true) as TitleWindow;
+            // PopUpManager.centerPopUp(loginWindow);
             
             var expandMenu:ContextMenu = new ContextMenu;
             expandMenu.hideBuiltInItems();
@@ -361,14 +361,9 @@ package com.yspay
             ta.text = dtsxml2.toXMLString();
         }
         
-        protected function disxml():void
+        protected function disxml():Boolean
         {
-//            do_disp_xml = true;
-        }
-
-        protected function newwin():void
-        {
-            if (editxml_text.text != "")
+			if (editxml_text.text != "")
             {
                 var userbus:Object = new Object();
                 userbus['__DICT_IN'] = [editxml_text.text];
@@ -400,10 +395,21 @@ package com.yspay
                 // dynamicWindow = PopUpManager.createPopUp(this, DynamicWindow, true) as DynamicWindowImpl;
                 // PopUpManager.centerPopUp(dynamicWindow);
                 // tempstr="<views>"+userdtsxml.source.toXMLString()+"</views>";
+                return true;
             }
             else
             {
                 Alert.show("请输入DTS号！");
+                return false;
+            }
+        }
+
+        protected function newwin():void
+        {
+            // if (disxml())
+            {
+            	dynamicWindow = PopUpManager.createPopUp(this, DynamicWindow, true) as DynamicWindowImpl;
+            	PopUpManager.centerPopUp(dynamicWindow);
             }
         }
 
