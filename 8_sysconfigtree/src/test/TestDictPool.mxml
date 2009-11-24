@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" creationComplete="init()">
+    <mx:Script>
+        <![CDATA[
+            import com.yspay.DictPool;
+            
+            private var _pool:DictPool;
+            private function init():void
+            {
+                _pool = new DictPool;
+            }
+            private function onClick():void
+            {
+                _pool.Add("key1", "value1");
+                _pool.Add("key1", "value2");
+                _pool.Add("key2", "value2");
+            }
+        ]]>
+    </mx:Script>
+    <mx:Button x="152" y="173" label="Button" click="onClick()"/>
+    <mx:Tree x="313" y="172" width="261" height="312" id="DictTree"/>
+</mx:Application>
