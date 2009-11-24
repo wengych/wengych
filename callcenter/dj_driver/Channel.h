@@ -63,5 +63,7 @@ private:
     // for interphone
     bool first_in;
     bool off_hook;
+	time_t interphone_time_in;
+	bool resp_send_success;
 };
 #endif

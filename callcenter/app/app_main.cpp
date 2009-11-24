@@ -106,10 +106,21 @@ void MyMethod( App &app, char** argv )
                 if (!app.CheckCmd(last_command))
                 {
                     // need input args.
+					int to1 = sess.GetTimeOut();
+					int to2 = sess.GetTimeOut2();
                     StringArray menu = sess.GetMenu();
+					logger << "menu size: " << menu.size() << std::endl;
                     std::string menu_msg = sess.GetMenuMsg();
+					logger << "menu msg: " << menu_msg << std::endl;
                     bool flag = (bool)sess.GetFlag();
 
+					if (!app.DoCmdByMenu(menu, menu_msg, to1, flag))
+					{
+						last_command = "END";
+						continue;
+					}
+
+					/*
                     logger << "menu: ";
                     for (StringArray::iterator it = menu.begin(); it != menu.end(); ++it)
                     {
@@ -121,6 +132,7 @@ void MyMethod( App &app, char** argv )
                         if (!app.IsRingIn())
                             break;
                     }
+					*/
 
                     if (!app.IsRingIn())
                         break;
@@ -135,7 +147,7 @@ void MyMethod( App &app, char** argv )
                         break;
                     InputRangeSet input_range_set = sess.GetInputRange();
 
-                    app.SetTimeOut(sess.GetTimeOut(), sess.GetTimeOut2());
+                    app.SetTimeOut(to1, to2);
                     user_input = app.WaitUserInput(input_range_set, sess.GetEncode());
                     app.SetTimeOut();
                     if (!app.IsRingIn())
@@ -156,6 +168,12 @@ void MyMethod( App &app, char** argv )
                 user_input = "";
                 sess.DoCommand(last_command, argv[1], caller_id, host_id, user_input);
                 last_command = sess.GetLastCommand();
+
+				StringArray menu = sess.GetMenu();
+				logger << "menu size: " << menu.size() << std::endl;
+				std::string menu_msg = sess.GetMenuMsg();
+				logger << "menu msg: " << menu_msg << std::endl;
+				bool flag = (bool)sess.GetFlag();
 
                 app.HangUp();
             }

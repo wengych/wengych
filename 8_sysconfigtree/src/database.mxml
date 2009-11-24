@@ -330,12 +330,12 @@
 				expandMenu.customItems.push(menunoselect);
 				systree.contextMenu=expandMenu;
 
-				var menunoselect:ContextMenuItem=new ContextMenuItem("保存配置模板");
+				menunoselect=new ContextMenuItem("保存配置模板");
 				menunoselect.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,saveconfig);
 				expandMenu.customItems.push(menunoselect);
 				systree.contextMenu=expandMenu;
 				
-				var menunoselect:ContextMenuItem=new ContextMenuItem("删除配置模板");
+				menunoselect=new ContextMenuItem("删除配置模板");
 				menunoselect.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,removedts);
 				expandMenu.customItems.push(menunoselect);
 				systree.contextMenu=expandMenu;
@@ -354,11 +354,11 @@
 				menuremovenode2.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,removenode2);
 				expandMenu2.customItems.push(menuremovenode2);
 				
-				var menuremovenode2:ContextMenuItem=new ContextMenuItem("保存用户配置");
+				menuremovenode2=new ContextMenuItem("保存用户配置");
 				menuremovenode2.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,saveconfig);
 				expandMenu2.customItems.push(menuremovenode2);
 				
-				var menuremovenode2:ContextMenuItem=new ContextMenuItem("删除用户配置");
+				menuremovenode2=new ContextMenuItem("删除用户配置");
 				menuremovenode2.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,removedts);
 				expandMenu2.customItems.push(menuremovenode2);
 				

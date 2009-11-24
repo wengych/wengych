@@ -10,6 +10,8 @@ package com.yspay
     
     import mx.controls.Alert;
     
+    import com.yspay.events.ServiceCallCompleteEvent;
+    
     public class ServiceCall
     {
         private var _socket:Socket = new Socket();

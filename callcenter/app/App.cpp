@@ -109,16 +109,19 @@ void App::OffHook()
 		throw std::string ("OffHook failed.");
 }
 
-void App::Interphone()
+bool App::Interphone(const std::string& file_names, const std::string& menu_msg, int time_out, bool block)
 {
     WriteSharedMemory("转内线");
-
 
     InterphonePool pool;
     int interphone_id = pool.GetRandomAvailableChannel();
  
     Request req("INTERPHONE");
     req.argument_map["interphone_id"] = boost::lexical_cast<std::string>(interphone_id);
+	req.argument_map["file_list"] = file_names;
+	req.argument_map["is_start"] = "false";
+	req.argument_map["block"] = block ? "true" : "false";
+	req.argument_map["time_out"] = boost::lexical_cast<std::string>(time_out);
 
     SendRequest(req);
 
@@ -129,15 +132,23 @@ void App::Interphone()
         ring_in = false;
 
         pool.ModifyChannel(interphone_id, true);
-        return ;
-    }
+        return false;
+	}
+	else if (resp.state == "INTERPHONE_TIME_OUT" ||
+			 resp.state == "INTERPHONE_PLAY_END")
+	{
+		pool.ModifyChannel(interphone_id, true);
+		return false;
+	}
     else if (resp.argument_map["hang_up"] == "inter_phone")
     {
         ring_in = false;
 
         pool.ModifyChannel(interphone_id, true);
-        return ;
+        return false;
     }
+
+	return true;
 }
 
 void App::HangUp()
@@ -174,14 +185,14 @@ bool App::PlayFile( const std::string& file_names, const std::string& menu_msg, 
 	Response resp = RecvResponse();
     if (resp.state == "USER_HANG_UP") {
 		ring_in = false;
-        return true;
+        return false;
     }
 
 	Response::ArgMap::iterator it = resp.argument_map.find("dtmf_hit");
 	if (it != resp.argument_map.end() &&
 		it->second ==  "true") {
 		StopPlay();
-			return false;
+			return true;
 	}
 
     return true;
@@ -621,6 +632,49 @@ void App::SetTimeOut(int to, int to2)
     time_out2 = to2;
 }
 
+bool App::DoCmdByMenu( StringArray& menu, std::string menu_msg, int time_out, bool flag )
+{
+	const std::string file_begin = "FILE:";
+	const std::string cmd_begin = "CMD:";
+
+	MenuType menu_type = _MenuTypeFiles;
+	std::stringstream file_names;
+
+	for (StringArray::iterator it = menu.begin();
+		it != menu.end(); ++it)
+	{
+		std::string& str = *it;
+		if (0 == str.compare(0, file_begin.length(), file_begin))
+		{
+			GetFileNames(file_names, str.substr(file_begin.length()));
+		}
+		else if (0 == str.compare(0, cmd_begin.length(), cmd_begin))
+		{
+			if (str.substr(cmd_begin.length()) == "INTERPHONE")
+				menu_type = _MenuTypeInterphone;
+		}
+	}
+
+	switch (menu_type)
+	{
+	case _MenuTypeFiles:
+		logger << "App播放文件: " << file_names.str() << std::endl;
+		return PlayFile(file_names.str(), menu_msg, flag);
+		break;
+
+	case _MenuTypeInterphone:
+		logger << "App转接内线,播放背景音乐: " << file_names.str() << std::endl;
+		return Interphone(file_names.str(), menu_msg, time_out, flag);
+		break;
+
+	default:
+		break;
+	}
+
+	return true;
+}
+
+/*
 bool App::DoCmd( std::string& str, std::string& menu_msg, bool flag )
 {
     const std::string file_begin = "FILE:";
@@ -628,7 +682,7 @@ bool App::DoCmd( std::string& str, std::string& menu_msg, bool flag )
     if (0 == str.compare(0, file_begin.length(), file_begin))
     {
         logger << "App::DoCmd::PlayFile.\n";
-        std::stringstream file_names;         
+        std::stringstream file_names;
         GetFileNames(file_names, str.substr(file_begin.length()));
         return PlayFile(file_names.str(), menu_msg, flag);
     }
@@ -644,6 +698,7 @@ bool App::DoCmd( std::string& str, std::string& menu_msg, bool flag )
     logger << "App::DoCmd::NoCmd.\n";
     return true;
 }
+*/
 
 std::string App::ClearDtmf()
 {
@@ -658,4 +713,21 @@ std::string App::ClearDtmf()
     }
 
     return "";
+}
+
+void App::GetFileNames( std::stringstream& file_names, std::string &menu )
+{
+	// StringArray::iterator it = menu.begin();
+	// file_names << "cn\\" << *it;
+	typedef boost::tokenizer< boost::char_separator<char> > tokenizer;
+	boost::char_separator<char> sep(",");
+	tokenizer token = tokenizer(menu, sep);
+	tokenizer::iterator it_token = token.begin();
+	if (!file_names.eof())
+		file_names << ",";
+	file_names << "cn\\" << *it_token;
+	while (++it_token != token.end())
+	{
+		file_names << ',' << "cn\\" << *it_token;
+	}
 }

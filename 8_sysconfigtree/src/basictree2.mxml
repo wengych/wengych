@@ -23,7 +23,7 @@
 			import mx.collections.ArrayCollection;
 
 			import com.yspay.ServiceCall;
-			import com.yspay.ServiceCallCompleteEvent;
+			import com.yspay.events.ServiceCallCompleteEvent;
 			import com.yspay.DynamicWindowImpl;
 
 			import flash.net.Socket;
@@ -34,7 +34,7 @@
 			import flash.events.IOErrorEvent;
 			import flash.events.ProgressEvent;
 			import com.adobe.serialization.json.*;
-
+            
 			private var socket:Socket = new Socket();
 			private var tempstr:String = "";
 			private var receivestr:String = "";
@@ -201,16 +201,14 @@
 					<mx:Label text="IP："
 							  fontSize="12"
 							  textAlign="right"/>
-					<mx:TextInput width="100"
-								  id="ip_text"
-								  text="192.168.0.77"/>
+					<mx:TextInput width="180"
+								  id="ip_text"/>
 					<mx:Label text="端口："
 							  width="55"
 							  fontSize="12"
 							  textAlign="right"/>
 					<mx:TextInput width="60"
-								  id="port_text"
-								  text="16920"/>
+								  id="port_text"/>
 					<mx:Spacer width="10%"/>
 					<mx:Button label="更换"
 							   click="chgsocket();"/>

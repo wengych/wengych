@@ -21,7 +21,13 @@ enum UserInputType {
     _InputTypeStringWithLen
 };
 
+enum MenuType {
+	_MenuTypeFiles = 1,
+	_MenuTypeInterphone
+};
+
 class App {
+	typedef std::vector<std::string> StringArray;
 public:
 	App(char* channel_id);
 	void SendRequest(Request&);
@@ -31,7 +37,7 @@ public:
 
 	bool RingIn();
 	void OffHook();
-    void Interphone();
+    bool Interphone(const std::string& file_names, const std::string& menu_msg, int time_out, bool block);
 	bool PlayFile(const std::string& file_name, const std::string& menu_msg, bool block);
 	void StopPlay();
     void SetTimeOut(int to = 0, int to2 = 0);
@@ -57,21 +63,9 @@ public:
 
     bool CheckCmd(const std::string& cmd);
 
-    void GetFileNames( std::stringstream& file_names, std::string &menu ) 
-    {
-        // StringArray::iterator it = menu.begin();
-        // file_names << "cn\\" << *it;
-        typedef boost::tokenizer< boost::char_separator<char> > tokenizer;
-        boost::char_separator<char> sep(",");
-        tokenizer token = tokenizer(menu, sep);
-        tokenizer::iterator it_token = token.begin();
-        file_names << "cn\\" << *it_token;
-        while (++it_token != token.end())
-        {
-            file_names << ',' << "cn\\" << *it_token;
-        }
-    }
-    bool DoCmd(std::string& str, std::string& menu_msg, bool flag);
+    void GetFileNames( std::stringstream& file_names, std::string &menu );
+    // bool DoCmd(std::string& str, std::string& menu_msg, bool flag);
+	bool DoCmdByMenu( StringArray& menu, std::string menu_msg, int time_out, bool flag );
 
     void InitActiveFileLock();
     void UpdateActiveFile();

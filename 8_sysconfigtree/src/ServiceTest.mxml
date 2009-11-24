@@ -5,7 +5,7 @@
         <![CDATA[
         import mx.collections.ArrayCollection;
         import com.yspay.ServiceCall;
-        import com.yspay.ServiceCallCompleteEvent;
+        import com.yspay.events.ServiceCallCompleteEvent;
         
         private var service:ServiceCall;
         private var arr_sock_recv:ByteArray = new ByteArray();

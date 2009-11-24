@@ -1,12 +1,14 @@
 package com.yspay
 {
     import com.adobe.serialization.json.*;
+    import com.yspay.events.ServiceCallCompleteEvent;
     
     import flash.events.*;
     import flash.ui.ContextMenu;
     import flash.ui.ContextMenuItem;
     import flash.utils.ByteArray;
     
+    import mx.collections.ArrayCollection;
     import mx.collections.XMLListCollection;
     import mx.containers.TitleWindow;
     import mx.controls.Alert;
@@ -17,21 +19,25 @@ package com.yspay
     import mx.core.Application;
     import mx.events.*;
     import mx.managers.PopUpManager;
-
+    
     public class BasicTree extends Application
     {
         protected var _charSet:String = 'CN-GB';
         protected var _serviceCall:ServiceCall;
         protected var _log:String;
-        protected var dtsxml2:XML = <L KEY="config" KEYNAME="字段定义1" VALUE="field"/>;
-        protected var dtsxml3:XML = <L KEY="config" KEYNAME="字段定义1" VALUE="field">
-                    <L KEY="待定" KEYNAME="待定" VALUE=""><A KEY="待定属性" KEYNAME="待定属性" VALUE=""/></L>
-                </L>;
-        
+        protected var dtsxml2:XML = <L KEY="config" KEYNAME="字段定义1" VALUE="field">
+            <L KEY="待定" KEYNAME="待定" VALUE=""><A KEY="待定属性" KEYNAME="待定属性" VALUE="" isBranch="true"/></L>
+            </L>;
+//         protected var dtsxml3:XML = <L KEY="config" KEYNAME="字段定义1" VALUE="field">
+//                 <L KEY="待定" KEYNAME="待定" VALUE=""><A KEY="待定属性" KEYNAME="待定属性" VALUE="" isBranch="true"/></L>
+//             </L>;
+
         protected var dynamicWindow:DynamicWindowImpl;
         protected var loginWindow:TitleWindow;
-        [Bindable] public var systree:Tree;
-        [Bindable] public var usertree:Tree;
+        [Bindable]
+        public var systree:Tree;
+        [Bindable]
+        public var usertree:Tree;
         public var ta:TextArea;
         public var ip_text:TextInput;
         public var port_text:TextInput;
@@ -40,23 +46,29 @@ package com.yspay
         public var head_isused:CheckBox;
         public var headvalue:TextInput;
         public var editxml_text:TextInput;
-        [Bindable] protected var dtsxml:XML = <L/>;
-        [Bindable] protected var sysdtsxml:XMLListCollection = new XMLListCollection(dtsxml.*);
-        [Bindable] protected var userdtsxml:XMLListCollection = new XMLListCollection(dtsxml2.*);
+        public var ip_list:ArrayCollection;
+        public var port_list:ArrayCollection;
+        public var current_ip_index:int;
+        [Bindable]
+        protected var dtsxml:XML = <L/>;
+        [Bindable]
+        protected var sysdtsxml:XMLListCollection = new XMLListCollection(dtsxml.*);
+        [Bindable]
+        protected var userdtsxml:XMLListCollection = new XMLListCollection(dtsxml2.*);
 
         public function BasicTree()
         {
             super();
         }
-        
-		protected function init():void
+
+        protected function init():void
         {
             // loginWindow = PopUpManager.createPopUp(this, login, true) as TitleWindow;
             // PopUpManager.centerPopUp(loginWindow);
-            
+
             var expandMenu:ContextMenu = new ContextMenu;
             expandMenu.hideBuiltInItems();
-            
+
             var menumodtree:ContextMenuItem = new ContextMenuItem("删除节点");
             menumodtree.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, removenode);
 
@@ -72,17 +84,30 @@ package com.yspay
             var menuremovenode2:ContextMenuItem = new ContextMenuItem("删除节点");
             menuremovenode2.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, removenode2);
             expandMenu2.customItems.push(menuremovenode2);
-            
+
             menuremovenode2 = new ContextMenuItem("保存用户配置");
             menuremovenode2.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, saveconfig);
             expandMenu2.customItems.push(menuremovenode2);
-            
+
             usertree.contextMenu = expandMenu2;
             showtext();
-            
+
             this.addEventListener(ServiceCallCompleteEvent.OPERATION_COMPLETE, DataReady);
+            
+            ip_list = new ArrayCollection;
+            ip_list.addItem("124.207.197.178");
+            ip_list.addItem("192.168.0.77");
+            ip_list.addItem("192.168.88.84");
+            port_list = new ArrayCollection;
+            port_list.addItem("6802");
+            port_list.addItem("16920");
+            port_list.addItem("16920");
+            current_ip_index = 0;
+            
+            ip_text.text = ip_list.getItemAt(current_ip_index).toString();
+            port_text.text = port_list.getItemAt(current_ip_index).toString();
         }
-        
+
         protected function removenode(event:Event):void
         {
             if (systree.selectedIndex >= 0)
@@ -101,12 +126,12 @@ package com.yspay
                 Alert.show("请选择节点！");
             }
         }
-        
+
         protected function removeClickHandler(event:CloseEvent):void
         {
             if (event.detail == Alert.YES)
             {
-                
+
                 var req_head_obj:Object = new Object();
                 req_head_obj['version'] = '1.0';
                 req_head_obj['type'] = 'request';
@@ -133,7 +158,7 @@ package com.yspay
                 ta.text += JSON.encode(userbus);
             }
         }
-        
+
         protected function removenode2(event:Event):void
         {
             if (usertree.selectedIndex >= 0)
@@ -157,12 +182,12 @@ package com.yspay
                 Alert.show("请选择节点！");
             }
         }
-        
+
         protected function saveconfig(event:Event):void
         {
             Alert.show("是否要保存配置？", "保存配置", 3, this, saveconfigHandler);
         }
-        
+
         protected function saveconfigHandler(event:CloseEvent):void
         {
             if (event.detail == Alert.YES)
@@ -175,7 +200,7 @@ package com.yspay
                 req_head['respflag'] = true;
                 req_head['resptype'] = 'json';
                 req_head['active'] = 'YSDBSDTSObjectConfigInsert';
-                
+
                 // <L TYPE="filed" NAME="余额" VER="20091103123456" ISUSED="1" APPNAME="MyApp" CUSER="admin">
                 var insert_xml:XML = new XML('<L TYPE="type" NAME="name" VER="20091103123456" ISUSED="1" APPNAME="MyApp" CUSER="admin" />');
                 insert_xml.@TYPE = headvalue.text;
@@ -186,7 +211,7 @@ package com.yspay
                 else
                     insert_xml.@ISUSED = '0';
                 insert_xml.appendChild(dtsxml2);
-                
+
                 // var strReqBody:String = '<?xml version="1.0" encoding="gbk" ?>';
                 // strReqBody += '<L TYPE="filed" NAME="余额" VER="20091103123456" ISUSED="1" APPNAME="MyApp" CUSER="admin">';
                 // strReqBody += dtsxml2.toXMLString();
@@ -195,25 +220,25 @@ package com.yspay
                 var req_body_string:String = '<?xml version="1.0" encoding="gbk" ?>\n';
                 req_body_string += insert_xml.toXMLString();
                 req_body.writeMultiByte(req_body_string, _charSet);
-                
+
                 _serviceCall = new ServiceCall();
                 _serviceCall.SetServerInfo(ip_text.text, int(port_text.text));
                 _serviceCall.SetCompleteEventHandler(this);
                 _serviceCall.do_service_call(JSON.encode(req_head), req_body);
-                
+
                 ta.text += "\n发送请求:\n请求头:\n";
                 ta.text += JSON.encode(req_head);
                 ta.text += "\n请求体:\n" + req_body_string;
             }
         }
-        
+
         protected function showtext():void
         {
             dtsxml2.@KEYNAME = headkeyname.text;
             dtsxml2.@VALUE = headvalue.text;
             ta.text = dtsxml2.toXMLString();
         }
-        
+
         protected function GetService(service_type:String):void
         {
             var req_head_obj:Object = new Object;
@@ -247,25 +272,25 @@ package com.yspay
             _log = "发送请求:\n请求头:\n" + req_head + "\n";
             _log = _log + "\n请求体:\n" + req_body_string + "\n";
         }
-        
+
         protected function DataReady(event:ServiceCallCompleteEvent):void
         {
             trace("DataReady:head:", event.ResponseHead);
             // trace ("DataReady:body:", event.ResponseBody);
-    
+
             ta.text += "\n接收数据包头:\n";
             ta.text += event.ResponseHead;
-    
+
             var obj:Object = JSON.decode(event.ResponseHead) as Object;
-    
+
             if (obj['active'] == 'YSDBSDTSObjectList')
             {
                 trace('YSDBSDTSOjbectList');
                 var req_body_string:String = event.ResponseBody.readMultiByte(event.ResponseBody.length, 'CN-GB');
                 var req_head:Object = JSON.decode(event.ResponseHead) as Object;
                 var req_body:Object = JSON.decode(req_body_string) as Object;
-    
-    
+
+
                 ta.text += "\n接收数据包体:\n";
                 ta.text += req_body_string;
                 ta.text += "\n\n";
@@ -277,10 +302,18 @@ package com.yspay
                 dtsxml = XML(xml_string);
                 sysdtsxml.source = XMLList(dtsxml.L);
                 sysdtsxml.refresh();
-    
-    
-                ta.text += "\n接收数据包体:\n";
-                ta.text += xml_string;
+
+                var max_xml_string_disp_len:int = 200;
+                if (xml_string.length < max_xml_string_disp_len)
+                {
+                    ta.text += "\n接收数据包体:\n";
+                    ta.text += xml_string;
+                }
+                else
+                {
+                    ta.text += "\n接收数据包体的前" + max_xml_string_disp_len.toString() + "字节:\n";
+                    ta.text += xml_string.substring(0, max_xml_string_disp_len);
+                }
                 ta.text += "\n\n";
             }
             else if (obj['active'] == 'YSDBSDTSObjectConfigDelete' || obj['active'] == 'YSDBSDTSObjectConfigInsert')
@@ -288,29 +321,29 @@ package com.yspay
                 ta.text += "\n接收数据包体:\n";
                 ta.text += event.ResponseBody;
                 ta.text += '\n';
-    
+
                 UpdateDtsTree('ALL');
             }
             else if (obj['active'] == 'YSDBSDTSObjectSelect')
             {
-                var xml_string:String = event.ResponseBody.readMultiByte(event.ResponseBody.length, 'CN-GB');
-                
+                xml_string = event.ResponseBody.readMultiByte(event.ResponseBody.length, 'CN-GB');
+
                 var disp_xml:XML = XML(xml_string);
-                
+
 //                if (do_disp_xml)
-                    ;
+                ;
 //                else
-                    ;
+                ;
                 // dynamicWindow = new DynamicWindow(disp_xml);
                 // dynamicWindow = PopUpManager.createPopUp(this, DynamicWindow, true) as DynamicWindowImpl;
                 // PopUpManager.centerPopUp(dynamicWindow);
-                
+
                 ta.text += "\n接收数据包体:\n";
                 ta.text += disp_xml.toXMLString();
                 ta.text += '\n';
             }
         }
-        
+
         protected function UpdateDtsTree(dictIn:String):void
         {
             var userbus:Object = new Object();
@@ -336,7 +369,7 @@ package com.yspay
             ta.text += JSON.encode(req_head);
             ta.text += "\n请求体:\n" + JSON.encode(userbus);
         }
-        
+
         protected function editxml():void
         {
             if (editxml_text.text.length == 0)
@@ -344,6 +377,7 @@ package com.yspay
             else
                 UpdateDtsTree(editxml_text.text);
         }
+
         protected function onTreeDragComplete(event:DragEvent):void
         {
             showtext();
@@ -360,16 +394,16 @@ package com.yspay
             }
             ta.text = dtsxml2.toXMLString();
         }
-        
+
         protected function disxml():Boolean
         {
-			if (editxml_text.text != "")
+            if (editxml_text.text != "")
             {
                 var userbus:Object = new Object();
                 userbus['__DICT_IN'] = [editxml_text.text];
                 var req_body:ByteArray = new ByteArray;
                 req_body.writeMultiByte(JSON.encode(userbus), _charSet);
-            
+
                 var req_head:Object = new Object;
                 req_head['version'] = '1.0';
                 req_head['type'] = 'request';
@@ -408,23 +442,20 @@ package com.yspay
         {
             // if (disxml())
             {
-            	dynamicWindow = PopUpManager.createPopUp(this, DynamicWindow, true) as DynamicWindowImpl;
-            	PopUpManager.centerPopUp(dynamicWindow);
+                dynamicWindow = PopUpManager.createPopUp(this, DynamicWindow, true) as DynamicWindowImpl;
+                PopUpManager.centerPopUp(dynamicWindow);
             }
         }
 
         protected function chgsocket():void
         {
-            if (ip_text.text == "192.168.0.77")
+            if (++current_ip_index >= ip_list.length)
             {
-                ip_text.text = "192.168.0.201";
-                port_text.text = "6900";
+                current_ip_index = 0;
             }
-            else
-            {
-                ip_text.text = "192.168.0.77";
-                port_text.text = "16920";
-            }
+            
+            ip_text.text = ip_list.getItemAt(current_ip_index).toString();
+            port_text.text = port_list.getItemAt(current_ip_index).toString();
         }
     }
 }

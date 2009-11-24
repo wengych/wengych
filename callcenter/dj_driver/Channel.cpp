@@ -46,7 +46,7 @@ bool Channel::GetCallerId( )
 	std::string caller_id;
 	if (DtmfHit(channel_id)) {
         while (DtmfHit(channel_id)) {
-			char c= ConvertDtmf(GetDtmfCode(channel_id));
+			char c = ConvertDtmf(GetDtmfCode(channel_id));
             if (c != 'd')
                 caller_id += c;
         }
@@ -89,9 +89,10 @@ bool Channel::Interphone()
     }
     else if (first_in)
     {
-        logger << "FeedRealRing.\n";
+		logger << "FeedRealRing:" << interphone_id << "\n";
         ::FeedRealRing(interphone_id);
         first_in = false;
+		interphone_time_in = time(NULL);
     }
     else if(off_hook)
     {
@@ -114,6 +115,7 @@ bool Channel::Interphone()
     else if (OffHookDetect(interphone_id))
     {
         logger << "OffHookDetect.\n";
+		StopPlay();
         FeedPower(interphone_id);
         StartPlaySignal(channel_id, SIG_STOP);
         SetLink(channel_id, interphone_id);
@@ -123,6 +125,42 @@ bool Channel::Interphone()
 
         off_hook = true;
     }
+	else 
+	{
+		/*
+		int time_out = boost::lexical_cast<int>(req->argument_map["time_out"]);
+		if (time(NULL) - interphone_time_in >= time_out)
+		{
+			::ClearLink(channel_id, interphone_id);
+
+			::FeedPower(interphone_id);
+			::StartPlaySignal(channel_id, SIG_STOP);
+
+			::HangUp(channel_id);
+
+			resp->state = "INTERPHONE_TIME_OUT";
+
+			first_in = true;
+			off_hook = false;
+			return true;
+		}
+		
+		else */if (PlayFile() == true &&
+			resp->argument_map["is_end"] == "true")
+		{
+			::ClearLink(channel_id, interphone_id);
+
+			::FeedPower(interphone_id);
+			::StartPlaySignal(channel_id, SIG_STOP);
+			::StopPlay(channel_id);
+
+			resp->state = "INTERPHONE_PLAY_END";
+
+			first_in = true;
+			off_hook = false;
+			return true;
+		}
+	}
 
     return false;
 }
@@ -148,6 +186,7 @@ bool Channel::PlayFile()
 		char_separator<char> sep(",");
 		tokenizer<char_separator<char> > tok(req->argument_map["file_list"], sep);
 		play_list.insert(play_list.end(), tok.begin(), tok.end());
+		logger << "通道[" << channel_id << "] 语音队列长度" << play_list.size() << std::endl;
 
 		char file_name[256];
 		strcpy_s(file_name, play_list.begin()->c_str());
@@ -157,7 +196,7 @@ bool Channel::PlayFile()
 		req->argument_map["is_start"] = "true";
 		req->argument_map["is_end"] = "false";
 
-		logger << "start play file.\n";
+		logger << "通道[" << channel_id << "] 开始播放语音文件: " << file_name << "\n";
 	} else if (::DtmfHit(channel_id)) {
 		if (req->argument_map["block"] == "true") {
 			::InitDtmfBuf(channel_id);
@@ -181,7 +220,8 @@ bool Channel::PlayFile()
 			resp->argument_map["is_start"] = req->argument_map["is_start"];
 			resp->argument_map["is_end"] = "true";
 
-			logger << "end play file.\n";
+			// logger << "end play file.\n";
+			logger << "通道[" << channel_id << "] 播放语音文件结束" << std::endl;
 			return true;
 		} else {
 			::StopPlayFile(channel_id);
@@ -190,7 +230,8 @@ bool Channel::PlayFile()
 			::StartPlayFile(channel_id, file_name, 0);
 			play_list.pop_front();
 
-			logger << "play next file.\n";
+			// logger << "play next file.\n";
+			logger << "通道[" << channel_id << "] 继续播放语音文件: " << file_name << "\n";
 		}
 	}
 
@@ -311,6 +352,7 @@ Channel::Channel( int _channel_id )
 
     first_in = true;
     off_hook = false;
+	resp_send_success = true;
 }
 
 Channel::Channel( const Channel& rhs )
@@ -320,7 +362,8 @@ request_queue(rhs.request_queue),
 response_queue(rhs.response_queue),
 response_mutex(rhs.response_mutex),
 first_in(rhs.first_in),
-off_hook(rhs.off_hook)
+off_hook(rhs.off_hook),
+resp_send_success(rhs.resp_send_success)
 {
 	current_work = GetWork();
 }
@@ -362,7 +405,11 @@ void Channel::DoWork()
 		current_work();
 	} else if (!req) {
 	*/
-	if (!current_work || !req) {
+	if (!resp_send_success)
+	{
+		resp_send_success = PostResponse();
+		return ;
+	} else if (!current_work || !req) {
 		if (!GetRequest())
 			return;
 		current_work = GetWork();
@@ -377,7 +424,7 @@ void Channel::DoWork()
 				resp.reset(new Response(current_state));
 			} else {
 				// will send response while work finish and there is no new request. 
-				PostResponse();
+				resp_send_success = PostResponse();
 				current_state = "";
 				current_work = GetWork();
 				resp.reset(/*NULL*/);
@@ -393,7 +440,7 @@ void Channel::DoWork()
 			resp.reset(new Response(current_state));
 		} else if (work_result) {
 			// work complete
-			PostResponse();
+			resp_send_success = PostResponse();
 			current_state = "";
 			current_work = GetWork();
 			resp.reset(/*NULL*/);
@@ -410,19 +457,34 @@ bool Channel::GetRequest()
 {
 	size_t recvd_size;
 	unsigned int priority;
-	if (request_queue->try_receive(QUEUE_BUFFER, MAX_MSG_SIZE, recvd_size, priority)) {
-		req.reset(new Request(QUEUE_BUFFER, recvd_size));
-		current_state = req->state;
-		return true;
-	}
+	bool rtn = false;
 
-	return false;
+	if (response_mutex->try_lock())
+	{
+		if (request_queue->try_receive(QUEUE_BUFFER, MAX_MSG_SIZE, recvd_size, priority)) {
+			req.reset(new Request(QUEUE_BUFFER, recvd_size));
+			current_state = req->state;
+
+			logger << "收到Request: " << req->state << "\n";
+			rtn = true;
+		}
+
+		// logger << "无Request.\n";
+		response_mutex->unlock();
+	}
+	return rtn;
 }
 
 bool Channel::PostResponse()
 {
-	using namespace boost::interprocess;
+	bool rtn = false;
 
-	scoped_lock<named_mutex> sc_lock(*response_mutex);
-	return response_queue->try_send(resp->str().c_str(), resp->str().length(), 0);
+	if (response_mutex->try_lock())
+	{
+		logger << "发送Response: " << resp->state << "\n";
+		rtn = response_queue->try_send(resp->str().c_str(), resp->str().length(), 0);
+
+		response_mutex->unlock();
+	}
+	return rtn;
 }
