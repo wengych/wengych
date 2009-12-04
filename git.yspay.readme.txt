@@ -1,0 +1,43 @@
+★版本控制系统使用说明★
+  ▲使用工具:git
+  ▲git简单说明:
+    git是由Linus本人开发的分布式版本控制系统，现已被大量开源项目所使用。
+    git在Linux下的安装非常简单，Debian/Ubuntu中使用sudo apt-get install git-core
+    更多详细使用说明参见progit中文文档:  http://progit.org/book/zh/
+  ▲版本库权限控制:
+    √管理员根据不同开发人员的职责，控制开发人员的库使用权限
+    √编辑仓库gitosis-admin根目录下的gitosis.conf文件,定义组、组权限(权限中定义对应仓库)及组成员
+    √添加新用户时,新用户将自己的公钥提交给管理员
+    √管理员将用户的公钥保存在仓库gitosis-admin的keydir目录下
+    √管理员修改gitosis.conf将新用户添加至该用户可写或可读的组中
+    √管理员commit并push仓库gitosis-admin成功后,新用户即可访问在gitosis.conf中定义好的组
+  ▲windows下的git
+    √msysgit
+      △主页: http://code.google.com/p/msysgit/
+      △说明: 基于MSys的win32版本git
+      △git gui可以打开一个图形化的界面进行版本库的操作
+    √TortoiseGit
+      △主页: http://code.google.com/p/tortoisegit/
+      △说明: 小乌龟客户端的git版本
+      △详细使用说明参考TortoiseGit网站
+    √公网访问方式
+      △ssh://git@124.207.197.178:6801/callcenter.git
+      △详细说明
+        ○ssh:// 透过ssh协议
+        ○git@ git用户访问
+        ○124.207.197.178 ip地址
+        ○6801 端口号
+        ○callcenter.git 仓库名
+  ▲提交规则
+    √编译器产生的临时文件不放入代码库
+    √外部程序库不放入代码库
+    √尽量采用相对小、相对独立的提交，一次提交所修改的文件尽量少
+    √每次提交必须带有注释，最好使用能够表示本次修改性质的描述，例如
+      △:Add somthing.
+      △:Bug [fix|found]: describe the bug or fix.
+      △:Change something.
+      △:Del something.
+      △:Enhance something.
+      △:New something.
+      △:Tmp for some cause.
+    √本地库建立分支修改代码，测试完毕后合并到主干 (合并提交检查?code review?)

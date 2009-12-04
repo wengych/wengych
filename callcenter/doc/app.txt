@@ -1,9 +1,0 @@
-app.exe进程负责与dj_driver.exe及后台的service call通信,将driver层产生的呼入请求及用户输入等信息转发给后台service call,并将后台service call产生的语音播放或等待输入请求进行分解加工,产生app与driver之间的请求格式数据并传递给driver进行处理.
-
-app_main.cpp::main :
-    初始化系统环境,更新心跳文件;
-    创建app对象;
-    执行主逻辑循环:等待呼入->执行ServiceCall->播放语音->等待输入->...->(执行ServiceCall->播放语音->等待输入)->...->挂机;
-
-App:
-    
