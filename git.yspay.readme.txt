@@ -1,7 +1,7 @@
 ★版本控制系统使用说明★
   ▲使用工具:git
   ▲git简单说明:
-    git是由Linus本人开发的分布式版本控制系统，现已被大量开源项目所使用。
+    git是由Linus开发的分布式版本控制系统，现已被大量开源项目所使用
     git在Linux下的安装非常简单，Debian/Ubuntu中使用sudo apt-get install git-core
     更多详细使用说明参见progit中文文档:  http://progit.org/book/zh/
   ▲版本库权限控制:
@@ -28,6 +28,9 @@
         ○124.207.197.178 ip地址
         ○6801 端口号
         ○callcenter.git 仓库名
+  ▲配置自己的git客户端的user信息
+    √git config --global user.name="Charles Weng" #替换Charles Weng为你自己的名字，此处的username会体现在提交后的log中
+    √git config --global user.email="wengych@gmail.com;ychweng@yspay.com" #替换为你的邮件地址
   ▲提交规则
     √编译器产生的临时文件不放入代码库
     √外部程序库不放入代码库
