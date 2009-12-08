@@ -54,9 +54,8 @@
       △git tag #分支标签
       △git [-a | -s | -u <key-id>] <tag-name> #创建标签
       △git -d <tag-name>
-    √checkout: 切换到branch或tag
-      △git checkout <branch or tag>
-    √stash: 暂存当前修改，可理解为压栈
+    √stash
+    √
 
   ▲提交规则
     √编译器产生的临时文件不放入代码库
