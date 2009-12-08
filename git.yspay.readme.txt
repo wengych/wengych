@@ -33,8 +33,8 @@
     √git config --global user.email="wengych@gmail.com;ychweng@yspay.com" #替换为你的邮件地址
   ▲基本操作
     √clone: 克隆一份远端的仓库到本地
-      △git clone git@server:respority-name.git
       △git clone ssh://git@server:port/respority-name.git
+      △git clone git@server:respority-name.git
       △git clone git://server/respority-name
       △git clone http://server/respority-name
       △git clone https://server/respority-name
@@ -42,10 +42,18 @@
       △git init
     √add: 向仓库添加一个新文件，或将一个更改的文件暂存到stage区域
       △git add filename
-    √commit
-      △
-    √branch
-    √tag
+    √commit: 将当前stage区域的数据提交到仓库中
+      △git commit -m "comment"
+    √branch: 查询、建立或删除分支
+      △git branch #列本地分支
+      △git branch -r #列远端分支
+      △git branch -a #列全部分支
+      △git branch <branch-name> #建立分支
+      △git branch -d <branch-name> #删除分支
+    √tag: 创建、查询、删除或校验tag中的对象，tag:标签或快照
+      △git tag #分支标签
+      △git [-a | -s | -u <key-id>] <tag-name> #创建标签
+      △git -d <tag-name>
     √stash
     √
 
