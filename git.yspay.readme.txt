@@ -28,6 +28,23 @@
         ○124.207.197.178 ip地址
         ○6801 端口号
         ○callcenter.git 仓库名
+  ▲基本操作
+    √clone: 克隆一份远端的仓库到本地
+      △git clone git@server:respority-name.git
+      △git clone ssh://git@server:port/respority-name.git
+      △git clone git://server/respority-name
+      △git clone http://server/respority-name
+      △git clone https://server/respority-name
+    √init: 创建一个仓库
+      △git init
+    √add: 向仓库添加一个新文件，或将一个更改的文件暂存到stage区域
+      △git add filename
+    √commit
+      △
+    √branch
+    √tag
+    √stash
+    √
   ▲提交规则
     √编译器产生的临时文件不放入代码库
     √外部程序库不放入代码库
